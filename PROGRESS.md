@@ -16,14 +16,14 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong đến hết Giai đoạn 2.** Tiếp theo: **Giai đoạn 3 — Khuyến mãi + Thực đơn**.
+**Đã xong đến hết Giai đoạn 3.** Tiếp theo: **Giai đoạn 4 — Discount engine**.
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
 | 0 — Khởi tạo project | ✅ Xong | (commit trực tiếp trước khi thống nhất quy trình PR) |
 | 1 — Design system + Layout shell | ✅ Xong | [#1](https://github.com/hungknh/BeefSteakRestaurant/pull/1) |
 | 2 — Trang chủ | ✅ Xong | [#3](https://github.com/hungknh/BeefSteakRestaurant/pull/3) |
-| 3 — Khuyến mãi + Thực đơn | ⬜ Chưa làm | |
+| 3 — Khuyến mãi + Thực đơn | ✅ Xong | [#6](https://github.com/hungknh/BeefSteakRestaurant/pull/6) |
 | 4 — Discount engine | ⬜ Chưa làm | |
 | 5 — Giỏ hàng + Đặt bàn (UI) | ⬜ Chưa làm | |
 | 6 — Admin UI (mock) | ⬜ Chưa làm | |
@@ -38,14 +38,13 @@
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
-## Việc cần làm tiếp (Giai đoạn 3 — Khuyến mãi + Thực đơn)
+## Việc cần làm tiếp (Giai đoạn 4 — Discount engine)
 
-Xem PLAN.md mục 7 "GIAI ĐOẠN 3". Tóm tắt:
-- Ngày 1-2: `khuyen-mai/page.tsx` (grid đầy đủ, tái dùng `PromoCard` đã có), `khuyen-mai/[slug]/page.tsx` (chi tiết + điều kiện áp dụng + nút "Đặt bàn với ưu đãi này" dẫn `/dat-ban?promo=<slug>`).
-- Ngày 3-4: `thuc-don/page.tsx` (grid + filter category qua URL searchParams, KHÔNG dùng `useState`), `DishCard`, `loading.tsx` skeleton, empty state.
-- Ngày 5: `thuc-don/[slug]/page.tsx` (ảnh lớn, chọn độ chín + số lượng + ghi chú, review list, món liên quan, `generateMetadata()`, `not-found.tsx`).
-
-`PromoCard` (`components/promotion/promo-card.tsx`) đã được dựng sớm ở Giai đoạn 2 vì trang chủ cần — Giai đoạn 3 chỉ cần tái sử dụng, không viết lại. `DishCard` thì chưa có (trang chủ dùng layout list-row riêng, không phải grid card) — viết mới ở Giai đoạn 3.
+Xem PLAN.md mục 6 (thiết kế) + mục 7 "GIAI ĐOẠN 4". Tóm tắt:
+- `lib/promotions/apply.ts` — hàm thuần `bestPromotion(lines, promos, now)`, KHÔNG đụng DB/React. Input `CartLine[]` + `Promotion[]` (đã có sẵn qua `getPromotions()`).
+- Viết **Vitest** ngay tại giai đoạn này, phủ hết bảng edge case ở PLAN.md mục 6: khung giờ vắt qua nửa đêm, làm tròn PERCENT (`Math.floor`), FIXED > subtotal (`Math.min`), giỏ rỗng, scope=DISH không khớp giỏ, 2 promo bằng giá trị giảm (giữ cái đầu).
+- Cần cài `vitest` (chưa có trong `package.json` — chỉ mới có ESLint/Prettier, chưa có test runner nào).
+- Đây là hàm sẽ dùng lại ở cả Giai đoạn 5 (giỏ hàng hiện giá tạm tính) và Giai đoạn 9 (server tính lại giá, chống sửa giá qua DevTools) — làm đúng ở bước này quan trọng hơn các giai đoạn UI khác.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -75,6 +74,16 @@ Xem PLAN.md mục 7 "GIAI ĐOẠN 3". Tóm tắt:
 10. **`components/shared/rating-stars.tsx` đã có** (dùng ở trang chủ phần Review, sẽ tái dùng ở Giai đoạn 3 phần review chi tiết món).
 
 11. **Sửa `next.config.ts` xong PHẢI restart dev server thủ công** — Turbopack không tự nạp lại file config này (gặp lỗi `next-error not-found` / 500 sau khi thêm `images.remotePatterns` mà không restart). Cách kiểm tra nhanh: `netstat -ano | grep ":3000"` để tìm đúng PID đang LISTEN (có thể khác PID Next.js báo lúc khởi động nếu server đã tự phục hồi sau lỗi trước đó), `taskkill //PID <pid> //F`, rồi `npm run dev` lại.
+
+12. **Route group `(public)` đã tách ra từ Giai đoạn 3** — `src/app/layout.tsx` (root) giờ chỉ còn `html`/`body`/font, KHÔNG còn Header/Footer. Header/Footer chuyển vào `src/app/(public)/layout.tsx`. Lý do: Giai đoạn 6 (admin) và Giai đoạn 8 (auth) cần layout hoàn toàn khác (sidebar+topbar / màn hình đăng nhập tối giản), Next.js layout lồng nhau là cộng dồn nên không thể "bỏ" Header/Footer nếu chúng nằm ở root. Trang mới thêm sau này (dat-ban, gio-hang, thanh-toan, lien-he, tai-khoan/*) đặt trong `(public)/` để tự động có Header/Footer; `admin/*` và `(auth)/*` đặt ở cấp ngang hàng `(public)/`, KHÔNG lồng bên trong.
+
+13. **`lib/data/categories.ts` đã có** (`getCategories()`), `getDishBySlug`, `getPromotionBySlug` cũng đã thêm vào `dishes.ts`/`promotions.ts`. `lib/format.ts` có thêm `formatDaysOfWeek()` (dịch CSV "1,4,6" sang "Thứ Hai, Thứ Năm...").
+
+14. **`components/menu/order-panel.tsx` (chọn độ chín/số lượng/ghi chú) chỉ dùng `useState` cục bộ, CHƯA nối Zustand cart store** — nút "Thêm Vào Giỏ" hiện chưa có `onClick`, chỉ là UI. Giai đoạn 5 sẽ nối vào `store/cart.ts`. Đừng ngạc nhiên khi bấm nút không có phản ứng gì — đúng như kế hoạch, chưa phải bug.
+
+15. **Xóa `src/components/ui/badge.tsx`** (thêm nhầm lúc `shadcn add`, không dùng đến — badge maroon/gold trên `PromoCard`/`DishCard` tự viết `<span>` thủ công vì cần màu riêng ngoài theme mặc định của shadcn Badge).
+
+16. **Đã fix 1 bug layout ở Giai đoạn 3:** `ReviewList` dùng `justify-between` cho hàng tên + rating sao trong cột review — ở màn hình rộng (cột review chiếm gần hết `max-w-6xl`), `justify-between` đẩy sao ra sát mép phải, cách xa tên. Đã sửa thành `flex items-center gap-3` (tên + sao đứng sát nhau). Cẩn thận pattern này ở các list item khác nằm trong cột rất rộng.
 
 ## Cách tiếp tục ở phiên mới
 
