@@ -16,13 +16,13 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong đến hết Giai đoạn 1.** Tiếp theo: **Giai đoạn 2 — Trang chủ**.
+**Đã xong đến hết Giai đoạn 2.** Tiếp theo: **Giai đoạn 3 — Khuyến mãi + Thực đơn**.
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
 | 0 — Khởi tạo project | ✅ Xong | (commit trực tiếp trước khi thống nhất quy trình PR) |
 | 1 — Design system + Layout shell | ✅ Xong | [#1](https://github.com/hungknh/BeefSteakRestaurant/pull/1) |
-| 2 — Trang chủ | ⬜ Chưa làm | |
+| 2 — Trang chủ | ✅ Xong | [#3](https://github.com/hungknh/BeefSteakRestaurant/pull/3) |
 | 3 — Khuyến mãi + Thực đơn | ⬜ Chưa làm | |
 | 4 — Discount engine | ⬜ Chưa làm | |
 | 5 — Giỏ hàng + Đặt bàn (UI) | ⬜ Chưa làm | |
@@ -38,11 +38,14 @@
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
-## Việc cần làm tiếp (Giai đoạn 2 — Trang chủ)
+## Việc cần làm tiếp (Giai đoạn 3 — Khuyến mãi + Thực đơn)
 
-Xem PLAN.md mục 7 "GIAI ĐOẠN 2". Tóm tắt: Hero (ảnh nền full-viewport + overlay, heading 3 dòng dòng 2 serif italic gold, 2 nút), Khuyến mãi nổi bật (grid 3 cột từ `MOCK_PROMOTIONS`), Chuẩn mực Beefsteak (4 card icon lucide), Xem trước thực đơn (ảnh lớn trái + list phải từ `MOCK_DISHES`), Review khách hàng (từ `MOCK_REVIEWS`), CTA đặt bàn cuối trang.
+Xem PLAN.md mục 7 "GIAI ĐOẠN 3". Tóm tắt:
+- Ngày 1-2: `khuyen-mai/page.tsx` (grid đầy đủ, tái dùng `PromoCard` đã có), `khuyen-mai/[slug]/page.tsx` (chi tiết + điều kiện áp dụng + nút "Đặt bàn với ưu đãi này" dẫn `/dat-ban?promo=<slug>`).
+- Ngày 3-4: `thuc-don/page.tsx` (grid + filter category qua URL searchParams, KHÔNG dùng `useState`), `DishCard`, `loading.tsx` skeleton, empty state.
+- Ngày 5: `thuc-don/[slug]/page.tsx` (ảnh lớn, chọn độ chín + số lượng + ghi chú, review list, món liên quan, `generateMetadata()`, `not-found.tsx`).
 
-Cần tạo `src/lib/data/dishes.ts` và `src/lib/data/promotions.ts` (bọc mock, `async`, xem PLAN.md mục 4 — 3 luật bắt buộc) vì đây là lần đầu page cần đọc dữ liệu.
+`PromoCard` (`components/promotion/promo-card.tsx`) đã được dựng sớm ở Giai đoạn 2 vì trang chủ cần — Giai đoạn 3 chỉ cần tái sử dụng, không viết lại. `DishCard` thì chưa có (trang chủ dùng layout list-row riêng, không phải grid card) — viết mới ở Giai đoạn 3.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -64,6 +67,14 @@ Cần tạo `src/lib/data/dishes.ts` và `src/lib/data/promotions.ts` (bọc moc
 6. **Icon dùng `lucide-react`** xuyên suốt (đúng như PLAN.md liệt kê ở Giai đoạn 0), không đổi sang thư viện icon khác.
 
 7. Môi trường sandbox lúc build **không resize được cửa sổ Chrome chính xác xuống 375px/1440px** để chụp đối chiếu Figma pixel-perfect — mới verify được qua breakpoint logic (`xl:` collapse), chưa có ảnh chụp đối chiếu thật. Nên tự kiểm lại bằng DevTools khi rảnh, đặc biệt trước mốc "Chốt frontend".
+
+8. **Đã xác nhận trực quan (Giai đoạn 2): ảnh `picsum.photos` random ra phong cảnh/đồ vật không liên quan** (núi, thác nước, tượng Nữ thần Tự do...) cạnh tên món bít tết — không chỉ là rủi ro lý thuyết nữa, cần thay ảnh thật trước khi chốt frontend (mục 3 ở trên).
+
+9. **`Button` (`src/components/ui/button.tsx`) có thêm variant `"gold-outline"`** (Pattern D trong PLAN.md mục 2.3 — nút viền vàng, nền trong suốt, chữ gold uppercase). Dùng variant này thay vì tự viết class thủ công mỗi lần cần "nút viền" (đã dùng ở `PromoCard`, `Hero`, `MenuPreview`).
+
+10. **`lib/data/dishes.ts`, `promotions.ts`, `reviews.ts` đã tồn tại** (bọc mock, `async`, đúng luật mục 4 PLAN.md). Giai đoạn 9 sẽ thay ruột sang Prisma — chữ ký hàm giữ nguyên.
+
+11. **`components/shared/rating-stars.tsx` đã có** (dùng ở trang chủ phần Review, sẽ tái dùng ở Giai đoạn 3 phần review chi tiết món).
 
 ## Cách tiếp tục ở phiên mới
 

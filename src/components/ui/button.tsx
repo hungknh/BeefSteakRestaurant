@@ -18,6 +18,9 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // Pattern D (PLAN.md mục 2.3): nút viền vàng, nền trong suốt, chữ gold uppercase.
+        "gold-outline":
+          "border-primary bg-transparent text-primary uppercase tracking-wider hover:bg-primary hover:text-primary-foreground",
       },
       size: {
         default:
