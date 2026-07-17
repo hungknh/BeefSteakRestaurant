@@ -4,3 +4,7 @@ import type { Promotion } from "@/types";
 export async function getPromotions(): Promise<Promotion[]> {
   return MOCK_PROMOTIONS.filter((p) => p.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
 }
+
+export async function getPromotionBySlug(slug: string): Promise<Promotion | null> {
+  return MOCK_PROMOTIONS.find((p) => p.slug === slug) ?? null;
+}
