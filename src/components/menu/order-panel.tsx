@@ -6,24 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import type { Doneness } from "@/types";
+import { useCartStore } from "@/store/cart";
+import { DONENESS_LABELS } from "@/lib/format";
+import type { Dish, Doneness } from "@/types";
 
-const DONENESS_OPTIONS: { value: Doneness; label: string }[] = [
-  { value: "RARE", label: "Tái" },
-  { value: "MEDIUM_RARE", label: "Tái Chín" },
-  { value: "MEDIUM", label: "Chín Vừa" },
-  { value: "MEDIUM_WELL", label: "Chín Vừa Kỹ" },
-  { value: "WELL_DONE", label: "Chín Kỹ" },
-];
+const DONENESS_OPTIONS = (Object.entries(DONENESS_LABELS) as [Doneness, string][]).map(
+  ([value, label]) => ({ value, label }),
+);
 
-export function OrderPanel({ hasDoneness }: { hasDoneness: boolean }) {
+export function OrderPanel({ dish }: { dish: Dish }) {
+  const addItem = useCartStore((s) => s.addItem);
   const [doneness, setDoneness] = useState<Doneness>("MEDIUM_RARE");
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState("");
+  const [justAdded, setJustAdded] = useState(false);
+
+  const handleAddToCart = () => {
+    addItem(dish, quantity, dish.hasDoneness ? doneness : null, note.trim());
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  };
 
   return (
     <div className="flex flex-col gap-6 rounded-lg border border-border bg-card p-6">
-      {hasDoneness ? (
+      {dish.hasDoneness ? (
         <div>
           <Label htmlFor="doneness" className="text-sm font-medium text-foreground">
             Độ chín
@@ -85,9 +91,8 @@ export function OrderPanel({ hasDoneness }: { hasDoneness: boolean }) {
         />
       </div>
 
-      {/* ponytail: chưa nối Zustand cart store, xem PLAN.md Giai đoạn 5 */}
-      <Button size="lg" type="button">
-        Thêm Vào Giỏ
+      <Button size="lg" type="button" onClick={handleAddToCart}>
+        {justAdded ? "Đã Thêm Vào Giỏ ✓" : "Thêm Vào Giỏ"}
       </Button>
     </div>
   );
