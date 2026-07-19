@@ -16,7 +16,7 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong đến hết Giai đoạn 3.** Tiếp theo: **Giai đoạn 4 — Discount engine**.
+**Đã xong đến hết Giai đoạn 6.** Tiếp theo: **Checkpoint "Chốt frontend"**, rồi **Giai đoạn 7 — Database**.
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
@@ -24,9 +24,9 @@
 | 1 — Design system + Layout shell | ✅ Xong | [#1](https://github.com/hungknh/BeefSteakRestaurant/pull/1) |
 | 2 — Trang chủ | ✅ Xong | [#3](https://github.com/hungknh/BeefSteakRestaurant/pull/3) |
 | 3 — Khuyến mãi + Thực đơn | ✅ Xong | [#6](https://github.com/hungknh/BeefSteakRestaurant/pull/6) |
-| 4 — Discount engine | ⬜ Chưa làm | |
-| 5 — Giỏ hàng + Đặt bàn (UI) | ⬜ Chưa làm | |
-| 6 — Admin UI (mock) | ⬜ Chưa làm | |
+| 4 — Discount engine | ✅ Xong | [#8](https://github.com/hungknh/BeefSteakRestaurant/pull/8) |
+| 5 — Giỏ hàng + Đặt bàn (UI) | ✅ Xong | [#9](https://github.com/hungknh/BeefSteakRestaurant/pull/9) |
+| 6 — Admin UI (mock) | ✅ Xong | [#10](https://github.com/hungknh/BeefSteakRestaurant/pull/10) |
 | Checkpoint — Chốt frontend | ⬜ Chưa làm | |
 | 7 — Database (Prisma + SQLite) | ⬜ Chưa làm | |
 | 8 — Auth | ⬜ Chưa làm | |
@@ -38,13 +38,17 @@
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
-## Việc cần làm tiếp (Giai đoạn 4 — Discount engine)
+## Việc cần làm tiếp (Checkpoint "Chốt frontend" — PLAN.md, trước Giai đoạn 7)
 
-Xem PLAN.md mục 6 (thiết kế) + mục 7 "GIAI ĐOẠN 4". Tóm tắt:
-- `lib/promotions/apply.ts` — hàm thuần `bestPromotion(lines, promos, now)`, KHÔNG đụng DB/React. Input `CartLine[]` + `Promotion[]` (đã có sẵn qua `getPromotions()`).
-- Viết **Vitest** ngay tại giai đoạn này, phủ hết bảng edge case ở PLAN.md mục 6: khung giờ vắt qua nửa đêm, làm tròn PERCENT (`Math.floor`), FIXED > subtotal (`Math.min`), giỏ rỗng, scope=DISH không khớp giỏ, 2 promo bằng giá trị giảm (giữ cái đầu).
-- Cần cài `vitest` (chưa có trong `package.json` — chỉ mới có ESLint/Prettier, chưa có test runner nào).
-- Đây là hàm sẽ dùng lại ở cả Giai đoạn 5 (giỏ hàng hiện giá tạm tính) và Giai đoạn 9 (server tính lại giá, chống sửa giá qua DevTools) — làm đúng ở bước này quan trọng hơn các giai đoạn UI khác.
+- [ ] Responsive 375/768/1440 không vỡ (chưa verify pixel-perfect, xem mục "Sai khác" #6)
+- [ ] Tab qua hết mọi nút, focus ring rõ trên nền tối
+- [ ] Contrast chữ muted kiểm bằng DevTools (≥ 4.5:1)
+- [ ] Mọi ảnh có `alt`, console không warning
+- [ ] Thay ảnh `picsum.photos` bằng ảnh món ăn thật (xem mục "Sai khác" #3, #7)
+- [ ] Deploy Vercel lần đầu để có link demo sớm
+- [ ] Screenshot cho README
+
+Sau checkpoint mới sang **Giai đoạn 7 — Database**: `npx prisma init`, dịch `src/types/index.ts` sang `schema.prisma`, `prisma/seed.ts` bê `_mock.ts` vào. Xem PLAN.md mục 7 "GIAI ĐOẠN 7".
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -79,11 +83,25 @@ Xem PLAN.md mục 6 (thiết kế) + mục 7 "GIAI ĐOẠN 4". Tóm tắt:
 
 13. **`lib/data/categories.ts` đã có** (`getCategories()`), `getDishBySlug`, `getPromotionBySlug` cũng đã thêm vào `dishes.ts`/`promotions.ts`. `lib/format.ts` có thêm `formatDaysOfWeek()` (dịch CSV "1,4,6" sang "Thứ Hai, Thứ Năm...").
 
-14. **`components/menu/order-panel.tsx` (chọn độ chín/số lượng/ghi chú) chỉ dùng `useState` cục bộ, CHƯA nối Zustand cart store** — nút "Thêm Vào Giỏ" hiện chưa có `onClick`, chỉ là UI. Giai đoạn 5 sẽ nối vào `store/cart.ts`. Đừng ngạc nhiên khi bấm nút không có phản ứng gì — đúng như kế hoạch, chưa phải bug.
+14. ~~`components/menu/order-panel.tsx` chưa nối Zustand cart store~~ — **đã nối xong ở Giai đoạn 5** (`OrderPanel` nhận prop `dish`, gọi `useCartStore().addItem()`).
 
 15. **Xóa `src/components/ui/badge.tsx`** (thêm nhầm lúc `shadcn add`, không dùng đến — badge maroon/gold trên `PromoCard`/`DishCard` tự viết `<span>` thủ công vì cần màu riêng ngoài theme mặc định của shadcn Badge).
 
 16. **Đã fix 1 bug layout ở Giai đoạn 3:** `ReviewList` dùng `justify-between` cho hàng tên + rating sao trong cột review — ở màn hình rộng (cột review chiếm gần hết `max-w-6xl`), `justify-between` đẩy sao ra sát mép phải, cách xa tên. Đã sửa thành `flex items-center gap-3` (tên + sao đứng sát nhau). Cẩn thận pattern này ở các list item khác nằm trong cột rất rộng.
+
+17. **`store/cart.ts` lưu nguyên object `Dish` snapshot trong mỗi `CartItem`** (không chỉ `dishId`), để Header/CartDrawer/trang giỏ hàng tự đủ dữ liệu hiển thị mà không cần fetch lại danh sách món. Key hợp nhất dòng = `dishId + doneness + note` (`lib/cart/key.ts`, hàm `cartItemKey`, có Vitest). Giai đoạn 9 khi có DB thật vẫn giữ pattern này — server luôn tính lại giá qua `bestPromotion()`, không tin số client gửi (xem PLAN.md mục 6).
+
+18. **⚠️ Bug Base UI Select hay gặp — nhớ kỹ khi thêm Select mới:** `<Select.Value>` (component `SelectValue` trong `components/ui/select.tsx`) **mặc định hiển thị raw `value` string**, không tự tra label như Radix. Phải luôn truyền `children` dạng function:
+    ```tsx
+    <SelectValue placeholder="...">
+      {(value: string) => categories.find(c => c.id === value)?.name}
+    </SelectValue>
+    ```
+    Thiếu bước này thì UI hiện thẳng `"cat-steak"` thay vì `"Bít Tết"` — đã gặp và fix ở toàn bộ 7 chỗ dùng Select trong Giai đoạn 6 (`dish-form-dialog.tsx`, `promotion-form-dialog.tsx` ×4, `reservations-table.tsx`, `orders-table.tsx`).
+
+19. **`lib/data/reservations.ts` (`getReservations()`) và `lib/data/orders.ts` (`getOrders()`) đã có** ở Giai đoạn 6, cùng `MOCK_RESERVATIONS`/`MOCK_ORDERS` trong `_mock.ts` (6 bản ghi mỗi loại, đủ trạng thái). `promotions.ts` có thêm `getAllPromotions()` (không lọc `isActive`, dùng riêng cho admin — `getPromotions()` gốc vẫn chỉ trả khuyến mãi đang bật, dùng cho trang khách).
+
+20. **Admin CRUD (Giai đoạn 6) chỉ sửa `useState` cục bộ trong `DishesTable`/`PromotionsTable`/`ReservationsTable`/`OrdersTable`, KHÔNG persist.** Reload trang là mất thay đổi — đúng như kế hoạch "Admin UI (mock)". Giai đoạn 11 mới nối Server Actions thật.
 
 ## Cách tiếp tục ở phiên mới
 
