@@ -1,9 +1,36 @@
+import type { Doneness, OrderStatus, ReservationStatus } from "@/types";
+
 export function formatVND(amount: number): string {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
   }).format(amount);
 }
+
+export const DONENESS_LABELS: Record<Doneness, string> = {
+  RARE: "Tái",
+  MEDIUM_RARE: "Tái Chín",
+  MEDIUM: "Chín Vừa",
+  MEDIUM_WELL: "Chín Vừa Kỹ",
+  WELL_DONE: "Chín Kỹ",
+};
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING: "Chờ Xác Nhận",
+  CONFIRMED: "Đã Xác Nhận",
+  PREPARING: "Đang Chuẩn Bị",
+  DELIVERING: "Đang Giao",
+  COMPLETED: "Hoàn Thành",
+  CANCELLED: "Đã Hủy",
+};
+
+export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
+  PENDING: "Chờ Xác Nhận",
+  CONFIRMED: "Đã Xác Nhận",
+  SEATED: "Đã Nhận Bàn",
+  CANCELLED: "Đã Hủy",
+  NO_SHOW: "Không Đến",
+};
 
 const WEEKDAY_LABELS: Record<string, string> = {
   "0": "Chủ Nhật",

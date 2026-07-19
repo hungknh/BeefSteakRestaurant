@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, User } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,9 +13,11 @@ import {
 import { TopBar } from "@/components/layout/top-bar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 import { cn } from "@/lib/utils";
+import type { Promotion } from "@/types";
 
-export function Header() {
+export function Header({ promos }: { promos: Promotion[] }) {
   const pathname = usePathname();
 
   return (
@@ -47,15 +49,7 @@ export function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Giỏ hàng"
-            nativeButton={false}
-            render={<Link href="/gio-hang" />}
-          >
-            <ShoppingCart className="size-5" strokeWidth={1.5} />
-          </Button>
+          <CartDrawer promos={promos} />
 
           <DropdownMenu>
             <DropdownMenuTrigger

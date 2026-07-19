@@ -58,7 +58,7 @@ export default async function DishDetailPage({ params }: Props) {
             <p className="mt-4 text-muted-foreground">{dish.description}</p>
           </div>
 
-          <OrderPanel hasDoneness={dish.hasDoneness} />
+          <OrderPanel dish={dish} />
         </div>
       </div>
 
