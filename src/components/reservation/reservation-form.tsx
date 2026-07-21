@@ -127,7 +127,7 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
                 disabled={disabled}
                 onClick={() => setValue("timeSlot", slot, { shouldValidate: true })}
                 className={cn(
-                  "rounded-md border border-border py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground disabled:pointer-events-none disabled:opacity-40",
+                  "rounded-md border border-border py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-40",
                   timeSlot === slot &&
                     "border-primary bg-primary text-primary-foreground hover:text-primary-foreground",
                 )}

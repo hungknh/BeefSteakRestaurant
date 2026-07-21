@@ -37,7 +37,9 @@ export function DishesTable({
   const upsertDish = (dish: Dish) => {
     setDishes((prev) => {
       const exists = prev.some((d) => d.id === dish.id);
-      return exists ? prev.map((d) => (d.id === dish.id ? dish : d)) : [...prev, dish];
+      return exists
+        ? prev.map((d) => (d.id === dish.id ? dish : d))
+        : [...prev, dish];
     });
   };
 
@@ -60,63 +62,86 @@ export function DishesTable({
           }
         />
       </div>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
-            <th className="cursor-pointer px-5 py-3 font-medium" onClick={() => toggleSort("name")}>
-              Tên Món
-            </th>
-            <th className="px-5 py-3 font-medium">Danh Mục</th>
-            <th
-              className="cursor-pointer px-5 py-3 font-medium"
-              onClick={() => toggleSort("price")}
-            >
-              Giá
-            </th>
-            <th className="px-5 py-3 font-medium">Trạng Thái</th>
-            <th className="px-5 py-3 font-medium" />
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((dish) => (
-            <tr key={dish.id} className="border-b border-border last:border-0">
-              <td className="px-5 py-3 text-foreground">{dish.name}</td>
-              <td className="px-5 py-3 text-muted-foreground">
-                {categories.find((c) => c.id === dish.categoryId)?.name ?? "—"}
-              </td>
-              <td className="px-5 py-3">
-                <Price amount={dish.price} className="text-sm" />
-              </td>
-              <td className="px-5 py-3 text-muted-foreground">
-                {dish.isAvailable ? "Còn Bán" : "Hết Món"}
-              </td>
-              <td className="px-5 py-3">
-                <div className="flex justify-end gap-2">
-                  <DishFormDialog
-                    dish={dish}
-                    categories={categories}
-                    onSave={upsertDish}
-                    trigger={
-                      <Button variant="ghost" size="icon-sm" aria-label="Sửa món">
-                        <Pencil className="size-3.5" strokeWidth={1.5} />
-                      </Button>
-                    }
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Xóa món"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => setDishes((prev) => prev.filter((d) => d.id !== dish.id))}
-                  >
-                    <Trash2 className="size-3.5" strokeWidth={1.5} />
-                  </Button>
-                </div>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
+              <th className="px-5 py-3 font-medium">
+                <button
+                  type="button"
+                  className="cursor-pointer rounded-xs uppercase focus-visible:outline-2 focus-visible:outline-primary"
+                  onClick={() => toggleSort("name")}
+                >
+                  Tên Món
+                </button>
+              </th>
+              <th className="px-5 py-3 font-medium">Danh Mục</th>
+              <th className="px-5 py-3 font-medium">
+                <button
+                  type="button"
+                  className="cursor-pointer rounded-xs uppercase focus-visible:outline-2 focus-visible:outline-primary"
+                  onClick={() => toggleSort("price")}
+                >
+                  Giá
+                </button>
+              </th>
+              <th className="px-5 py-3 font-medium">Trạng Thái</th>
+              <th className="px-5 py-3 font-medium" />
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((dish) => (
+              <tr
+                key={dish.id}
+                className="border-b border-border last:border-0"
+              >
+                <td className="px-5 py-3 text-foreground">{dish.name}</td>
+                <td className="px-5 py-3 text-muted-foreground">
+                  {categories.find((c) => c.id === dish.categoryId)?.name ??
+                    "—"}
+                </td>
+                <td className="px-5 py-3">
+                  <Price amount={dish.price} className="text-sm" />
+                </td>
+                <td className="px-5 py-3 text-muted-foreground">
+                  {dish.isAvailable ? "Còn Bán" : "Hết Món"}
+                </td>
+                <td className="px-5 py-3">
+                  <div className="flex justify-end gap-2">
+                    <DishFormDialog
+                      dish={dish}
+                      categories={categories}
+                      onSave={upsertDish}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label="Sửa món"
+                        >
+                          <Pencil className="size-3.5" strokeWidth={1.5} />
+                        </Button>
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Xóa món"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() =>
+                        setDishes((prev) =>
+                          prev.filter((d) => d.id !== dish.id),
+                        )
+                      }
+                    >
+                      <Trash2 className="size-3.5" strokeWidth={1.5} />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
