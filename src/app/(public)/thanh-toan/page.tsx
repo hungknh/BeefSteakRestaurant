@@ -2,6 +2,8 @@ import { getPromotions } from "@/lib/data/promotions";
 import { CheckoutForm } from "@/components/cart/checkout-form";
 
 export const metadata = { title: "Thanh Toán" };
+// Force-dynamic: bestPromotion() phải tính trên khuyến mãi mới nhất trong DB.
+export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
   const promos = await getPromotions();

@@ -1,6 +1,9 @@
-import { MOCK_RESERVATIONS } from "@/lib/data/_mock";
+import { prisma } from "@/lib/prisma";
 import type { Reservation } from "@/types";
 
 export async function getReservations(): Promise<Reservation[]> {
-  return [...MOCK_RESERVATIONS].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // status lưu String trong Prisma (không dùng enum) — ép kiểu về union hẹp của app.
+  return prisma.reservation.findMany({
+    orderBy: { createdAt: "desc" },
+  }) as unknown as Promise<Reservation[]>;
 }

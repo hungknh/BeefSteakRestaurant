@@ -1,5 +1,5 @@
 import { ORDER_STATUS_LABELS } from "@/lib/format";
-import type { Order, OrderStatus } from "@/types";
+import type { OrderStatus } from "@/types";
 
 const STATUS_ORDER: OrderStatus[] = [
   "PENDING",
@@ -24,11 +24,15 @@ const STATUS_BAR_COLOR: Record<OrderStatus | "SEATED" | "NO_SHOW", string> = {
   NO_SHOW: "bg-badge-label",
 };
 
-export function OrderStatusChart({ orders }: { orders: Order[] }) {
+export function OrderStatusChart({
+  statusCounts,
+}: {
+  statusCounts: Partial<Record<OrderStatus, number>>;
+}) {
   const counts = STATUS_ORDER.map((status) => ({
     status,
     label: ORDER_STATUS_LABELS[status],
-    count: orders.filter((o) => o.status === status).length,
+    count: statusCounts[status] ?? 0,
   }));
   const max = Math.max(1, ...counts.map((c) => c.count));
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { orderFormSchema, type OrderFormValues } from "@/lib/validations/order";
+import { createOrder } from "@/lib/actions/order";
 import { useCartStore } from "@/store/cart";
 import type { Promotion } from "@/types";
 
@@ -19,6 +21,7 @@ export function CheckoutForm({ promos }: { promos: Promotion[] }) {
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const clear = useCartStore((s) => s.clear);
+  const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
     control,
@@ -45,9 +48,21 @@ export function CheckoutForm({ promos }: { promos: Promotion[] }) {
     );
   }
 
-  const onSubmit = (values: OrderFormValues) => {
-    // ponytail: chưa có server action (Giai đoạn 9), console.log để demo luồng.
-    console.log("order", { ...values, items });
+  const onSubmit = async (values: OrderFormValues) => {
+    setFormError(null);
+    const result = await createOrder(
+      values,
+      items.map((i) => ({
+        dishId: i.dish.id,
+        quantity: i.quantity,
+        doneness: i.doneness,
+        note: i.note,
+      })),
+    );
+    if (result.error) {
+      setFormError(result.error);
+      return;
+    }
     clear();
     router.push("/thanh-toan/thanh-cong");
   };
@@ -106,6 +121,7 @@ export function CheckoutForm({ promos }: { promos: Promotion[] }) {
           promos={promos}
           shippingFee={deliveryMethod === "DELIVERY" ? SHIPPING_FEE : 0}
         />
+        {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
         <Button size="lg" type="submit" disabled={isSubmitting}>
           Đặt Hàng
         </Button>

@@ -2,6 +2,8 @@ import { getPromotions } from "@/lib/data/promotions";
 import { CartPageView } from "@/components/cart/cart-page-view";
 
 export const metadata = { title: "Giỏ Hàng" };
+// Force-dynamic: bestPromotion() phải tính trên khuyến mãi mới nhất trong DB.
+export const dynamic = "force-dynamic";
 
 export default async function CartPage() {
   const promos = await getPromotions();

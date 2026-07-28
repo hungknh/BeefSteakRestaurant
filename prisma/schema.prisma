@@ -7,11 +7,14 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
-// Quy tắc để đổi SQLite -> Postgres không đau (xem PLAN.md mục 5):
-// - Role/Status/Doneness/DiscountType/PromoScope là String, không dùng enum (SQLite không hỗ trợ).
+// Đã chuyển từ SQLite sang Neon Postgres (2026-07-28, sớm hơn dự tính Giai đoạn 13 —
+// cần DB thật để web live trên Vercel phản ánh dữ liệu). Giữ nguyên các quy tắc dưới
+// đây dù không còn ràng buộc SQLite nữa, để tương thích ngược không cần sửa lại
+// mock/type — không có gì bắt buộc phải đổi, không đổi cho gọn diff:
+// - Role/Status/Doneness/DiscountType/PromoScope là String, không dùng enum.
 // - daysOfWeek là chuỗi CSV ("1,4,6"), không dùng scalar list.
 // - price/subtotal/discount/shippingFee/total/minSubtotal/discountValue là Int, đơn vị đồng.
 // - createdAt/date/startDate/endDate/startTime/endTime là String để khớp đúng type `string` trong

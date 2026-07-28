@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: "Toàn bộ ưu đãi đang áp dụng tại Beef Haven.",
 };
 
+// Force-dynamic: khuyến mãi đổi trong DB (admin bật/tắt) phải hiện ngay.
+export const dynamic = "force-dynamic";
+
 export default async function KhuyenMaiPage() {
   const promotions = await getPromotions();
 

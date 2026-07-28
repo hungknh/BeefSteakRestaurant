@@ -1,11 +1,14 @@
-import { MOCK_DISHES } from "@/lib/data/_mock";
+import { prisma } from "@/lib/prisma";
 import type { Dish } from "@/types";
 
 export async function getDishes(filter?: { category?: string }): Promise<Dish[]> {
-  const all = MOCK_DISHES;
-  return filter?.category ? all.filter((d) => d.category?.slug === filter.category) : all;
+  return prisma.dish.findMany({
+    where: filter?.category ? { category: { slug: filter.category } } : undefined,
+    include: { category: true },
+    orderBy: [{ category: { sortOrder: "asc" } }, { name: "asc" }],
+  });
 }
 
 export async function getDishBySlug(slug: string): Promise<Dish | null> {
-  return MOCK_DISHES.find((d) => d.slug === slug) ?? null;
+  return prisma.dish.findUnique({ where: { slug }, include: { category: true } });
 }

@@ -13,11 +13,13 @@ import {
   type ReservationFormValues,
 } from "@/lib/validations/reservation";
 import { TIME_SLOTS, isSlotDisabled, toLocalDateStr } from "@/lib/reservation/time-slots";
+import { createReservation } from "@/lib/actions/reservation";
 import { cn } from "@/lib/utils";
 import type { Promotion } from "@/types";
 
 export function ReservationForm({ promo }: { promo: Promotion | null }) {
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const today = toLocalDateStr(new Date());
   const {
     register,
@@ -40,9 +42,13 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
   const date = watch("date");
   const timeSlot = watch("timeSlot");
 
-  const onSubmit = (values: ReservationFormValues) => {
-    // ponytail: chưa có server action (Giai đoạn 9), console.log để demo luồng.
-    console.log("reservation", { ...values, promotionId: promo?.id ?? null });
+  const onSubmit = async (values: ReservationFormValues) => {
+    setFormError(null);
+    const result = await createReservation(values, promo?.id ?? null);
+    if (result.error) {
+      setFormError(result.error);
+      return;
+    }
     setSubmitted(true);
   };
 
@@ -146,6 +152,8 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
         <Label htmlFor="note">Ghi chú (tùy chọn)</Label>
         <Textarea id="note" className="mt-2" {...register("note")} />
       </div>
+
+      {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
 
       <Button size="lg" type="submit" disabled={isSubmitting}>
         Xác Nhận Đặt Bàn

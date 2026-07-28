@@ -1,6 +1,11 @@
-import { MOCK_ORDERS } from "@/lib/data/_mock";
+import { prisma } from "@/lib/prisma";
 import type { Order } from "@/types";
 
 export async function getOrders(): Promise<Order[]> {
-  return [...MOCK_ORDERS].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // status/doneness lưu String trong Prisma (không dùng enum, xem schema.prisma) —
+  // ép kiểu về union hẹp của app, giá trị runtime luôn nằm trong tập hợp lệ.
+  return prisma.order.findMany({
+    include: { items: { include: { dish: true } } },
+    orderBy: { createdAt: "desc" },
+  }) as unknown as Promise<Order[]>;
 }
