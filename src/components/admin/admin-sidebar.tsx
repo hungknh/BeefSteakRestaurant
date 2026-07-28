@@ -41,7 +41,7 @@ export function AdminSidebar() {
               href={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-muted-foreground hover:bg-background hover:text-foreground",
-                active && "bg-primary/10 text-primary",
+                active && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
               )}
             >
               <Icon className="size-4" strokeWidth={1.5} />

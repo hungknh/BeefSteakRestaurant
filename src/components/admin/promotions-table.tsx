@@ -5,6 +5,7 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PromotionFormDialog } from "@/components/admin/promotion-form-dialog";
+import { Pill } from "@/components/admin/pill";
 import { formatDaysOfWeek } from "@/lib/format";
 import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
 import type { Category, Dish, Promotion } from "@/types";
@@ -88,7 +89,7 @@ export function PromotionsTable({
             {rows.map((promotion) => (
               <tr
                 key={promotion.id}
-                className="border-b border-border last:border-0"
+                className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"
               >
                 <td className="px-5 py-3 text-foreground">{promotion.title}</td>
                 <td className="px-5 py-3 text-muted-foreground">
@@ -99,8 +100,10 @@ export function PromotionsTable({
                 <td className="px-5 py-3 text-muted-foreground">
                   {formatDaysOfWeek(promotion.daysOfWeek)}
                 </td>
-                <td className="px-5 py-3 text-muted-foreground">
-                  {promotion.isActive ? "Đang Chạy" : "Tạm Dừng"}
+                <td className="px-5 py-3">
+                  <Pill tone={promotion.isActive ? "gold-muted" : "neutral"}>
+                    {promotion.isActive ? "Đang Chạy" : "Tạm Dừng"}
+                  </Pill>
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-2">

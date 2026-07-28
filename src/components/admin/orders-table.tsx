@@ -86,7 +86,7 @@ export function OrdersTable({ initialOrders }: { initialOrders: Order[] }) {
             {rows.map((order) => (
               <tr
                 key={order.id}
-                className="border-b border-border last:border-0"
+                className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"
               >
                 <td className="px-5 py-3 text-foreground">{order.code}</td>
                 <td className="px-5 py-3 text-muted-foreground">

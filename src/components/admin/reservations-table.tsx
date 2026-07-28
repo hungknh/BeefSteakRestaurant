@@ -88,7 +88,7 @@ export function ReservationsTable({
             {rows.map((reservation) => (
               <tr
                 key={reservation.id}
-                className="border-b border-border last:border-0"
+                className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"
               >
                 <td className="px-5 py-3 text-foreground">
                   {reservation.guestName}

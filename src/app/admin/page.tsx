@@ -1,6 +1,7 @@
 import { UtensilsCrossed, Tag, CalendarCheck, ShoppingBag } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { OrderStatusChart } from "@/components/admin/order-status-chart";
 import { Price } from "@/components/shared/price";
 import { getDishes } from "@/lib/data/dishes";
 import { getPromotions } from "@/lib/data/promotions";
@@ -45,42 +46,46 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
-      <div className="rounded-lg border border-border bg-card">
-        <div className="border-b border-border p-5">
-          <h2 className="font-serif text-lg text-foreground">
-            Đơn Hàng Gần Đây
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
-                <th className="px-5 py-3 font-medium">Mã Đơn</th>
-                <th className="px-5 py-3 font-medium">Khách Hàng</th>
-                <th className="px-5 py-3 font-medium">Tổng Tiền</th>
-                <th className="px-5 py-3 font-medium">Trạng Thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="border-b border-border last:border-0"
-                >
-                  <td className="px-5 py-3 text-foreground">{order.code}</td>
-                  <td className="px-5 py-3 text-muted-foreground">
-                    {order.receiverName}
-                  </td>
-                  <td className="px-5 py-3">
-                    <Price amount={order.total} className="text-sm" />
-                  </td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={order.status} />
-                  </td>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
+        <OrderStatusChart orders={orders} />
+
+        <div className="rounded-lg border border-border bg-card">
+          <div className="border-b border-border p-5">
+            <h2 className="font-serif text-lg text-foreground">
+              Đơn Hàng Gần Đây
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
+                  <th className="px-5 py-3 font-medium">Mã Đơn</th>
+                  <th className="px-5 py-3 font-medium">Khách Hàng</th>
+                  <th className="px-5 py-3 font-medium">Tổng Tiền</th>
+                  <th className="px-5 py-3 font-medium">Trạng Thái</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentOrders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"
+                  >
+                    <td className="px-5 py-3 text-foreground">{order.code}</td>
+                    <td className="px-5 py-3 text-muted-foreground">
+                      {order.receiverName}
+                    </td>
+                    <td className="px-5 py-3">
+                      <Price amount={order.total} className="text-sm" />
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={order.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

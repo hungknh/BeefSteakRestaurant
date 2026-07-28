@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Price } from "@/components/shared/price";
 import { DishFormDialog } from "@/components/admin/dish-form-dialog";
+import { Pill } from "@/components/admin/pill";
 import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
 import type { Category, Dish } from "@/types";
 
@@ -93,7 +94,7 @@ export function DishesTable({
             {rows.map((dish) => (
               <tr
                 key={dish.id}
-                className="border-b border-border last:border-0"
+                className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"
               >
                 <td className="px-5 py-3 text-foreground">{dish.name}</td>
                 <td className="px-5 py-3 text-muted-foreground">
@@ -103,8 +104,10 @@ export function DishesTable({
                 <td className="px-5 py-3">
                   <Price amount={dish.price} className="text-sm" />
                 </td>
-                <td className="px-5 py-3 text-muted-foreground">
-                  {dish.isAvailable ? "Còn Bán" : "Hết Món"}
+                <td className="px-5 py-3">
+                  <Pill tone={dish.isAvailable ? "gold-muted" : "neutral"}>
+                    {dish.isAvailable ? "Còn Bán" : "Hết Món"}
+                  </Pill>
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-2">
