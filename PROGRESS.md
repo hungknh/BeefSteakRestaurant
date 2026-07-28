@@ -12,17 +12,18 @@
 - Push nhánh lên GitHub thường xuyên trong lúc làm.
 - Xong 1 giai đoạn (lint + build xanh) → `gh pr create` vào `main` → **squash merge** (`gh pr merge --squash --delete-branch`) → xóa nhánh.
 - **Không bật Branch Protection** trên GitHub (quyết định có chủ đích, xem lịch sử chat) — tự giác đi qua nhánh + PR mà không khóa cứng ở repo settings.
+- **⚠️ KHÔNG thêm dòng `Co-Authored-By: Claude` vào commit message** (dù công cụ AI mặc định hay làm vậy) — chủ dự án yêu cầu giữ contributor trên GitHub chỉ có mình mình. Đã xóa dòng này khỏi toàn bộ lịch sử `main` cũ (rewrite qua `git filter-branch` + force-push) và khỏi mô tả 12 PR đã merge trước đó — xem "Sai khác" #44. Đừng thêm lại.
 - Repo: https://github.com/hungknh/BeefSteakRestaurant
 
 ## Trạng thái hiện tại
 
-**Đã xong đến hết Giai đoạn 10 (Review), đang làm dở Giai đoạn 11 (Admin backend).** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách).
+**Đã xong hết Giai đoạn 10 (Review) và gần hết Giai đoạn 11 (Admin backend)** — chỉ còn thiếu "upload ảnh" (chờ chủ dự án tạo tài khoản UploadThing, xem mục "Việc cần làm tiếp"). Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Lưu ý: bản deploy Vercel hiện KHÔNG tự cập nhật theo commit mới (xem "Sai khác" #26) — code trên `main` đã đi trước bản demo, muốn deploy lại thì `npx vercel --prod --yes`.
 
 **Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
 **Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 460 đặt bàn, 113 đánh giá, 71 khách hàng**. Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
 
-PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database, SQLite ban đầu) → #17 (Giai đoạn 8 — Auth, thay cho #16 bị đóng tự động vì nhánh gốc bị xoá, xem #39) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20 (progress.md) → #21 (progress.md) → #22 (Giai đoạn 10 — Review, verified purchase + unique constraint + useOptimistic, đã tự kiểm qua browser thật). **Không còn PR nào chờ merge — `main` đã sạch, đã deploy Vercel với dữ liệu Neon mới nhất.**
+PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database) → #17 (Giai đoạn 8 — Auth) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20, #21 (progress.md) → #22 (Giai đoạn 10 — Review) → #23 (Giai đoạn 11 — CRUD món/khuyến mãi thật) → #24 (Giai đoạn 11 — đổi trạng thái đơn/đặt bàn thật) → #25 (Giai đoạn 11 — phân trang admin). **Không còn PR nào chờ merge — `main` đã sạch.**
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
@@ -46,21 +47,14 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 
 ## Việc cần làm tiếp
 
-**Giai đoạn 10 (Review) đã xong và đã tự kiểm qua browser thật** (Chrome extension nối lại được ở phiên này) — tạo/sửa/xóa review, optimistic UI, tính lại avgRating đều đúng. PR #22 đã squash-merge.
+**Bước tiếp theo ngay: hoàn tất nốt Giai đoạn 11 rồi sang Giai đoạn 12.**
 
-**Giai đoạn 11 (Admin backend) — đang làm dở, PR #23 + #24 đã squash-merge:**
-- ✅ CRUD món ăn thật: `src/lib/actions/dish.ts` (`createDish`/`updateDish`/`deleteDish`), tự check `role === "ADMIN"` qua `src/lib/auth/require-admin.ts` (`requireAdminSession()`, dùng chung cho mọi action admin từ giờ). Xóa món có FK (đơn hàng/review) trả lỗi thân thiện thay vì crash — đã tự test qua browser với `Bít Tết Wagyu A5` (có review/đơn thật).
-- ✅ CRUD khuyến mãi thật: `src/lib/actions/promotion.ts`, cùng pattern.
-- ✅ Đổi trạng thái booking/order thật: `updateReservationStatus`/`updateOrderStatus` thêm vào `src/lib/actions/reservation.ts`/`order.ts` (cùng file với `createReservation`/`createOrder` có sẵn, không tách file riêng), validate status hợp lệ bằng mảng cố định (không dùng zod cho việc kiểm tra 1 enum đơn giản này). `reservations-table.tsx`/`orders-table.tsx` bỏ hẳn `useState` mock.
-- ✅ Đã tự test qua browser thật (đăng nhập `admin@beefhaven.vn`/`admin1234`): tạo/sửa/xóa món, tạo/sửa/xóa khuyến mãi, xóa món có FK bị chặn đúng thông báo, đổi trạng thái đặt bàn/đơn hàng đều đúng và tự khôi phục lại dữ liệu demo gốc sau khi test xong.
-- ✅ Phân trang server-side (PR #25): `getOrdersPaged`/`getReservationsPaged` (`skip`/`take` 20 dòng/trang) trong `lib/data/orders.ts`/`reservations.ts` — hàm `getOrders()`/`getReservations()` gốc **giữ nguyên không đổi** (dashboard `admin/page.tsx` vẫn cần load toàn bộ để tính `reservationsToday`, không được đổi sang bản phân trang). `admin/orders/page.tsx`/`admin/reservations/page.tsx` nhận `searchParams.page`, component `Pager` mới (`src/components/admin/pager.tsx`) dùng chung cho cả 2 trang. Đã tự test qua browser: bấm "Sau" từ trang 1 → 2, URL đổi `?page=2`, dữ liệu khác đúng.
-  - ⚠️ **Đánh đổi đã biết**: ô tìm kiếm/sort trong `OrdersTable`/`ReservationsTable` giờ chỉ hoạt động **trong phạm vi 20 dòng của trang hiện tại**, không tìm được xuyên suốt toàn bộ 632 đơn/460 đặt bàn — vì search/sort vẫn client-side như cũ (PLAN.md chỉ yêu cầu phân trang server-side, không yêu cầu search server-side). Muốn tìm 1 đơn cụ thể không biết nằm trang nào, phải chuyển sang search server-side (thêm `searchParams.q`, phức tạp hơn) nếu chủ dự án cần.
-- ✅~~Stat: doanh thu tháng, số đơn, booking hôm nay, món bán chạy~~ — **đã xong từ Giai đoạn 9** (`src/lib/data/analytics.ts` + `admin/page.tsx`), sớm hơn dự tính PLAN.md. Không cần làm lại.
-- ⬜ **Upload ảnh (UploadThing)** — cần chủ dự án tự tạo tài khoản UploadThing + lấy API token trước, chưa làm được vì cần credential ngoài. **Đây là việc duy nhất còn lại của Giai đoạn 11.**
+1. **Upload ảnh (UploadThing) — việc duy nhất còn lại của Giai đoạn 11.** Đang chờ chủ dự án tự tạo tài khoản UploadThing + lấy API token (không tự làm được vì cần credential ngoài, xem `UPLOADTHING_TOKEN` ở PLAN.md Giai đoạn 13). Có token rồi thì làm tiếp; nếu chủ dự án quyết định bỏ qua phần này, đánh dấu Giai đoạn 11 là "Xong" luôn trong bảng trạng thái và chuyển sang Giai đoạn 12.
+2. Sau đó bắt đầu **Giai đoạn 12 (Hoàn thiện)**: SEO (`generateMetadata`, `sitemap.ts`, `robots.ts`, OG image), JSON-LD, `error.tsx`/`not-found.tsx` toàn cục, rate limit đặt bàn, thêm Vitest/Playwright, GitHub Actions CI — xem chi tiết PLAN.md.
 
-⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — giờ toàn bộ CRUD/đổi trạng thái admin (món/khuyến mãi/đặt bàn/đơn hàng) đều đã có Server Action thật, tự check role qua `requireAdminSession()`.
+**Đã xong toàn bộ ở Giai đoạn 10 và 11 (trừ mục 1 ở trên)** — mọi CRUD/đổi trạng thái/phân trang admin đều đã nối Server Action thật, tự check `role === "ADMIN"` qua `requireAdminSession()` (`src/lib/auth/require-admin.ts`, dùng chung), và đã tự test qua browser thật (không chỉ lint/build/test). Chi tiết từng quyết định/gap đã sửa xem "Sai khác" #42–#44. Mục "Stat" của Giai đoạn 11 (doanh thu/số đơn/booking hôm nay/món bán chạy) **đã xong sẵn từ Giai đoạn 9**, không cần làm lại.
 
-⚠️ Admin `orders`/`reservations` table hiện load **toàn bộ** bản ghi (632 đơn, 460 đặt bàn) vào 1 trang, không phân trang — vẫn dùng được nhưng là bảng khá dài để cuộn. Phân trang server-side vẫn chưa làm trong PR #23, để lại cho phần việc kế tiếp của Giai đoạn 11.
+⚠️ **Đánh đổi đã biết ở phân trang admin** (`/admin/orders`, `/admin/reservations`): ô tìm kiếm/sort trong 2 bảng này giờ chỉ hoạt động trong phạm vi 20 dòng của trang hiện tại, không tìm xuyên suốt toàn bộ 632 đơn/460 đặt bàn (search vẫn client-side, PLAN.md chỉ yêu cầu phân trang server-side chứ không yêu cầu search server-side). Muốn tìm toàn bộ thì phải thêm `searchParams.q` — chưa làm, chỉ làm nếu chủ dự án cần.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -177,6 +171,11 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
     - **`DishFormDialog`/`PromotionFormDialog` (thời mock, Giai đoạn 6) thiếu input cho một số trường có sẵn trong schema/type** — `Dish`: `isFeatured`, `hasDoneness`, `weightGram` (form cũ chỉ có tên/giá/danh mục/mô tả/ảnh, 3 trường kia âm thầm giữ nguyên giá trị cũ hoặc mặc định, không sửa được qua UI). `Promotion`: `badgeLabel`, `badgeOffer`, `scheduleText`, `startDate`, `endDate` (badge hiển thị trên `PromoCard` không có cách nào sửa qua admin UI cũ). Đã bổ sung đầy đủ input khi viết lại 2 dialog này sang gọi Server Action thật — không phải scope creep, mà là sửa 1 gap thật (nếu không, tạo khuyến mãi mới qua admin sẽ ra badge rỗng).
     - **Mục "Stat" của Giai đoạn 11 (doanh thu tháng, số đơn, booking hôm nay, món bán chạy) thực ra đã xong từ Giai đoạn 9** (`src/lib/data/analytics.ts`, hiển thị ở `admin/page.tsx`) — sớm hơn dự tính PLAN.md, giống pattern Postgres/dashboard đã làm sớm trước đó. Không cần làm lại khi tiếp tục Giai đoạn 11.
     - `src/lib/auth/require-admin.ts` (`requireAdminSession()`) là helper dùng chung mới — mọi Server Action admin sau này (đổi trạng thái đơn/đặt bàn, upload ảnh...) nên gọi hàm này thay vì tự viết lại check `role === "ADMIN"`.
+
+44. **⚠️ Đã xóa `CLAUDE.md`/`AGENTS.md` khỏi repo và dọn sạch mọi nhắc đến "Claude" trên GitHub, theo yêu cầu chủ dự án** (contributor chỉ muốn có mình chủ dự án):
+    - Xóa hẳn `CLAUDE.md`, `AGENTS.md` ở root — **đừng tự tạo lại** 2 file này (kể cả khi `prisma init`/`shadcn add`/công cụ khác tự sinh ra, xem "Sai khác" #31 — file đó nằm trong `.gitignore` nên không commit, không liên quan file đã xóa ở đây).
+    - Viết lại toàn bộ lịch sử `main` (qua `git filter-branch`, force-push) để xóa dòng `Co-Authored-By: Claude Sonnet 5` khỏi 1 commit squash-merge cũ + sửa mô tả 12 PR đã merge để xóa dòng "🤖 Generated with Claude Code" — **không phải thao tác cần lặp lại**, chỉ ghi để hiểu vì sao lịch sử git commit hash khác với những gì đã thấy trước đó nếu có clone cũ.
+    - Quy tắc áp dụng **từ giờ về sau**: không thêm `Co-Authored-By: Claude` vào bất kỳ commit mới nào (xem mục "Quy trình git" đầu file) — nếu công cụ AI đang dùng tự động thêm dòng này theo mặc định, phải chủ động bỏ nó đi trước khi commit.
 
 ## Cách tiếp tục ở phiên mới
 
