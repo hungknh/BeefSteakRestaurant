@@ -10,6 +10,24 @@ export async function getOrders(): Promise<Order[]> {
   }) as unknown as Promise<Order[]>;
 }
 
+const PAGE_SIZE = 20;
+
+export async function getOrdersPaged(page: number): Promise<{ orders: Order[]; totalPages: number }> {
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      include: { items: { include: { dish: true } } },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    prisma.order.count(),
+  ]);
+  return {
+    orders: orders as unknown as Order[],
+    totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+  };
+}
+
 export async function getHasPurchasedDish(userId: string, dishId: string): Promise<boolean> {
   const item = await prisma.orderItem.findFirst({
     where: { dishId, order: { userId, status: "COMPLETED" } },

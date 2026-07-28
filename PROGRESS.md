@@ -38,7 +38,7 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 | 8 — Auth | ✅ Xong | [#17](https://github.com/hungknh/BeefSteakRestaurant/pull/17) |
 | 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [#18](https://github.com/hungknh/BeefSteakRestaurant/pull/18) |
 | 10 — Review | ✅ Xong | [#22](https://github.com/hungknh/BeefSteakRestaurant/pull/22) |
-| 11 — Admin backend | 🔶 Một phần (CRUD món+khuyến mãi+đổi trạng thái đơn/đặt bàn xong, còn: upload ảnh/phân trang) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24) |
+| 11 — Admin backend | 🔶 Một phần (còn thiếu duy nhất: upload ảnh, chờ chủ dự án tạo tài khoản UploadThing) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24), [#25](https://github.com/hungknh/BeefSteakRestaurant/pull/25) |
 | 12 — Hoàn thiện (SEO/test/CI) | ⬜ Chưa làm | |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
@@ -53,11 +53,12 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 - ✅ CRUD khuyến mãi thật: `src/lib/actions/promotion.ts`, cùng pattern.
 - ✅ Đổi trạng thái booking/order thật: `updateReservationStatus`/`updateOrderStatus` thêm vào `src/lib/actions/reservation.ts`/`order.ts` (cùng file với `createReservation`/`createOrder` có sẵn, không tách file riêng), validate status hợp lệ bằng mảng cố định (không dùng zod cho việc kiểm tra 1 enum đơn giản này). `reservations-table.tsx`/`orders-table.tsx` bỏ hẳn `useState` mock.
 - ✅ Đã tự test qua browser thật (đăng nhập `admin@beefhaven.vn`/`admin1234`): tạo/sửa/xóa món, tạo/sửa/xóa khuyến mãi, xóa món có FK bị chặn đúng thông báo, đổi trạng thái đặt bàn/đơn hàng đều đúng và tự khôi phục lại dữ liệu demo gốc sau khi test xong.
-- ⬜ **Upload ảnh (UploadThing)** — cần chủ dự án tự tạo tài khoản UploadThing + lấy API token trước, chưa làm được vì cần credential ngoài.
-- ⬜ Phân trang server-side qua searchParams — chưa làm, xem cảnh báo bảng dài phía dưới.
+- ✅ Phân trang server-side (PR #25): `getOrdersPaged`/`getReservationsPaged` (`skip`/`take` 20 dòng/trang) trong `lib/data/orders.ts`/`reservations.ts` — hàm `getOrders()`/`getReservations()` gốc **giữ nguyên không đổi** (dashboard `admin/page.tsx` vẫn cần load toàn bộ để tính `reservationsToday`, không được đổi sang bản phân trang). `admin/orders/page.tsx`/`admin/reservations/page.tsx` nhận `searchParams.page`, component `Pager` mới (`src/components/admin/pager.tsx`) dùng chung cho cả 2 trang. Đã tự test qua browser: bấm "Sau" từ trang 1 → 2, URL đổi `?page=2`, dữ liệu khác đúng.
+  - ⚠️ **Đánh đổi đã biết**: ô tìm kiếm/sort trong `OrdersTable`/`ReservationsTable` giờ chỉ hoạt động **trong phạm vi 20 dòng của trang hiện tại**, không tìm được xuyên suốt toàn bộ 632 đơn/460 đặt bàn — vì search/sort vẫn client-side như cũ (PLAN.md chỉ yêu cầu phân trang server-side, không yêu cầu search server-side). Muốn tìm 1 đơn cụ thể không biết nằm trang nào, phải chuyển sang search server-side (thêm `searchParams.q`, phức tạp hơn) nếu chủ dự án cần.
 - ✅~~Stat: doanh thu tháng, số đơn, booking hôm nay, món bán chạy~~ — **đã xong từ Giai đoạn 9** (`src/lib/data/analytics.ts` + `admin/page.tsx`), sớm hơn dự tính PLAN.md. Không cần làm lại.
+- ⬜ **Upload ảnh (UploadThing)** — cần chủ dự án tự tạo tài khoản UploadThing + lấy API token trước, chưa làm được vì cần credential ngoài. **Đây là việc duy nhất còn lại của Giai đoạn 11.**
 
-⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — giờ toàn bộ CRUD/đổi trạng thái admin (món/khuyến mãi/đặt bàn/đơn hàng) đều đã có Server Action thật, tự check role qua `requireAdminSession()`. Chỉ còn thiếu upload ảnh + phân trang.
+⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — giờ toàn bộ CRUD/đổi trạng thái admin (món/khuyến mãi/đặt bàn/đơn hàng) đều đã có Server Action thật, tự check role qua `requireAdminSession()`.
 
 ⚠️ Admin `orders`/`reservations` table hiện load **toàn bộ** bản ghi (632 đơn, 460 đặt bàn) vào 1 trang, không phân trang — vẫn dùng được nhưng là bảng khá dài để cuộn. Phân trang server-side vẫn chưa làm trong PR #23, để lại cho phần việc kế tiếp của Giai đoạn 11.
 
