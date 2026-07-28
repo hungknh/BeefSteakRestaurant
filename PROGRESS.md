@@ -16,28 +16,13 @@
 
 ## Trạng thái hiện tại
 
-**Checkpoint "Chốt frontend" đã xong + merge.** PR [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) đã squash merge (2026-07-28). Đã thay ảnh thật, đổi thương hiệu sang **"Beef Haven"** + thêm logo, đổi font toàn site, và **deploy Vercel lần đầu** — xem "Sai khác" #24/#25/#26. **Link demo: https://beefsteakhouse.vercel.app**.
+**Đã xong đến hết Giai đoạn 9 (Nối data thật), tất cả đã merge vào `main`.** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách).
 
-**Đang có 4 nhánh chờ merge, xếp chồng lên nhau theo thứ tự bắt buộc:**
+**Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
-1. `feat/gd7-database` (PR [#13](https://github.com/hungknh/BeefSteakRestaurant/pull/13)) — Giai đoạn 7, Database. **Merge cái này TRƯỚC TIÊN.**
-2. `feat/gd8-auth` (PR [#16](https://github.com/hungknh/BeefSteakRestaurant/pull/16), base = `feat/gd7-database`) — Giai đoạn 8, Auth. Cần Prisma User model từ #13 nên phải merge #13 xong mới merge được #16 (hoặc rebase #16 nếu #13 đổi khi review).
-3. `fix/admin-ui-polish` (PR [#14](https://github.com/hungknh/BeefSteakRestaurant/pull/14), base = `main`) — độc lập, không phụ thuộc 2 nhánh trên, merge lúc nào cũng được.
-4. `fix/numeral-font` (PR [#15](https://github.com/hungknh/BeefSteakRestaurant/pull/15), base = `main`) — độc lập, merge lúc nào cũng được.
+**Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 460 đặt bàn, 113 đánh giá, 71 khách hàng**. Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
 
-Chi tiết từng nhánh:
-
-- **Giai đoạn 7 — Database (Prisma + SQLite)**, `feat/gd7-database`. `schema.prisma` dịch từ `src/types/index.ts`, migration init, `prisma/seed.ts` bê `_mock.ts` vào (đã chạy seed thật, verify bằng query trực tiếp), `src/lib/prisma.ts` singleton. Gặp nhiều khác biệt so với PLAN.md do Prisma 7 (CLI cài thực tế là 7.9.1) — xem "Sai khác" #27–#31, **đọc trước khi động vào schema/seed/lib/prisma.ts**.
-- **Giai đoạn 8 — Auth**, `feat/gd8-auth`. Auth.js v5 (Credentials bcrypt + Google), `src/proxy.ts` chặn `/admin/*` (role ADMIN) và `/tai-khoan/*` (đã đăng nhập), trang `/dang-nhap`/`/dang-ky`, `/tai-khoan` tối thiểu. Đã verify bằng browser thật (đăng nhập admin/user thường, đăng ký, đăng xuất đều đúng) — xem "Sai khác" #32–#33.
-- **Admin UI polish**, `fix/admin-ui-polish`. Bỏ màu trong suốt trong admin (nav active, stat-card icon, status badge), thêm `OrderStatusChart`, thêm hover cho bảng.
-- **Font số/giá tiền**, `fix/numeral-font`. `font-variant-numeric: lining-nums tabular-nums` toàn site + đổi font giá tiền từ Cormorant Garamond sang Lora (basic/cổ điển hơn theo yêu cầu chủ dự án).
-
-Phiên mới muốn tiếp tục Giai đoạn 8: `git checkout feat/gd8-auth`. Muốn làm tiếp Giai đoạn 7: `git checkout feat/gd7-database`. Đừng bắt đầu nhánh mới từ `main` nếu đang có việc dở ở 1 trong 4 nhánh trên.
-
-**⚠️ Phiên 2026-07-22 có thêm 2 việc phát sinh ngoài checklist gốc, đã commit ở phiên 2026-07-28** (xem mục "Sai khác" #24/#25 để biết chi tiết):
-- Đổi tên 5 ảnh khuyến mãi từ `promo-*.jpg` sang tên gốc chủ dự án đặt (`gio-vang.jpg`, `steak-night.jpg`, `lang-man.jpg`, `dat-nhieu.jpg`, `combo-cuoi-tuan.jpg`), sửa `imageUrl` tương ứng trong `_mock.ts`. 5 file `promo-*.jpg` cũ trong `public/images/` giờ không còn dùng, chưa xóa.
-- Đổi font toàn site trong `src/app/layout.tsx`: heading `Playfair Display` → `Cormorant Garamond`, body `Inter` → `Lora`.
-- `public/images/logo.jpg` và `screenshots/trang-chu.jpg` cũng có trong đợt commit này — chủ dự án xác nhận (2026-07-28) đây là thay đổi logo có chủ đích từ trước, chỉ là chưa ghi vào file này, không phải lỗi ghi đè ngoài ý muốn như nghi ngờ ban đầu.
+PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database, SQLite ban đầu) → #17 (Giai đoạn 8 — Auth, thay cho #16 bị đóng tự động vì nhánh gốc bị xoá, xem #35) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê). PR #19 (`.vercelignore`, nhỏ, không ảnh hưởng chức năng) đang chờ merge.
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
@@ -49,41 +34,23 @@ Phiên mới muốn tiếp tục Giai đoạn 8: `git checkout feat/gd8-auth`. M
 | 5 — Giỏ hàng + Đặt bàn (UI) | ✅ Xong | [#9](https://github.com/hungknh/BeefSteakRestaurant/pull/9) |
 | 6 — Admin UI (mock) | ✅ Xong | [#10](https://github.com/hungknh/BeefSteakRestaurant/pull/10) |
 | Checkpoint — Chốt frontend | ✅ Xong | [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) |
-| 7 — Database (Prisma + SQLite) | 🔶 Đang làm | [#13](https://github.com/hungknh/BeefSteakRestaurant/pull/13) (chưa merge, merge trước) |
-| 8 — Auth | 🔶 Đang làm | [#16](https://github.com/hungknh/BeefSteakRestaurant/pull/16) (chưa merge, base = #13) |
-| 9 — Nối data thật | ⬜ Chưa làm | |
+| 7 — Database (Prisma + Postgres) | ✅ Xong | [#13](https://github.com/hungknh/BeefSteakRestaurant/pull/13) |
+| 8 — Auth | ✅ Xong | [#17](https://github.com/hungknh/BeefSteakRestaurant/pull/17) |
+| 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [#18](https://github.com/hungknh/BeefSteakRestaurant/pull/18) |
 | 10 — Review | ⬜ Chưa làm | |
 | 11 — Admin backend | ⬜ Chưa làm | |
 | 12 — Hoàn thiện (SEO/test/CI) | ⬜ Chưa làm | |
-| 13 — Deploy production | ⬜ Chưa làm | |
+| 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
 ## Việc cần làm tiếp
 
-**Giai đoạn 7 — Database** (`feat/gd7-database`, PR #13, chưa merge) — xong hết:
+Chưa bắt đầu Giai đoạn 10 (Review — Server Action `createReview`, `@@unique([userId, dishId])`, cập nhật `avgRating` cùng transaction, `useOptimistic`). Tạo nhánh mới từ `main` khi bắt đầu.
 
-- [x] `npm i prisma @prisma/client`, `npx prisma init --datasource-provider sqlite` — xem #27 về khác biệt Prisma 7
-- [x] `schema.prisma` — dịch nguyên `src/types/index.ts` sang 8 model, theo đúng quy tắc PLAN.md mục 5 (String thay enum, CSV thay scalar list, tiền là Int). `createdAt`/`date`/`startDate`/`endDate`/`startTime`/`endTime` cũng để String (không phải DateTime) để khớp đúng type `string` trong types/index.ts — xem comment đầu `schema.prisma`.
-- [x] Index: `Category.slug`/`Dish.slug`/`Promotion.slug`/`Order.code` `@unique`, `Reservation.date` `@@index`
-- [x] `avgRating`/`reviewCount` trên `Dish` — cột lưu sẵn (Float/Int), không tính lại mỗi query
-- [x] `npx prisma migrate dev --name init` — xem #29 về vị trí file `dev.db`
-- [x] `prisma/seed.ts` — bê thẳng `_mock.ts` vào, đã chạy `npx prisma db seed` thật và verify bằng query trực tiếp (15 dish, order kèm items đúng)
-- [x] `src/lib/prisma.ts` — singleton client (dùng driver adapter, xem #28)
-- [ ] Merge PR #13 vào `main` — cần chủ dự án xác nhận (đang tự review)
+⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — hiện admin CRUD (Giai đoạn 6) vẫn chỉ là `useState` cục bộ, chưa có Server Action nào cần check role. Tới **Giai đoạn 11 (Admin backend)** khi thêm Server Actions thật, mỗi action phải tự check `session.user.role === "ADMIN"` lại, không tin middleware là đủ.
 
-**Giai đoạn 8 — Auth** (`feat/gd8-auth`, PR #16, base = `feat/gd7-database`, chưa merge) — xong hết:
-
-- [x] `npm i next-auth@beta bcryptjs`
-- [x] NextAuth v5: Credentials (bcrypt.compare) + Google, role vào JWT + session — xem #33 về augment type đúng module `@auth/core/*`
-- [x] `src/proxy.ts` (không phải `middleware.ts`, xem #32) chặn `/admin/*` (ADMIN) và `/tai-khoan/*` (đã login), tách `auth.config.ts` (edge-safe) khỏi `auth.ts` (đầy đủ, có Prisma)
-- [x] Nối login/register form, Header hiện avatar dropdown theo session
-- [x] Verify bằng browser thật: đăng nhập admin/user thường, chặn role, đăng ký, đăng xuất — đều đúng
-- [ ] Merge PR #16 (sau khi PR #13 merge) — cần chủ dự án xác nhận
-
-⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — hiện chưa có Server Action nào cần check role (admin CRUD ở Giai đoạn 6 vẫn chỉ là `useState` cục bộ, chưa persist). Tới **Giai đoạn 11 (Admin backend)** khi thêm Server Actions thật, mỗi action phải tự check `session.user.role === "ADMIN"` lại, không tin middleware là đủ.
-
-**Admin UI polish** (`fix/admin-ui-polish`, PR #14) và **Font số/giá tiền** (`fix/numeral-font`, PR #15) — cả 2 độc lập với Giai đoạn 7/8, đã xong, chờ merge.
+⚠️ Admin `orders`/`reservations` table hiện load **toàn bộ** bản ghi (632 đơn, 460 đặt bàn) vào 1 trang, không phân trang — vẫn dùng được nhưng là bảng khá dài để cuộn. Phân trang server-side là việc của Giai đoạn 11 theo đúng kế hoạch gốc, chưa làm bây giờ.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -173,10 +140,28 @@ Phiên mới muốn tiếp tục Giai đoạn 8: `git checkout feat/gd8-auth`. M
 
 36. **Đổi font hiển thị giá tiền (2026-07-28, theo yêu cầu chủ dự án):** `Price.tsx` (dùng ở hầu hết nơi hiện giá) và dòng "Tổng cộng" trong `CartSummary` đổi từ `font-serif` (Cormorant Garamond — nét display, hơi "uốn lượn") sang `font-sans` (thực ra là Lora, xem #25) — nhìn cổ điển/basic hơn, không phải font mới. Tên món/tiêu đề vẫn giữ `font-serif` như cũ, chỉ số tiền đổi. Đồng thời đã thêm `font-variant-numeric: lining-nums tabular-nums` toàn site ở `globals.css` (số thẳng hàng, cùng chiều cao, không dùng oldstyle figures mặc định của font). Cả 2 việc này nằm trên nhánh `fix/numeral-font` (PR #15).
 
+37. **⚠️ Turso (SQLite hosted) không dùng được — CLI không có bản Windows** (chỉ có Darwin/Linux release, không có winget/scoop package). Đổi sang **Neon Postgres** — cũng đúng luôn với kế hoạch gốc PLAN.md Giai đoạn 13, chỉ làm sớm hơn. Cài `neonctl` qua `npx` (gói npm, chạy được trên Windows), login OAuth y hệt flow Vercel CLI trước đó.
+
+38. **Prisma 7 đổi cách khai báo Postgres — không còn `url`/`directUrl` trong `schema.prisma`.** Bản 7 báo lỗi validate nếu để 2 dòng này trong `datasource` block; connection string giờ chỉ khai ở `prisma.config.ts` (dùng cho CLI: migrate/seed) và truyền trực tiếp vào driver adapter lúc runtime (`new PrismaPg(new Pool({connectionString}))`). Đổi từ `@prisma/adapter-libsql` sang **`@prisma/adapter-pg` + `pg`** (theo khuyến nghị chính thức của Prisma cho Postgres, không dùng driver serverless riêng của Neon để tránh thêm dependency không cần thiết). `DATABASE_URL` dùng connection **pooled** (qua PgBouncer, hậu tố `-pooler` trong hostname) cho app runtime — cần thiết vì Vercel serverless có thể mở nhiều connection ngắn hạn cùng lúc; `DIRECT_URL` dùng connection thẳng riêng cho Prisma Migrate (DDL không ổn định qua pooler ở transaction-mode). Xem `prisma/schema.prisma`, `prisma.config.ts`, `src/lib/prisma.ts`.
+
+39. **⚠️ GitHub tự đóng PR khi nhánh base bị xóa.** PR #16 (Giai đoạn 8, base = `feat/gd7-database`) tự chuyển `CLOSED` ngay khi PR #13 được squash-merge + xóa nhánh `feat/gd7-database` — không tự retarget sang `main` được (`gh pr edit --base main` báo lỗi "Cannot change the base branch of a closed pull request", `gh pr reopen` cũng lỗi vì base không còn tồn tại). Cách xử lý: `git rebase origin/main` nhánh con (tự động bỏ qua các commit đã có trong `main` nhờ squash), force-push, rồi `gh pr create` tạo PR MỚI (không tái dùng số PR cũ) nhắm thẳng `main`. PR #16 → thay bằng **PR #17**. Bài học cho các nhánh xếp chồng (stacked PR) sau này: merge nhánh gốc xong, kiểm tra ngay PR con có bị đóng không trước khi tưởng nó vẫn chờ merge bình thường.
+
+40. **⚠️ Vercel CLI tự upload file `.env` cục bộ vào deployment dù `.gitignore` đã chặn** — `.gitignore` chỉ chi phối `git`, không chi phối `vercel` CLI lúc thu thập file để deploy. Log build có dòng cảnh báo "Detected .env file, it is strongly recommended to use Vercel's env handling instead". Không ảnh hưởng chức năng (biến môi trường set qua `vercel env add`/Dashboard vẫn được ưu tiên hơn giá trị trong `.env` bundle, do Next.js không ghi đè `process.env` đã có sẵn), nhưng để `.env` nằm trong source đã deploy là thói quen xấu — đã thêm `.vercelignore` (file mới, nội dung chỉ 1 dòng `.env`) để chặn hẳn.
+
+41. **Sinh dữ liệu lịch sử (Giai đoạn 9) — đã tra cứu benchmark ngành F&B trước khi viết code sinh dữ liệu**, không bịa số tùy tiện:
+    - Rating trung bình nhà hàng trên Google Maps ~3.9 sao, mục tiêu "tốt" là >4.25 sao; phân bố lệch dương rõ (chỉ ~2.7% nhà hàng dưới 3.0 sao) — áp dụng trọng số review 55/27/12/4/2 cho 5/4/3/2/1 sao.
+    - Tỷ lệ no-show đặt bàn ngành F&B 3.5–20% tùy hệ thống, best-in-class ~3.5% no-show + 11% hủy — dữ liệu sinh ra đạt ~4% no-show, ~11% hủy (khớp gần đúng).
+    - Doanh thu cuối tuần cao hơn ngày thường rõ rệt (dẫn chứng: "Average Spend Per Cover" mục tiêu $22 ngày thường / $32 cuối tuần cho fine dining) — áp hệ số theo thứ (`WEEKDAY_MULTIPLIER` trong `prisma/seed-data/calendar.ts`, Thứ 7 = 1.45x, Thứ 2 = 0.65x).
+    - Tết Nguyên Đán (29/01/2025, 17/02/2026): nhà hàng thực tế giảm giờ/đóng cửa quanh ngày Tết, cao điểm "tất niên" ~10 ngày trước đó — mô hình hoá bằng hệ số dip 0.15x quanh Tết + boost 1.7x giai đoạn tất niên. Valentine (14/02) và Giáng Sinh (24/25/31-12) cũng là đợt cao điểm riêng.
+    - `prisma/seed.ts` sinh theo **từng ngày** trong 574 ngày (01/2025 → hiện tại), nhân hệ số ngày với volume cơ sở, KHÔNG sinh ngẫu nhiên đều — đơn hàng dùng đúng `bestPromotion()` thật của app (không phải số giảm giá giả lập riêng) nên dữ liệu khớp 100% với logic tính tiền thật. Chi tiết: xem `prisma/seed-data/calendar.ts` (hệ số theo ngày), `menu.ts` (thực đơn, chuyển từ `_mock.ts` đã xóa), `names.ts` (sinh tên khách Việt Nam), `review-text.ts` (mẫu câu theo số sao).
+    - Đơn hàng/đặt bàn cũ (quá 2 ngày) luôn ở trạng thái cuối (HOÀN THÀNH/ĐÃ HỦY hoặc ĐÃ NHẬN BÀN/ĐÃ HỦY/KHÔNG ĐẾN) — chỉ 1 mẻ nhỏ "top-up" cho hôm nay mới có đủ cả 4 trạng thái đang xử lý (CHỜ XÁC NHẬN/ĐÃ XÁC NHẬN/ĐANG CHUẨN BỊ/ĐANG GIAO), khớp thực tế vận hành (đơn cũ không thể còn "đang chuẩn bị").
+    - **`src/lib/data/reviews.ts` dùng `select` tường minh cho quan hệ `user`, không dùng `include: { user: true }`** — `User` model có cột `password` (bcrypt hash), `include` thẳng sẽ trả nguyên object User (kèm hash) ra tận client qua props của `ReviewList`/`ReviewsPreview`. Đây là quy tắc chung: **bất kỳ chỗ nào populate quan hệ tới `User` cho client đều phải `select` tường minh**, không `include: true`.
+
 ## Cách tiếp tục ở phiên mới
 
 1. Đọc file này + `PLAN.md`.
 2. `git status` / `git log --oneline -10` để xác nhận đúng những gì bảng trên ghi.
 3. **Nếu bảng "Trạng thái hiện tại" đang ghi có PR "chưa merge"** (checkpoint hoặc giai đoạn đang dở) → `git checkout <tên-nhánh>` để làm tiếp trên đúng nhánh đó, ĐỪNG tạo nhánh mới từ `main`.
-4. Chạy `npm run dev`, mở `http://localhost:3000` kiểm tra nhanh trạng thái hiện tại.
+4. Chạy `npm run dev`, mở `http://localhost:3000` kiểm tra nhanh trạng thái hiện tại. `.env` cục bộ đã trỏ `DATABASE_URL`/`DIRECT_URL` sang Neon Postgres thật — không cần setup DB riêng, nhưng cũng nghĩa là **dev đụng thẳng vào dữ liệu chung**, cẩn thận khi test các thao tác ghi/xóa.
 5. Nếu bắt đầu giai đoạn/việc mới hoàn toàn: tạo nhánh mới, làm theo PLAN.md mục 7, cập nhật lại bảng trạng thái + mục "Sai khác" trong file này trước khi mở PR.
+6. **Muốn seed lại dữ liệu lịch sử từ đầu** (ví dụ đổi logic sinh dữ liệu trong `prisma/seed.ts`): `npx prisma migrate reset --force` — lệnh này bị Prisma CLI chặn khi phát hiện chạy từ AI agent, phải hỏi ý kiến chủ dự án trước (xem "Sai khác" #35), rồi `npx prisma db seed` (không tự chạy kèm `migrate reset` ở Prisma 7, xem #34). Script chạy khá lâu (~600 lượt ghi tuần tự, vài phút) vì gọi Neon qua network cho từng bản ghi, không batch.
