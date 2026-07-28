@@ -38,7 +38,7 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 | 8 — Auth | ✅ Xong | [#17](https://github.com/hungknh/BeefSteakRestaurant/pull/17) |
 | 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [#18](https://github.com/hungknh/BeefSteakRestaurant/pull/18) |
 | 10 — Review | ✅ Xong | [#22](https://github.com/hungknh/BeefSteakRestaurant/pull/22) |
-| 11 — Admin backend | 🔶 Một phần (CRUD món+khuyến mãi xong, còn: upload ảnh/đổi trạng thái đơn-đặt bàn/phân trang) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23) |
+| 11 — Admin backend | 🔶 Một phần (CRUD món+khuyến mãi+đổi trạng thái đơn/đặt bàn xong, còn: upload ảnh/phân trang) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24) |
 | 12 — Hoàn thiện (SEO/test/CI) | ⬜ Chưa làm | |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
@@ -48,16 +48,16 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 
 **Giai đoạn 10 (Review) đã xong và đã tự kiểm qua browser thật** (Chrome extension nối lại được ở phiên này) — tạo/sửa/xóa review, optimistic UI, tính lại avgRating đều đúng. PR #22 đã squash-merge.
 
-**Giai đoạn 11 (Admin backend) — đang làm dở, PR #23 (`feat/gd11-dishes-promotions-crud`):**
+**Giai đoạn 11 (Admin backend) — đang làm dở, PR #23 + #24 đã squash-merge:**
 - ✅ CRUD món ăn thật: `src/lib/actions/dish.ts` (`createDish`/`updateDish`/`deleteDish`), tự check `role === "ADMIN"` qua `src/lib/auth/require-admin.ts` (`requireAdminSession()`, dùng chung cho mọi action admin từ giờ). Xóa món có FK (đơn hàng/review) trả lỗi thân thiện thay vì crash — đã tự test qua browser với `Bít Tết Wagyu A5` (có review/đơn thật).
 - ✅ CRUD khuyến mãi thật: `src/lib/actions/promotion.ts`, cùng pattern.
-- ✅ Đã tự test qua browser thật (đăng nhập `admin@beefhaven.vn`/`admin1234`): tạo/sửa/xóa món, tạo/sửa/xóa khuyến mãi, xóa món có FK bị chặn đúng thông báo.
+- ✅ Đổi trạng thái booking/order thật: `updateReservationStatus`/`updateOrderStatus` thêm vào `src/lib/actions/reservation.ts`/`order.ts` (cùng file với `createReservation`/`createOrder` có sẵn, không tách file riêng), validate status hợp lệ bằng mảng cố định (không dùng zod cho việc kiểm tra 1 enum đơn giản này). `reservations-table.tsx`/`orders-table.tsx` bỏ hẳn `useState` mock.
+- ✅ Đã tự test qua browser thật (đăng nhập `admin@beefhaven.vn`/`admin1234`): tạo/sửa/xóa món, tạo/sửa/xóa khuyến mãi, xóa món có FK bị chặn đúng thông báo, đổi trạng thái đặt bàn/đơn hàng đều đúng và tự khôi phục lại dữ liệu demo gốc sau khi test xong.
 - ⬜ **Upload ảnh (UploadThing)** — cần chủ dự án tự tạo tài khoản UploadThing + lấy API token trước, chưa làm được vì cần credential ngoài.
-- ⬜ Đổi trạng thái booking/order — `reservations-table.tsx`/`orders-table.tsx` vẫn còn `useState` mock, chưa nối Server Action.
 - ⬜ Phân trang server-side qua searchParams — chưa làm, xem cảnh báo bảng dài phía dưới.
 - ✅~~Stat: doanh thu tháng, số đơn, booking hôm nay, món bán chạy~~ — **đã xong từ Giai đoạn 9** (`src/lib/data/analytics.ts` + `admin/page.tsx`), sớm hơn dự tính PLAN.md. Không cần làm lại.
 
-⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — admin CRUD giờ đã có Server Action thật (dish/promotion), nhưng `reservations-table.tsx`/`orders-table.tsx` đổi trạng thái vẫn còn `useState` cục bộ, chưa có Server Action nào cần check role ở 2 bảng này. Khi nối Server Action đổi trạng thái, nhớ dùng lại `requireAdminSession()` có sẵn.
+⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — giờ toàn bộ CRUD/đổi trạng thái admin (món/khuyến mãi/đặt bàn/đơn hàng) đều đã có Server Action thật, tự check role qua `requireAdminSession()`. Chỉ còn thiếu upload ảnh + phân trang.
 
 ⚠️ Admin `orders`/`reservations` table hiện load **toàn bộ** bản ghi (632 đơn, 460 đặt bàn) vào 1 trang, không phân trang — vẫn dùng được nhưng là bảng khá dài để cuộn. Phân trang server-side vẫn chưa làm trong PR #23, để lại cho phần việc kế tiếp của Giai đoạn 11.
 

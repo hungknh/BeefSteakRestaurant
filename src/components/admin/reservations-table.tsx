@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RESERVATION_STATUS_LABELS } from "@/lib/format";
+import { updateReservationStatus } from "@/lib/actions/reservation";
 import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
 import type { Reservation, ReservationStatus } from "@/types";
 
@@ -23,15 +25,17 @@ export function ReservationsTable({
 }: {
   initialReservations: Reservation[];
 }) {
-  const [reservations, setReservations] = useState(initialReservations);
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Reservation>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [error, setError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   const rows = useMemo(() => {
-    const filtered = filterBySearch(reservations, search, (r) => r.guestName);
+    const filtered = filterBySearch(initialReservations, search, (r) => r.guestName);
     return sortBy(filtered, sortKey, sortDir);
-  }, [reservations, search, sortKey, sortDir]);
+  }, [initialReservations, search, sortKey, sortDir]);
 
   const toggleSort = (key: keyof Reservation) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -42,9 +46,15 @@ export function ReservationsTable({
   };
 
   const changeStatus = (id: string, status: ReservationStatus) => {
-    setReservations((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status } : r)),
-    );
+    setError(null);
+    startTransition(async () => {
+      const result = await updateReservationStatus(id, status);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    });
   };
 
   return (
@@ -57,6 +67,7 @@ export function ReservationsTable({
           className="max-w-xs"
         />
       </div>
+      {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

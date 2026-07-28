@@ -4,11 +4,21 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAdminSession } from "@/lib/auth/require-admin";
 import { bestPromotion, type CartLine } from "@/lib/promotions/apply";
 import { orderFormSchema, type OrderFormValues } from "@/lib/validations/order";
-import type { Dish, Doneness, Promotion } from "@/types";
+import type { Dish, Doneness, OrderStatus, Promotion } from "@/types";
 
 const SHIPPING_FEE = 30000;
+
+const ORDER_STATUSES: OrderStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "PREPARING",
+  "DELIVERING",
+  "COMPLETED",
+  "CANCELLED",
+];
 
 export type OrderCartItemInput = {
   dishId: string;
@@ -90,4 +100,20 @@ export async function createOrder(values: OrderFormValues, items: OrderCartItemI
   revalidatePath("/admin/orders");
   revalidatePath("/admin");
   return { success: true as const, code: order.code };
+}
+
+export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+  if (!ORDER_STATUSES.includes(status)) return { error: "Trạng thái không hợp lệ." };
+
+  const session = await requireAdminSession();
+  if (!session) return { error: "Bạn không có quyền thực hiện thao tác này." };
+
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) return { error: "Không tìm thấy đơn hàng." };
+
+  await prisma.order.update({ where: { id: orderId }, data: { status } });
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin");
+  return { success: true as const };
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Price } from "@/components/shared/price";
 import { ORDER_STATUS_LABELS } from "@/lib/format";
+import { updateOrderStatus } from "@/lib/actions/order";
 import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
 import type { Order, OrderStatus } from "@/types";
 
@@ -20,19 +22,21 @@ const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS) as [
 ][];
 
 export function OrdersTable({ initialOrders }: { initialOrders: Order[] }) {
-  const [orders, setOrders] = useState(initialOrders);
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Order>("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [error, setError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   const rows = useMemo(() => {
     const filtered = filterBySearch(
-      orders,
+      initialOrders,
       search,
       (o) => `${o.code} ${o.receiverName}`,
     );
     return sortBy(filtered, sortKey, sortDir);
-  }, [orders, search, sortKey, sortDir]);
+  }, [initialOrders, search, sortKey, sortDir]);
 
   const toggleSort = (key: keyof Order) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -43,7 +47,15 @@ export function OrdersTable({ initialOrders }: { initialOrders: Order[] }) {
   };
 
   const changeStatus = (id: string, status: OrderStatus) => {
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+    setError(null);
+    startTransition(async () => {
+      const result = await updateOrderStatus(id, status);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    });
   };
 
   return (
@@ -56,6 +68,7 @@ export function OrdersTable({ initialOrders }: { initialOrders: Order[] }) {
           className="max-w-xs"
         />
       </div>
+      {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
