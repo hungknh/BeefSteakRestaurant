@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,7 @@ import type { Promotion } from "@/types";
 
 export function Header({ promos }: { promos: Promotion[] }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur">
@@ -71,8 +73,24 @@ export function Header({ promos }: { promos: Promotion[] }) {
               <User className="size-5" strokeWidth={1.5} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem render={<Link href="/dang-nhap" />}>Đăng nhập</DropdownMenuItem>
-              <DropdownMenuItem render={<Link href="/dang-ky" />}>Đăng ký</DropdownMenuItem>
+              {session?.user ? (
+                <>
+                  <DropdownMenuItem render={<Link href="/tai-khoan" />}>
+                    {session.user.name ?? "Tài khoản"}
+                  </DropdownMenuItem>
+                  {session.user.role === "ADMIN" ? (
+                    <DropdownMenuItem render={<Link href="/admin" />}>Quản trị</DropdownMenuItem>
+                  ) : null}
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem render={<Link href="/dang-nhap" />}>Đăng nhập</DropdownMenuItem>
+                  <DropdownMenuItem render={<Link href="/dang-ky" />}>Đăng ký</DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 

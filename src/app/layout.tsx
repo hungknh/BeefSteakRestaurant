@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Lora } from "next/font/google";
+import { AuthSessionProvider } from "@/components/providers/session-provider";
 import "./globals.css";
 
 const serif = Cormorant_Garamond({
@@ -28,7 +29,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${serif.variable} ${sans.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <AuthSessionProvider>{children}</AuthSessionProvider>
+      </body>
     </html>
   );
 }

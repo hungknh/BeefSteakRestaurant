@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { PrismaClient } from "../src/generated/prisma/client";
 import {
@@ -70,11 +71,34 @@ async function main() {
     });
   }
 
+  // Mật khẩu demo dùng chung cho toàn bộ tài khoản seed — chỉ cho môi trường dev/demo,
+  // không dùng cho user thật (Giai đoạn 9+ đăng ký qua form sẽ tự hash mật khẩu riêng).
+  const demoPasswordHash = await bcrypt.hash("password123", 10);
+
   for (const u of MOCK_USERS) {
     await prisma.user.create({
-      data: { id: u.id, name: u.name, email: u.email, image: u.image, role: u.role },
+      data: {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        image: u.image,
+        role: u.role,
+        password: demoPasswordHash,
+      },
     });
   }
+
+  // Tài khoản admin demo — không có trong MOCK_USERS (type `User` dùng cho UI khách hàng,
+  // không nên lẫn tài khoản quản trị vào đó). Dùng để đăng nhập /admin.
+  await prisma.user.create({
+    data: {
+      id: "user-admin-demo",
+      name: "Quản Trị Viên",
+      email: "admin@beefhaven.vn",
+      role: "ADMIN",
+      password: await bcrypt.hash("admin1234", 10),
+    },
+  });
 
   for (const r of MOCK_REVIEWS) {
     await prisma.review.create({

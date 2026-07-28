@@ -18,7 +18,21 @@
 
 **Checkpoint "Chốt frontend" đã xong + merge.** PR [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) đã squash merge (2026-07-28). Đã thay ảnh thật, đổi thương hiệu sang **"Beef Haven"** + thêm logo, đổi font toàn site, và **deploy Vercel lần đầu** — xem "Sai khác" #24/#25/#26. **Link demo: https://beefsteakhouse.vercel.app**.
 
-**Đang làm Giai đoạn 7 — Database (Prisma + SQLite)** trên nhánh `feat/gd7-database`, đã push, **chưa mở/merge PR**. Đã xong: `schema.prisma` dịch từ `src/types/index.ts`, migration init, `prisma/seed.ts` bê `_mock.ts` vào (đã chạy seed thật, verify bằng query trực tiếp), `src/lib/prisma.ts` singleton. `npm run lint`/`build`/`test` đều xanh. Gặp nhiều khác biệt so với PLAN.md do Prisma 7 (CLI cài thực tế là 7.9.1, mới hơn nhiều so với lúc viết PLAN.md) — xem "Sai khác" #27–#31, **đọc trước khi động vào schema/seed/lib/prisma.ts**. Phiên mới muốn tiếp tục: `git checkout feat/gd7-database`, đừng bắt đầu từ `main`.
+**Đang có 4 nhánh chờ merge, xếp chồng lên nhau theo thứ tự bắt buộc:**
+
+1. `feat/gd7-database` (PR [#13](https://github.com/hungknh/BeefSteakRestaurant/pull/13)) — Giai đoạn 7, Database. **Merge cái này TRƯỚC TIÊN.**
+2. `feat/gd8-auth` (PR [#16](https://github.com/hungknh/BeefSteakRestaurant/pull/16), base = `feat/gd7-database`) — Giai đoạn 8, Auth. Cần Prisma User model từ #13 nên phải merge #13 xong mới merge được #16 (hoặc rebase #16 nếu #13 đổi khi review).
+3. `fix/admin-ui-polish` (PR [#14](https://github.com/hungknh/BeefSteakRestaurant/pull/14), base = `main`) — độc lập, không phụ thuộc 2 nhánh trên, merge lúc nào cũng được.
+4. `fix/numeral-font` (PR [#15](https://github.com/hungknh/BeefSteakRestaurant/pull/15), base = `main`) — độc lập, merge lúc nào cũng được.
+
+Chi tiết từng nhánh:
+
+- **Giai đoạn 7 — Database (Prisma + SQLite)**, `feat/gd7-database`. `schema.prisma` dịch từ `src/types/index.ts`, migration init, `prisma/seed.ts` bê `_mock.ts` vào (đã chạy seed thật, verify bằng query trực tiếp), `src/lib/prisma.ts` singleton. Gặp nhiều khác biệt so với PLAN.md do Prisma 7 (CLI cài thực tế là 7.9.1) — xem "Sai khác" #27–#31, **đọc trước khi động vào schema/seed/lib/prisma.ts**.
+- **Giai đoạn 8 — Auth**, `feat/gd8-auth`. Auth.js v5 (Credentials bcrypt + Google), `src/proxy.ts` chặn `/admin/*` (role ADMIN) và `/tai-khoan/*` (đã đăng nhập), trang `/dang-nhap`/`/dang-ky`, `/tai-khoan` tối thiểu. Đã verify bằng browser thật (đăng nhập admin/user thường, đăng ký, đăng xuất đều đúng) — xem "Sai khác" #32–#33.
+- **Admin UI polish**, `fix/admin-ui-polish`. Bỏ màu trong suốt trong admin (nav active, stat-card icon, status badge), thêm `OrderStatusChart`, thêm hover cho bảng.
+- **Font số/giá tiền**, `fix/numeral-font`. `font-variant-numeric: lining-nums tabular-nums` toàn site + đổi font giá tiền từ Cormorant Garamond sang Lora (basic/cổ điển hơn theo yêu cầu chủ dự án).
+
+Phiên mới muốn tiếp tục Giai đoạn 8: `git checkout feat/gd8-auth`. Muốn làm tiếp Giai đoạn 7: `git checkout feat/gd7-database`. Đừng bắt đầu nhánh mới từ `main` nếu đang có việc dở ở 1 trong 4 nhánh trên.
 
 **⚠️ Phiên 2026-07-22 có thêm 2 việc phát sinh ngoài checklist gốc, đã commit ở phiên 2026-07-28** (xem mục "Sai khác" #24/#25 để biết chi tiết):
 - Đổi tên 5 ảnh khuyến mãi từ `promo-*.jpg` sang tên gốc chủ dự án đặt (`gio-vang.jpg`, `steak-night.jpg`, `lang-man.jpg`, `dat-nhieu.jpg`, `combo-cuoi-tuan.jpg`), sửa `imageUrl` tương ứng trong `_mock.ts`. 5 file `promo-*.jpg` cũ trong `public/images/` giờ không còn dùng, chưa xóa.
@@ -35,8 +49,8 @@
 | 5 — Giỏ hàng + Đặt bàn (UI) | ✅ Xong | [#9](https://github.com/hungknh/BeefSteakRestaurant/pull/9) |
 | 6 — Admin UI (mock) | ✅ Xong | [#10](https://github.com/hungknh/BeefSteakRestaurant/pull/10) |
 | Checkpoint — Chốt frontend | ✅ Xong | [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) |
-| 7 — Database (Prisma + SQLite) | 🔶 Đang làm | [feat/gd7-database](https://github.com/hungknh/BeefSteakRestaurant/tree/feat/gd7-database) (chưa mở PR) |
-| 8 — Auth | ⬜ Chưa làm | |
+| 7 — Database (Prisma + SQLite) | 🔶 Đang làm | [#13](https://github.com/hungknh/BeefSteakRestaurant/pull/13) (chưa merge, merge trước) |
+| 8 — Auth | 🔶 Đang làm | [#16](https://github.com/hungknh/BeefSteakRestaurant/pull/16) (chưa merge, base = #13) |
 | 9 — Nối data thật | ⬜ Chưa làm | |
 | 10 — Review | ⬜ Chưa làm | |
 | 11 — Admin backend | ⬜ Chưa làm | |
@@ -45,9 +59,9 @@
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
-## Việc cần làm tiếp (Giai đoạn 7 — Database, PLAN.md mục 7 "GIAI ĐOẠN 7")
+## Việc cần làm tiếp
 
-Nhánh đang làm: `feat/gd7-database`, đã push, **chưa mở PR**.
+**Giai đoạn 7 — Database** (`feat/gd7-database`, PR #13, chưa merge) — xong hết:
 
 - [x] `npm i prisma @prisma/client`, `npx prisma init --datasource-provider sqlite` — xem #27 về khác biệt Prisma 7
 - [x] `schema.prisma` — dịch nguyên `src/types/index.ts` sang 8 model, theo đúng quy tắc PLAN.md mục 5 (String thay enum, CSV thay scalar list, tiền là Int). `createdAt`/`date`/`startDate`/`endDate`/`startTime`/`endTime` cũng để String (không phải DateTime) để khớp đúng type `string` trong types/index.ts — xem comment đầu `schema.prisma`.
@@ -56,7 +70,20 @@ Nhánh đang làm: `feat/gd7-database`, đã push, **chưa mở PR**.
 - [x] `npx prisma migrate dev --name init` — xem #29 về vị trí file `dev.db`
 - [x] `prisma/seed.ts` — bê thẳng `_mock.ts` vào, đã chạy `npx prisma db seed` thật và verify bằng query trực tiếp (15 dish, order kèm items đúng)
 - [x] `src/lib/prisma.ts` — singleton client (dùng driver adapter, xem #28)
-- [ ] Mở PR cho `feat/gd7-database` — cần chủ dự án xác nhận trước khi merge (giống quy trình checkpoint trước)
+- [ ] Merge PR #13 vào `main` — cần chủ dự án xác nhận (đang tự review)
+
+**Giai đoạn 8 — Auth** (`feat/gd8-auth`, PR #16, base = `feat/gd7-database`, chưa merge) — xong hết:
+
+- [x] `npm i next-auth@beta bcryptjs`
+- [x] NextAuth v5: Credentials (bcrypt.compare) + Google, role vào JWT + session — xem #33 về augment type đúng module `@auth/core/*`
+- [x] `src/proxy.ts` (không phải `middleware.ts`, xem #32) chặn `/admin/*` (ADMIN) và `/tai-khoan/*` (đã login), tách `auth.config.ts` (edge-safe) khỏi `auth.ts` (đầy đủ, có Prisma)
+- [x] Nối login/register form, Header hiện avatar dropdown theo session
+- [x] Verify bằng browser thật: đăng nhập admin/user thường, chặn role, đăng ký, đăng xuất — đều đúng
+- [ ] Merge PR #16 (sau khi PR #13 merge) — cần chủ dự án xác nhận
+
+⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — hiện chưa có Server Action nào cần check role (admin CRUD ở Giai đoạn 6 vẫn chỉ là `useState` cục bộ, chưa persist). Tới **Giai đoạn 11 (Admin backend)** khi thêm Server Actions thật, mỗi action phải tự check `session.user.role === "ADMIN"` lại, không tin middleware là đủ.
+
+**Admin UI polish** (`fix/admin-ui-polish`, PR #14) và **Font số/giá tiền** (`fix/numeral-font`, PR #15) — cả 2 độc lập với Giai đoạn 7/8, đã xong, chờ merge.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -135,6 +162,16 @@ Nhánh đang làm: `feat/gd7-database`, đã push, **chưa mở PR**.
 29. **`DATABASE_URL` phải ghi tường minh `file:./prisma/dev.db`, không phải `file:./dev.db`.** Prisma 7 (qua `prisma.config.ts`) resolve đường dẫn SQLite tương đối theo thư mục chạy lệnh (project root), khác bản cũ resolve theo vị trí `schema.prisma`. Ban đầu để `file:./dev.db` thì `prisma migrate dev` tạo nhầm file ở root (`./dev.db`) — không khớp `.gitignore` sẵn có (`/prisma/dev.db`), suýt lọt vào git. Đã sửa `.env` thành `file:./prisma/dev.db` và migrate lại đúng chỗ.
 30. **Đã thêm `"postinstall": "prisma generate"` vào `package.json` ngay từ Giai đoạn 7**, sớm hơn dự tính của PLAN.md mục Giai đoạn 13 (`"build": "prisma generate && next build"`). Lý do: `next build` typecheck theo `tsconfig.json` (`include: **/*.ts`), bao trùm cả `prisma/seed.ts`/`src/lib/prisma.ts` dù chưa có page nào import — build sẽ lỗi `Cannot find module '.../generated/prisma/client'` trên máy sạch/CI nếu client chưa được generate sẵn (đã tự tay verify bằng cách xóa `src/generated` rồi build lại, thấy lỗi, thêm `postinstall` xong hết lỗi).
 31. **`prisma init` (bản 7) tự cài thêm tài liệu "skill" cho AI coding assistant** vào `.agents/`, `.claude/`, `.windsurf/`, `skills-lock.json` ở root (tham khảo CLI/Client API/driver adapter...). Không phải code dự án, đã thêm vào `.gitignore` để không commit — nếu cần tra cứu Prisma 7 thì đọc trực tiếp các file này trên máy (không có trên git).
+
+32. **Next.js 16.2.10 đổi tên convention `middleware.ts` → `proxy.ts`.** Vẫn cùng vị trí (`src/proxy.ts` do dự án dùng `src/`), cùng API (default export function, `export const config = { matcher: [...] }`) — chỉ đổi tên file. Để `middleware.ts` vẫn chạy được nhưng log cảnh báo deprecated lúc build (`The "middleware" file convention is deprecated`); đã đổi hẳn sang `proxy.ts` cho sạch log.
+
+33. **⚠️ next-auth v5 (beta) module augmentation PHẢI nhắm đúng `@auth/core/types`/`@auth/core/jwt`, không phải `next-auth`/`next-auth/jwt`.** Tài liệu chính thức hay ghi `declare module "next-auth" { interface Session {...} }`, nhưng bản beta hiện cài (`5.0.0-beta.32`) re-export `Session`/`User`/`JWT` từ `@auth/core` bằng `export type { Session } from "@auth/core/types"` — augment vào `"next-auth"` không merge được vào type gốc mà các callback (`jwt`, `session` trong `auth.config.ts`) thực sự dùng, gây lỗi `Type 'unknown' is not assignable to type 'string'` lúc build. Xem `src/types/next-auth.d.ts` — đã sửa augment thẳng `@auth/core/types` và `@auth/core/jwt`. Nếu nâng cấp next-auth lên bản mới hơn, kiểm tra lại `node_modules/next-auth/index.d.ts`/`jwt.d.ts` xem còn re-export kiểu này không trước khi đổi lại theo docs.
+
+34. **Prisma 7 không tự chạy seed sau `prisma migrate reset`/`migrate dev`** (khác bản cũ) — phải gọi `npx prisma db seed` riêng, một lệnh tách biệt hoàn toàn (xem mục "Cách tiếp tục ở phiên mới" nếu cần seed lại DB dev).
+
+35. **`prisma migrate reset` bị Prisma CLI tự chặn khi phát hiện chạy từ Claude Code**, báo lỗi yêu cầu hỏi ý kiến người dùng trước — đây là tính năng bảo vệ mới của Prisma dành riêng cho AI agent, không phải bug. Chỉ chạy tiếp sau khi chủ dự án xác nhận rõ ràng trong chat, kèm biến môi trường `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION="<nguyên văn câu xác nhận>"`.
+
+36. **Đổi font hiển thị giá tiền (2026-07-28, theo yêu cầu chủ dự án):** `Price.tsx` (dùng ở hầu hết nơi hiện giá) và dòng "Tổng cộng" trong `CartSummary` đổi từ `font-serif` (Cormorant Garamond — nét display, hơi "uốn lượn") sang `font-sans` (thực ra là Lora, xem #25) — nhìn cổ điển/basic hơn, không phải font mới. Tên món/tiêu đề vẫn giữ `font-serif` như cũ, chỉ số tiền đổi. Đồng thời đã thêm `font-variant-numeric: lining-nums tabular-nums` toàn site ở `globals.css` (số thẳng hàng, cùng chiều cao, không dùng oldstyle figures mặc định của font). Cả 2 việc này nằm trên nhánh `fix/numeral-font` (PR #15).
 
 ## Cách tiếp tục ở phiên mới
 

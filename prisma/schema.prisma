@@ -77,11 +77,14 @@ model Promotion {
 }
 
 model User {
-  id    String  @id
-  name  String
-  email String  @unique
-  image String?
-  role  String // USER | ADMIN
+  id       String  @id
+  name     String
+  email    String  @unique
+  image    String?
+  role     String // USER | ADMIN
+  // Hash bcrypt, chỉ dùng cho đăng nhập Credentials — null nếu user chỉ đăng nhập Google.
+  // Cố tình KHÔNG có trong type `User` ở src/types/index.ts (không được lộ ra ngoài auth.ts).
+  password String?
 
   reviews      Review[]
   reservations Reservation[]
