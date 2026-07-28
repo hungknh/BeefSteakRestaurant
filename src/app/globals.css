@@ -116,6 +116,10 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    /* lining-nums: số thẳng cùng chiều cao (kiểu cổ điển, trang trọng),
+       tabular-nums: số cùng độ rộng (thẳng cột giá/số liệu) — thay cho
+       oldstyle figures mặc định của Cormorant Garamond/Lora (số uốn lượn,
+       cao thấp không đều, hợp văn bản dài nhưng không hợp giá tiền/bảng số liệu). */
+    @apply font-sans lining-nums tabular-nums;
   }
 }

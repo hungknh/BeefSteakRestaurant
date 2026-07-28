@@ -32,7 +32,7 @@ export function CartSummary({
           <span>{formatVND(shippingFee)}</span>
         </div>
       ) : null}
-      <div className="mt-2 flex justify-between border-t border-border pt-3 font-serif text-lg text-foreground">
+      <div className="mt-2 flex justify-between border-t border-border pt-3 font-sans text-lg text-foreground">
         <span>Tổng cộng</span>
         <span className="text-primary">{formatVND(totals.total)}</span>
       </div>
