@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Price } from "@/components/shared/price";
 import { DishFormDialog } from "@/components/admin/dish-form-dialog";
 import { Pill } from "@/components/admin/pill";
+import { deleteDish } from "@/lib/actions/dish";
 import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
 import type { Category, Dish } from "@/types";
 
@@ -17,15 +19,18 @@ export function DishesTable({
   initialDishes: Dish[];
   categories: Category[];
 }) {
-  const [dishes, setDishes] = useState(initialDishes);
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Dish>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   const rows = useMemo(() => {
-    const filtered = filterBySearch(dishes, search, (d) => d.name);
+    const filtered = filterBySearch(initialDishes, search, (d) => d.name);
     return sortBy(filtered, sortKey, sortDir);
-  }, [dishes, search, sortKey, sortDir]);
+  }, [initialDishes, search, sortKey, sortDir]);
 
   const toggleSort = (key: keyof Dish) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -35,12 +40,17 @@ export function DishesTable({
     }
   };
 
-  const upsertDish = (dish: Dish) => {
-    setDishes((prev) => {
-      const exists = prev.some((d) => d.id === dish.id);
-      return exists
-        ? prev.map((d) => (d.id === dish.id ? dish : d))
-        : [...prev, dish];
+  const handleDelete = (dish: Dish) => {
+    setError(null);
+    setDeletingId(dish.id);
+    startTransition(async () => {
+      const result = await deleteDish(dish.id);
+      setDeletingId(null);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
     });
   };
 
@@ -55,7 +65,7 @@ export function DishesTable({
         />
         <DishFormDialog
           categories={categories}
-          onSave={upsertDish}
+          onSaved={() => router.refresh()}
           trigger={
             <Button>
               <Plus className="size-4" strokeWidth={1.5} /> Thêm Món
@@ -63,6 +73,7 @@ export function DishesTable({
           }
         />
       </div>
+      {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -114,7 +125,7 @@ export function DishesTable({
                     <DishFormDialog
                       dish={dish}
                       categories={categories}
-                      onSave={upsertDish}
+                      onSaved={() => router.refresh()}
                       trigger={
                         <Button
                           variant="ghost"
@@ -130,11 +141,8 @@ export function DishesTable({
                       size="icon-sm"
                       aria-label="Xóa món"
                       className="text-muted-foreground hover:text-destructive"
-                      onClick={() =>
-                        setDishes((prev) =>
-                          prev.filter((d) => d.id !== dish.id),
-                        )
-                      }
+                      disabled={deletingId === dish.id}
+                      onClick={() => handleDelete(dish)}
                     >
                       <Trash2 className="size-3.5" strokeWidth={1.5} />
                     </Button>

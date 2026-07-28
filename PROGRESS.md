@@ -16,13 +16,13 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong đến hết Giai đoạn 9 (Nối data thật), tất cả đã merge vào `main`.** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách).
+**Đã xong đến hết Giai đoạn 10 (Review), đang làm dở Giai đoạn 11 (Admin backend).** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách).
 
 **Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
 **Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 460 đặt bàn, 113 đánh giá, 71 khách hàng**. Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
 
-PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database, SQLite ban đầu) → #17 (Giai đoạn 8 — Auth, thay cho #16 bị đóng tự động vì nhánh gốc bị xoá, xem #39) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20 (progress.md). **Không còn PR nào chờ merge — `main` đã sạch, đã deploy Vercel với dữ liệu Neon mới nhất.**
+PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database, SQLite ban đầu) → #17 (Giai đoạn 8 — Auth, thay cho #16 bị đóng tự động vì nhánh gốc bị xoá, xem #39) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20 (progress.md) → #21 (progress.md) → #22 (Giai đoạn 10 — Review, verified purchase + unique constraint + useOptimistic, đã tự kiểm qua browser thật). **Không còn PR nào chờ merge — `main` đã sạch, đã deploy Vercel với dữ liệu Neon mới nhất.**
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
@@ -38,7 +38,7 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 | 8 — Auth | ✅ Xong | [#17](https://github.com/hungknh/BeefSteakRestaurant/pull/17) |
 | 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [#18](https://github.com/hungknh/BeefSteakRestaurant/pull/18) |
 | 10 — Review | ✅ Xong | [#22](https://github.com/hungknh/BeefSteakRestaurant/pull/22) |
-| 11 — Admin backend | ⬜ Chưa làm | |
+| 11 — Admin backend | 🔶 Một phần (CRUD món+khuyến mãi xong, còn: upload ảnh/đổi trạng thái đơn-đặt bàn/phân trang) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23) |
 | 12 — Hoàn thiện (SEO/test/CI) | ⬜ Chưa làm | |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
@@ -46,15 +46,20 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 
 ## Việc cần làm tiếp
 
-Giai đoạn 10 (Review) đã xong (PR #22): `src/lib/actions/review.ts` (`createReview`/`updateReview`/`deleteReview`), `ReviewSection`/`ReviewForm`/`RatingInput` mới, `ReviewList` thêm nút Sửa/Xóa. Xem "Sai khác" #42 trước khi bắt đầu Giai đoạn 11 — có 2 quyết định khác PLAN.md tối thiểu (verified purchase, phạm vi `useOptimistic`) cần biết.
+**Giai đoạn 10 (Review) đã xong và đã tự kiểm qua browser thật** (Chrome extension nối lại được ở phiên này) — tạo/sửa/xóa review, optimistic UI, tính lại avgRating đều đúng. PR #22 đã squash-merge.
 
-⚠️ **Chưa verify bằng browser thật** — sandbox phiên này không connect được Chrome extension (giống mục #25 dưới). Đã verify bằng: `npm run lint`/`npm test`/`npm run build` xanh, `npx tsc --noEmit` sạch, migration áp dụng thành công lên Neon (đã xác nhận trước đó không có cặp `(userId, dishId)` trùng trong 113 review cũ), curl trang `/thuc-don/[slug]` ở trạng thái chưa đăng nhập trả 200 không lỗi. **Chưa tự bấm qua UI thật** luồng tạo/sửa/xóa review — chủ dự án cần tự mở `localhost:3000` kiểm tra bằng 2 tài khoản cụ thể trước khi merge PR #22:
-- Tạo review mới: đăng nhập `phuong.vo@example.com` / `password123`, mở `/thuc-don/biet-tet-wagyu-a5` (user này có đơn COMPLETED chứa món này, chưa review).
-- Sửa/xóa review có sẵn: đăng nhập `viet.dinh@example.com` / `password123`, mở `/thuc-don/nam-portobello-nuong` (user này đã có sẵn 1 review cho món này).
+**Giai đoạn 11 (Admin backend) — đang làm dở, PR #23 (`feat/gd11-dishes-promotions-crud`):**
+- ✅ CRUD món ăn thật: `src/lib/actions/dish.ts` (`createDish`/`updateDish`/`deleteDish`), tự check `role === "ADMIN"` qua `src/lib/auth/require-admin.ts` (`requireAdminSession()`, dùng chung cho mọi action admin từ giờ). Xóa món có FK (đơn hàng/review) trả lỗi thân thiện thay vì crash — đã tự test qua browser với `Bít Tết Wagyu A5` (có review/đơn thật).
+- ✅ CRUD khuyến mãi thật: `src/lib/actions/promotion.ts`, cùng pattern.
+- ✅ Đã tự test qua browser thật (đăng nhập `admin@beefhaven.vn`/`admin1234`): tạo/sửa/xóa món, tạo/sửa/xóa khuyến mãi, xóa món có FK bị chặn đúng thông báo.
+- ⬜ **Upload ảnh (UploadThing)** — cần chủ dự án tự tạo tài khoản UploadThing + lấy API token trước, chưa làm được vì cần credential ngoài.
+- ⬜ Đổi trạng thái booking/order — `reservations-table.tsx`/`orders-table.tsx` vẫn còn `useState` mock, chưa nối Server Action.
+- ⬜ Phân trang server-side qua searchParams — chưa làm, xem cảnh báo bảng dài phía dưới.
+- ✅~~Stat: doanh thu tháng, số đơn, booking hôm nay, món bán chạy~~ — **đã xong từ Giai đoạn 9** (`src/lib/data/analytics.ts` + `admin/page.tsx`), sớm hơn dự tính PLAN.md. Không cần làm lại.
 
-⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — hiện admin CRUD (Giai đoạn 6) vẫn chỉ là `useState` cục bộ, chưa có Server Action nào cần check role. Tới **Giai đoạn 11 (Admin backend)** khi thêm Server Actions thật, mỗi action phải tự check `session.user.role === "ADMIN"` lại, không tin middleware là đủ.
+⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — admin CRUD giờ đã có Server Action thật (dish/promotion), nhưng `reservations-table.tsx`/`orders-table.tsx` đổi trạng thái vẫn còn `useState` cục bộ, chưa có Server Action nào cần check role ở 2 bảng này. Khi nối Server Action đổi trạng thái, nhớ dùng lại `requireAdminSession()` có sẵn.
 
-⚠️ Admin `orders`/`reservations` table hiện load **toàn bộ** bản ghi (632 đơn, 460 đặt bàn) vào 1 trang, không phân trang — vẫn dùng được nhưng là bảng khá dài để cuộn. Phân trang server-side là việc của Giai đoạn 11 theo đúng kế hoạch gốc, chưa làm bây giờ.
+⚠️ Admin `orders`/`reservations` table hiện load **toàn bộ** bản ghi (632 đơn, 460 đặt bàn) vào 1 trang, không phân trang — vẫn dùng được nhưng là bảng khá dài để cuộn. Phân trang server-side vẫn chưa làm trong PR #23, để lại cho phần việc kế tiếp của Giai đoạn 11.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -165,7 +170,12 @@ Giai đoạn 10 (Review) đã xong (PR #22): `src/lib/actions/review.ts` (`creat
     - **Điều kiện viết review là "verified purchase"**, không chỉ cần đăng nhập như PLAN.md ghi tối thiểu — `createReview` (`src/lib/actions/review.ts`) check `OrderItem` có `dishId` tương ứng thuộc 1 `Order` của user với `status === "COMPLETED"` (hàm `getHasPurchasedDish` trong `src/lib/data/orders.ts`). Nếu sau này muốn nới lỏng lại thành "chỉ cần đăng nhập", bỏ đoạn check `purchased` trong `createReview` và bỏ tham số `canReview` truyền vào `ReviewSection`.
     - **`useOptimistic` áp dụng cho cả sửa/xóa, không chỉ tạo mới** (PLAN.md chỉ ghi "review hiện ngay" cho tạo) — `ReviewSection` (`src/components/review/review-section.tsx`) dùng 1 reducer chung (`add`/`update`/`remove`) cho cả 3 thao tác, gọi `router.refresh()` sau khi Server Action trả `success` để đồng bộ lại đúng dữ liệu server (avgRating tính client-side từ mảng review hiện có, không đọc `dish.avgRating` — luôn khớp vì cùng công thức trung bình cộng).
     - Sửa/xóa review của chính mình xóa **ngay, không có confirm dialog** — khớp pattern admin hiện có (`dishes-table.tsx` cũng xóa ngay không confirm), đánh dấu bằng comment `ponytail:` trong code. Muốn thêm confirm thì bọc quanh lời gọi `submitDelete` trong `ReviewSection`.
-    - **Chưa verify bằng browser thật** (xem mục "Việc cần làm tiếp" phía trên) — chỉ verify được bằng lint/test/build/migration/curl do sandbox phiên này không connect Chrome extension, giống vấn đề đã gặp ở mục #25.
+    - **Đã verify bằng browser thật** (Chrome extension nối lại được ở phiên tiếp theo, khác #25) — tạo/sửa/xóa review qua UI thật, optimistic UI hiện đúng, avgRating/reviewCount cập nhật đúng, nút "Viết Đánh Giá" ẩn/hiện đúng theo điều kiện.
+
+43. **Giai đoạn 11 (Admin backend, đang làm dở) — 2 phát hiện khi wiring CRUD thật:**
+    - **`DishFormDialog`/`PromotionFormDialog` (thời mock, Giai đoạn 6) thiếu input cho một số trường có sẵn trong schema/type** — `Dish`: `isFeatured`, `hasDoneness`, `weightGram` (form cũ chỉ có tên/giá/danh mục/mô tả/ảnh, 3 trường kia âm thầm giữ nguyên giá trị cũ hoặc mặc định, không sửa được qua UI). `Promotion`: `badgeLabel`, `badgeOffer`, `scheduleText`, `startDate`, `endDate` (badge hiển thị trên `PromoCard` không có cách nào sửa qua admin UI cũ). Đã bổ sung đầy đủ input khi viết lại 2 dialog này sang gọi Server Action thật — không phải scope creep, mà là sửa 1 gap thật (nếu không, tạo khuyến mãi mới qua admin sẽ ra badge rỗng).
+    - **Mục "Stat" của Giai đoạn 11 (doanh thu tháng, số đơn, booking hôm nay, món bán chạy) thực ra đã xong từ Giai đoạn 9** (`src/lib/data/analytics.ts`, hiển thị ở `admin/page.tsx`) — sớm hơn dự tính PLAN.md, giống pattern Postgres/dashboard đã làm sớm trước đó. Không cần làm lại khi tiếp tục Giai đoạn 11.
+    - `src/lib/auth/require-admin.ts` (`requireAdminSession()`) là helper dùng chung mới — mọi Server Action admin sau này (đổi trạng thái đơn/đặt bàn, upload ảnh...) nên gọi hàm này thay vì tự viết lại check `role === "ADMIN"`.
 
 ## Cách tiếp tục ở phiên mới
 

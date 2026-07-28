@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,9 +21,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { createPromotion, updatePromotion } from "@/lib/actions/promotion";
+import type { PromotionFormValues } from "@/lib/validations/promotion";
 import type { Category, Dish, Promotion } from "@/types";
-
-type PromotionFormValues = Omit<Promotion, "id" | "slug">;
 
 const DISCOUNT_TYPE_LABELS: Record<Promotion["discountType"], string> = {
   PERCENT: "Phần trăm (%)",
@@ -46,16 +46,6 @@ const DAY_OPTIONS = [
   { value: "6", label: "T7" },
   { value: "0", label: "CN" },
 ];
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(new RegExp("[\\u0300-\\u036f]", "g"), "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 const EMPTY_FORM: PromotionFormValues = {
   title: "",
@@ -83,21 +73,26 @@ export function PromotionFormDialog({
   promotion,
   categories,
   dishes,
-  onSave,
+  onSaved,
   trigger,
 }: {
   promotion?: Promotion;
   categories: Category[];
   dishes: Dish[];
-  onSave: (promotion: Promotion) => void;
+  onSaved: () => void;
   trigger: React.ReactElement;
 }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<PromotionFormValues>(promotion ?? EMPTY_FORM);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
-    if (next) setForm(promotion ?? EMPTY_FORM);
+    if (next) {
+      setForm(promotion ?? EMPTY_FORM);
+      setError(null);
+    }
   };
 
   const selectedDays = form.daysOfWeek ? form.daysOfWeek.split(",") : [];
@@ -110,12 +105,18 @@ export function PromotionFormDialog({
   };
 
   const handleSubmit = () => {
-    onSave({
-      id: promotion?.id ?? `promo-${Date.now()}`,
-      slug: promotion?.slug ?? slugify(form.title),
-      ...form,
+    setError(null);
+    startTransition(async () => {
+      const result = promotion
+        ? await updatePromotion(promotion.id, form)
+        : await createPromotion(form);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setOpen(false);
+      onSaved();
     });
-    setOpen(false);
   };
 
   return (
@@ -144,6 +145,47 @@ export function PromotionFormDialog({
               className="mt-2"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="promo-image">Ảnh (URL)</Label>
+            <Input
+              id="promo-image"
+              className="mt-2"
+              value={form.imageUrl}
+              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="promo-badge-label">Nhãn badge</Label>
+              <Input
+                id="promo-badge-label"
+                className="mt-2"
+                placeholder="VD: HÀNG NGÀY"
+                value={form.badgeLabel}
+                onChange={(e) => setForm({ ...form, badgeLabel: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="promo-badge-offer">Nội dung ưu đãi</Label>
+              <Input
+                id="promo-badge-offer"
+                className="mt-2"
+                placeholder="VD: GIẢM 30%"
+                value={form.badgeOffer}
+                onChange={(e) => setForm({ ...form, badgeOffer: e.target.value })}
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="promo-schedule-text">Lịch áp dụng (hiển thị cho khách)</Label>
+            <Input
+              id="promo-schedule-text"
+              className="mt-2"
+              placeholder="VD: THỨ 5 HÀNG TUẦN"
+              value={form.scheduleText}
+              onChange={(e) => setForm({ ...form, scheduleText: e.target.value })}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -280,6 +322,28 @@ export function PromotionFormDialog({
               />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="promo-start-date">Ngày bắt đầu (tùy chọn)</Label>
+              <Input
+                id="promo-start-date"
+                type="date"
+                className="mt-2"
+                value={form.startDate ?? ""}
+                onChange={(e) => setForm({ ...form, startDate: e.target.value || null })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="promo-end-date">Ngày kết thúc (tùy chọn)</Label>
+              <Input
+                id="promo-end-date"
+                type="date"
+                className="mt-2"
+                value={form.endDate ?? ""}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value || null })}
+              />
+            </div>
+          </div>
           <div>
             <Label htmlFor="promo-min-subtotal">Hóa đơn tối thiểu (VNĐ)</Label>
             <Input
@@ -299,9 +363,12 @@ export function PromotionFormDialog({
             />
             Đang kích hoạt
           </label>
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
-          <Button onClick={handleSubmit}>{promotion ? "Lưu Thay Đổi" : "Thêm Khuyến Mãi"}</Button>
+          <Button onClick={handleSubmit} disabled={isPending}>
+            {promotion ? "Lưu Thay Đổi" : "Thêm Khuyến Mãi"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

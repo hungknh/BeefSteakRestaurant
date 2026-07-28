@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PromotionFormDialog } from "@/components/admin/promotion-form-dialog";
 import { Pill } from "@/components/admin/pill";
 import { formatDaysOfWeek } from "@/lib/format";
+import { deletePromotion } from "@/lib/actions/promotion";
 import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
 import type { Category, Dish, Promotion } from "@/types";
 
@@ -19,15 +21,18 @@ export function PromotionsTable({
   categories: Category[];
   dishes: Dish[];
 }) {
-  const [promotions, setPromotions] = useState(initialPromotions);
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Promotion>("sortOrder");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   const rows = useMemo(() => {
-    const filtered = filterBySearch(promotions, search, (p) => p.title);
+    const filtered = filterBySearch(initialPromotions, search, (p) => p.title);
     return sortBy(filtered, sortKey, sortDir);
-  }, [promotions, search, sortKey, sortDir]);
+  }, [initialPromotions, search, sortKey, sortDir]);
 
   const toggleSort = (key: keyof Promotion) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -37,12 +42,17 @@ export function PromotionsTable({
     }
   };
 
-  const upsertPromotion = (promotion: Promotion) => {
-    setPromotions((prev) => {
-      const exists = prev.some((p) => p.id === promotion.id);
-      return exists
-        ? prev.map((p) => (p.id === promotion.id ? promotion : p))
-        : [...prev, promotion];
+  const handleDelete = (promotion: Promotion) => {
+    setError(null);
+    setDeletingId(promotion.id);
+    startTransition(async () => {
+      const result = await deletePromotion(promotion.id);
+      setDeletingId(null);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
     });
   };
 
@@ -58,7 +68,7 @@ export function PromotionsTable({
         <PromotionFormDialog
           categories={categories}
           dishes={dishes}
-          onSave={upsertPromotion}
+          onSaved={() => router.refresh()}
           trigger={
             <Button>
               <Plus className="size-4" strokeWidth={1.5} /> Thêm Khuyến Mãi
@@ -66,6 +76,7 @@ export function PromotionsTable({
           }
         />
       </div>
+      {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -111,7 +122,7 @@ export function PromotionsTable({
                       promotion={promotion}
                       categories={categories}
                       dishes={dishes}
-                      onSave={upsertPromotion}
+                      onSaved={() => router.refresh()}
                       trigger={
                         <Button
                           variant="ghost"
@@ -127,11 +138,8 @@ export function PromotionsTable({
                       size="icon-sm"
                       aria-label="Xóa khuyến mãi"
                       className="text-muted-foreground hover:text-destructive"
-                      onClick={() =>
-                        setPromotions((prev) =>
-                          prev.filter((p) => p.id !== promotion.id),
-                        )
-                      }
+                      disabled={deletingId === promotion.id}
+                      onClick={() => handleDelete(promotion)}
                     >
                       <Trash2 className="size-3.5" strokeWidth={1.5} />
                     </Button>
