@@ -22,7 +22,7 @@
 
 **Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 460 đặt bàn, 113 đánh giá, 71 khách hàng**. Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
 
-PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database, SQLite ban đầu) → #17 (Giai đoạn 8 — Auth, thay cho #16 bị đóng tự động vì nhánh gốc bị xoá, xem #35) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê). PR #19 (`.vercelignore`, nhỏ, không ảnh hưởng chức năng) đang chờ merge.
+PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database, SQLite ban đầu) → #17 (Giai đoạn 8 — Auth, thay cho #16 bị đóng tự động vì nhánh gốc bị xoá, xem #39) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20 (progress.md). **Không còn PR nào chờ merge — `main` đã sạch, đã deploy Vercel với dữ liệu Neon mới nhất.**
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
