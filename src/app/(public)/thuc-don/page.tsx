@@ -8,7 +8,7 @@ import { getCategories } from "@/lib/data/categories";
 
 export const metadata: Metadata = {
   title: "Thực Đơn",
-  description: "Toàn bộ món ăn tại BeefSteakHouse.",
+  description: "Toàn bộ món ăn tại Beef Haven.",
 };
 
 type Props = { searchParams: Promise<{ category?: string }> };

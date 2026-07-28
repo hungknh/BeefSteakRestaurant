@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Cormorant_Garamond, Lora } from "next/font/google";
 import "./globals.css";
 
-const serif = Playfair_Display({
+const serif = Cormorant_Garamond({
   variable: "--font-serif",
   subsets: ["latin", "vietnamese"],
+  weight: ["500", "600", "700"],
 });
 
-const sans = Inter({
+const sans = Lora({
   variable: "--font-sans",
   subsets: ["latin", "vietnamese"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "BeefSteakHouse",
-    template: "%s · BeefSteakHouse",
+    default: "Beef Haven",
+    template: "%s · Beef Haven",
   },
   description: "Nhà hàng bít tết cao cấp — thực đơn, khuyến mãi và đặt bàn trực tuyến.",
 };

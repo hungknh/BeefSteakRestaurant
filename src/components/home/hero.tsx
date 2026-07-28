@@ -6,8 +6,8 @@ export function Hero() {
   return (
     <section className="relative flex min-h-[85dvh] items-center overflow-hidden">
       <Image
-        src="https://picsum.photos/seed/beefsteak-hero/1920/1080"
-        alt="Bít tết nướng trên bếp than tại BeefSteakHouse"
+        src="/images/hero.jpg"
+        alt="Bít tết nướng trên bếp than tại Beef Haven"
         fill
         priority
         sizes="100vw"

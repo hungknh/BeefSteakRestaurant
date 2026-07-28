@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User } from "lucide-react";
@@ -24,8 +25,20 @@ export function Header({ promos }: { promos: Promotion[] }) {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur">
       <TopBar />
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="shrink-0 font-serif text-xl tracking-wide text-foreground">
-          BeefSteak<span className="text-primary">House</span>
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 font-serif text-xl tracking-wide text-foreground"
+        >
+          <Image
+            src="/images/logo.jpg"
+            alt="Beef Haven"
+            width={36}
+            height={36}
+            className="rounded-full"
+            priority
+            unoptimized
+          />
+          Beef <span className="text-primary">Haven</span>
         </Link>
 
         <nav className="hidden items-center gap-8 xl:flex">

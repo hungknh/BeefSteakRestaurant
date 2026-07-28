@@ -5,7 +5,7 @@ import { getPromotions } from "@/lib/data/promotions";
 
 export const metadata: Metadata = {
   title: "Khuyến Mãi",
-  description: "Toàn bộ ưu đãi đang áp dụng tại BeefSteakHouse.",
+  description: "Toàn bộ ưu đãi đang áp dụng tại Beef Haven.",
 };
 
 export default async function KhuyenMaiPage() {

@@ -6,8 +6,8 @@ export function ReservationCta() {
   return (
     <section className="relative flex min-h-[45dvh] items-center overflow-hidden">
       <Image
-        src="https://picsum.photos/seed/beefsteak-reservation-cta/1920/900"
-        alt="Không gian bàn ăn tại BeefSteakHouse vào buổi tối"
+        src="/images/reservation-cta.jpg"
+        alt="Không gian bàn ăn tại Beef Haven vào buổi tối"
         fill
         sizes="100vw"
         className="object-cover"

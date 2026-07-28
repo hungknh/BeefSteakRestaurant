@@ -248,7 +248,7 @@ export function PromotionFormDialog({
                   type="button"
                   onClick={() => toggleDay(d.value)}
                   className={cn(
-                    "rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-primary",
+                    "rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                     selectedDays.includes(d.value) &&
                       "border-primary bg-primary text-primary-foreground",
                   )}

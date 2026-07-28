@@ -13,7 +13,7 @@ export async function FeaturedPromotions() {
         <SectionHeading
           eyebrow="Ưu đãi có hạn"
           title="Khuyến Mãi Nổi Bật"
-          description="Những ưu đãi đang áp dụng tại BeefSteakHouse, cập nhật theo ngày trong tuần."
+          description="Những ưu đãi đang áp dụng tại Beef Haven, cập nhật theo ngày trong tuần."
         />
 
         <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">

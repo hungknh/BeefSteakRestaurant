@@ -17,8 +17,8 @@ export async function MenuPreview() {
         <div className="mt-14 grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
           <div className="relative aspect-4/5 w-full overflow-hidden rounded-lg">
             <Image
-              src="https://picsum.photos/seed/beefsteak-menu-preview/900/1100"
-              alt="Bít tết trình bày trên đĩa đá tại BeefSteakHouse"
+              src="/images/menu-preview.jpg"
+              alt="Bít tết trình bày trên đĩa đá tại Beef Haven"
               fill
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"

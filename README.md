@@ -1,4 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Beef Haven
+
+Website nhà hàng bít tết: trang chủ, khuyến mãi, thực đơn, giỏ hàng, đặt bàn và khu quản trị (admin). Xây bằng [Next.js](https://nextjs.org) (App Router), [shadcn/ui](https://ui.shadcn.com), Zustand, Vitest.
+
+## Screenshots
+
+| Trang chủ | Khuyến mãi |
+|---|---|
+| ![Trang chủ](screenshots/trang-chu.jpg) | ![Khuyến mãi](screenshots/khuyen-mai.jpg) |
+
+| Thực đơn | Admin |
+|---|---|
+| ![Thực đơn](screenshots/thuc-don.jpg) | ![Admin](screenshots/admin.jpg) |
 
 ## Getting Started
 

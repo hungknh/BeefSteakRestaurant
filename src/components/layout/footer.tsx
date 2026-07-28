@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
@@ -7,8 +8,16 @@ export function Footer() {
     <footer className="border-t border-border bg-background-alt">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-4 lg:px-8">
         <div>
-          <p className="font-serif text-xl tracking-wide text-foreground">
-            BeefSteak<span className="text-primary">House</span>
+          <p className="flex items-center gap-2 font-serif text-xl tracking-wide text-foreground">
+            <Image
+              src="/images/logo.jpg"
+              alt="Beef Haven"
+              width={32}
+              height={32}
+              className="rounded-full"
+              unoptimized
+            />
+            Beef <span className="text-primary">Haven</span>
           </p>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Nhà hàng bít tết cao cấp, phục vụ nguyên liệu tuyển chọn từ 2010.
@@ -45,7 +54,7 @@ export function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <Mail className="size-4 shrink-0 text-primary" strokeWidth={1.5} />
-              <span>lienhe@beefsteakhouse.vn</span>
+              <span>lienhe@beefhaven.vn</span>
             </li>
           </ul>
         </div>
@@ -69,7 +78,7 @@ export function Footer() {
 
       <div className="border-t border-border px-4 py-6 sm:px-6 lg:px-8">
         <p className="text-center text-xs text-muted-foreground">
-          © 2026 BeefSteakHouse. Đã đăng ký bản quyền.
+          © 2026 Beef Haven. Đã đăng ký bản quyền.
         </p>
       </div>
     </footer>
