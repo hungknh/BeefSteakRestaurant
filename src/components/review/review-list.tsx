@@ -1,7 +1,21 @@
+import { Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { RatingStars } from "@/components/shared/rating-stars";
 import type { Review } from "@/types";
 
-export function ReviewList({ reviews, avgRating }: { reviews: Review[]; avgRating: number }) {
+export function ReviewList({
+  reviews,
+  avgRating,
+  currentUserId,
+  onEdit,
+  onDelete,
+}: {
+  reviews: Review[];
+  avgRating: number;
+  currentUserId?: string;
+  onEdit?: (review: Review) => void;
+  onDelete?: (review: Review) => void;
+}) {
   const distribution = [5, 4, 3, 2, 1].map((star) => {
     const count = reviews.filter((r) => r.rating === star).length;
     const percent = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
@@ -37,11 +51,34 @@ export function ReviewList({ reviews, avgRating }: { reviews: Review[]; avgRatin
         ) : (
           reviews.map((review) => (
             <div key={review.id} className="py-5 first:pt-0 last:pb-0">
-              <div className="flex items-center gap-3">
-                <p className="text-sm font-medium text-foreground">
-                  {review.user?.name ?? "Khách hàng"}
-                </p>
-                <RatingStars rating={review.rating} />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <p className="text-sm font-medium text-foreground">
+                    {review.user?.name ?? "Khách hàng"}
+                  </p>
+                  <RatingStars rating={review.rating} />
+                </div>
+                {currentUserId && review.userId === currentUserId ? (
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Sửa đánh giá"
+                      onClick={() => onEdit?.(review)}
+                    >
+                      <Pencil className="size-3.5" strokeWidth={1.5} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Xóa đánh giá"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => onDelete?.(review)}
+                    >
+                      <Trash2 className="size-3.5" strokeWidth={1.5} />
+                    </Button>
+                  </div>
+                ) : null}
               </div>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{review.content}</p>
             </div>

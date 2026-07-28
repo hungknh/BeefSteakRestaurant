@@ -9,3 +9,11 @@ export async function getOrders(): Promise<Order[]> {
     orderBy: { createdAt: "desc" },
   }) as unknown as Promise<Order[]>;
 }
+
+export async function getHasPurchasedDish(userId: string, dishId: string): Promise<boolean> {
+  const item = await prisma.orderItem.findFirst({
+    where: { dishId, order: { userId, status: "COMPLETED" } },
+    select: { id: true },
+  });
+  return item !== null;
+}

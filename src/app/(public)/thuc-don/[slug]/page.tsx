@@ -5,9 +5,12 @@ import { Weight } from "lucide-react";
 import { Price } from "@/components/shared/price";
 import { OrderPanel } from "@/components/menu/order-panel";
 import { DishCard } from "@/components/menu/dish-card";
-import { ReviewList } from "@/components/review/review-list";
+import { auth } from "@/auth";
+import { ReviewSection } from "@/components/review/review-section";
 import { getDishBySlug, getDishes } from "@/lib/data/dishes";
+import { getHasPurchasedDish } from "@/lib/data/orders";
 import { getReviews } from "@/lib/data/reviews";
+import type { User } from "@/types";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,11 +26,23 @@ export default async function DishDetailPage({ params }: Props) {
   const dish = await getDishBySlug(slug);
   if (!dish) notFound();
 
-  const [reviews, sameCategoryDishes] = await Promise.all([
+  const [reviews, sameCategoryDishes, session] = await Promise.all([
     getReviews({ dishId: dish.id }),
     getDishes({ category: dish.category?.slug }),
+    auth(),
   ]);
   const related = sameCategoryDishes.filter((d) => d.id !== dish.id).slice(0, 3);
+
+  const currentUser: User | null = session?.user
+    ? {
+        id: session.user.id,
+        name: session.user.name ?? "Bạn",
+        email: session.user.email ?? "",
+        image: session.user.image ?? null,
+        role: session.user.role,
+      }
+    : null;
+  const canReview = currentUser ? await getHasPurchasedDish(currentUser.id, dish.id) : false;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
@@ -65,7 +80,13 @@ export default async function DishDetailPage({ params }: Props) {
       <div className="mt-20 border-t border-border pt-16">
         <h2 className="font-serif text-2xl text-foreground">Đánh Giá Từ Thực Khách</h2>
         <div className="mt-8">
-          <ReviewList reviews={reviews} avgRating={dish.avgRating} />
+          <ReviewSection
+            dishId={dish.id}
+            slug={dish.slug}
+            reviews={reviews}
+            currentUser={currentUser}
+            canReview={canReview}
+          />
         </div>
       </div>
 

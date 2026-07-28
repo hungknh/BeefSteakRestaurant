@@ -37,7 +37,7 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 | 7 — Database (Prisma + Postgres) | ✅ Xong | [#13](https://github.com/hungknh/BeefSteakRestaurant/pull/13) |
 | 8 — Auth | ✅ Xong | [#17](https://github.com/hungknh/BeefSteakRestaurant/pull/17) |
 | 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [#18](https://github.com/hungknh/BeefSteakRestaurant/pull/18) |
-| 10 — Review | ⬜ Chưa làm | |
+| 10 — Review | ✅ Xong | [#22](https://github.com/hungknh/BeefSteakRestaurant/pull/22) |
 | 11 — Admin backend | ⬜ Chưa làm | |
 | 12 — Hoàn thiện (SEO/test/CI) | ⬜ Chưa làm | |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
@@ -46,7 +46,11 @@ PR đã merge trong phiên này (theo đúng thứ tự phụ thuộc): #13 (Gia
 
 ## Việc cần làm tiếp
 
-Chưa bắt đầu Giai đoạn 10 (Review — Server Action `createReview`, `@@unique([userId, dishId])`, cập nhật `avgRating` cùng transaction, `useOptimistic`). Tạo nhánh mới từ `main` khi bắt đầu.
+Giai đoạn 10 (Review) đã xong (PR #22): `src/lib/actions/review.ts` (`createReview`/`updateReview`/`deleteReview`), `ReviewSection`/`ReviewForm`/`RatingInput` mới, `ReviewList` thêm nút Sửa/Xóa. Xem "Sai khác" #42 trước khi bắt đầu Giai đoạn 11 — có 2 quyết định khác PLAN.md tối thiểu (verified purchase, phạm vi `useOptimistic`) cần biết.
+
+⚠️ **Chưa verify bằng browser thật** — sandbox phiên này không connect được Chrome extension (giống mục #25 dưới). Đã verify bằng: `npm run lint`/`npm test`/`npm run build` xanh, `npx tsc --noEmit` sạch, migration áp dụng thành công lên Neon (đã xác nhận trước đó không có cặp `(userId, dishId)` trùng trong 113 review cũ), curl trang `/thuc-don/[slug]` ở trạng thái chưa đăng nhập trả 200 không lỗi. **Chưa tự bấm qua UI thật** luồng tạo/sửa/xóa review — chủ dự án cần tự mở `localhost:3000` kiểm tra bằng 2 tài khoản cụ thể trước khi merge PR #22:
+- Tạo review mới: đăng nhập `phuong.vo@example.com` / `password123`, mở `/thuc-don/biet-tet-wagyu-a5` (user này có đơn COMPLETED chứa món này, chưa review).
+- Sửa/xóa review có sẵn: đăng nhập `viet.dinh@example.com` / `password123`, mở `/thuc-don/nam-portobello-nuong` (user này đã có sẵn 1 review cho món này).
 
 ⚠️ Nhắc lại từ PLAN.md: **middleware/proxy chỉ chặn ở tầng route** — hiện admin CRUD (Giai đoạn 6) vẫn chỉ là `useState` cục bộ, chưa có Server Action nào cần check role. Tới **Giai đoạn 11 (Admin backend)** khi thêm Server Actions thật, mỗi action phải tự check `session.user.role === "ADMIN"` lại, không tin middleware là đủ.
 
@@ -156,6 +160,12 @@ Chưa bắt đầu Giai đoạn 10 (Review — Server Action `createReview`, `@@
     - `prisma/seed.ts` sinh theo **từng ngày** trong 574 ngày (01/2025 → hiện tại), nhân hệ số ngày với volume cơ sở, KHÔNG sinh ngẫu nhiên đều — đơn hàng dùng đúng `bestPromotion()` thật của app (không phải số giảm giá giả lập riêng) nên dữ liệu khớp 100% với logic tính tiền thật. Chi tiết: xem `prisma/seed-data/calendar.ts` (hệ số theo ngày), `menu.ts` (thực đơn, chuyển từ `_mock.ts` đã xóa), `names.ts` (sinh tên khách Việt Nam), `review-text.ts` (mẫu câu theo số sao).
     - Đơn hàng/đặt bàn cũ (quá 2 ngày) luôn ở trạng thái cuối (HOÀN THÀNH/ĐÃ HỦY hoặc ĐÃ NHẬN BÀN/ĐÃ HỦY/KHÔNG ĐẾN) — chỉ 1 mẻ nhỏ "top-up" cho hôm nay mới có đủ cả 4 trạng thái đang xử lý (CHỜ XÁC NHẬN/ĐÃ XÁC NHẬN/ĐANG CHUẨN BỊ/ĐANG GIAO), khớp thực tế vận hành (đơn cũ không thể còn "đang chuẩn bị").
     - **`src/lib/data/reviews.ts` dùng `select` tường minh cho quan hệ `user`, không dùng `include: { user: true }`** — `User` model có cột `password` (bcrypt hash), `include` thẳng sẽ trả nguyên object User (kèm hash) ra tận client qua props của `ReviewList`/`ReviewsPreview`. Đây là quy tắc chung: **bất kỳ chỗ nào populate quan hệ tới `User` cho client đều phải `select` tường minh**, không `include: true`.
+
+42. **Giai đoạn 10 (Review) — 2 quyết định khác PLAN.md tối thiểu (đã thống nhất với chủ dự án trước khi code):**
+    - **Điều kiện viết review là "verified purchase"**, không chỉ cần đăng nhập như PLAN.md ghi tối thiểu — `createReview` (`src/lib/actions/review.ts`) check `OrderItem` có `dishId` tương ứng thuộc 1 `Order` của user với `status === "COMPLETED"` (hàm `getHasPurchasedDish` trong `src/lib/data/orders.ts`). Nếu sau này muốn nới lỏng lại thành "chỉ cần đăng nhập", bỏ đoạn check `purchased` trong `createReview` và bỏ tham số `canReview` truyền vào `ReviewSection`.
+    - **`useOptimistic` áp dụng cho cả sửa/xóa, không chỉ tạo mới** (PLAN.md chỉ ghi "review hiện ngay" cho tạo) — `ReviewSection` (`src/components/review/review-section.tsx`) dùng 1 reducer chung (`add`/`update`/`remove`) cho cả 3 thao tác, gọi `router.refresh()` sau khi Server Action trả `success` để đồng bộ lại đúng dữ liệu server (avgRating tính client-side từ mảng review hiện có, không đọc `dish.avgRating` — luôn khớp vì cùng công thức trung bình cộng).
+    - Sửa/xóa review của chính mình xóa **ngay, không có confirm dialog** — khớp pattern admin hiện có (`dishes-table.tsx` cũng xóa ngay không confirm), đánh dấu bằng comment `ponytail:` trong code. Muốn thêm confirm thì bọc quanh lời gọi `submitDelete` trong `ReviewSection`.
+    - **Chưa verify bằng browser thật** (xem mục "Việc cần làm tiếp" phía trên) — chỉ verify được bằng lint/test/build/migration/curl do sandbox phiên này không connect Chrome extension, giống vấn đề đã gặp ở mục #25.
 
 ## Cách tiếp tục ở phiên mới
 
