@@ -44,4 +44,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+/src/generated/prisma
+
+# tài liệu skill AI tự cài bởi `prisma init` (Prisma 7), không phải code dự án
+/.agents/
+/.claude/
+/.windsurf/
+/skills-lock.json

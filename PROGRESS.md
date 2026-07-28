@@ -16,7 +16,9 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong đến hết Checkpoint "Chốt frontend".** PR [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) đã **squash merge vào `main` và xóa nhánh** (2026-07-28, xác nhận bởi chủ dự án). Đã thay ảnh thật, đổi thương hiệu sang **"Beef Haven"** + thêm logo, chụp screenshot README, đổi tên ảnh khuyến mãi theo tên gốc, đổi font toàn site, và **deploy Vercel lần đầu** — xem mục "Sai khác" #24/#25/#26 để biết chi tiết. **Link demo: https://beefsteakhouse.vercel.app** (project `hung-dfd0/beefsteakhouse` trên Vercel, chưa nối GitHub Integration nên chưa auto-deploy mỗi push, xem #26). **Sẵn sàng bắt đầu Giai đoạn 7 — Database.** Phiên mới: `git checkout main && git pull` trước khi tạo nhánh mới cho Giai đoạn 7.
+**Checkpoint "Chốt frontend" đã xong + merge.** PR [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) đã squash merge (2026-07-28). Đã thay ảnh thật, đổi thương hiệu sang **"Beef Haven"** + thêm logo, đổi font toàn site, và **deploy Vercel lần đầu** — xem "Sai khác" #24/#25/#26. **Link demo: https://beefsteakhouse.vercel.app**.
+
+**Đang làm Giai đoạn 7 — Database (Prisma + SQLite)** trên nhánh `feat/gd7-database`, đã push, **chưa mở/merge PR**. Đã xong: `schema.prisma` dịch từ `src/types/index.ts`, migration init, `prisma/seed.ts` bê `_mock.ts` vào (đã chạy seed thật, verify bằng query trực tiếp), `src/lib/prisma.ts` singleton. `npm run lint`/`build`/`test` đều xanh. Gặp nhiều khác biệt so với PLAN.md do Prisma 7 (CLI cài thực tế là 7.9.1, mới hơn nhiều so với lúc viết PLAN.md) — xem "Sai khác" #27–#31, **đọc trước khi động vào schema/seed/lib/prisma.ts**. Phiên mới muốn tiếp tục: `git checkout feat/gd7-database`, đừng bắt đầu từ `main`.
 
 **⚠️ Phiên 2026-07-22 có thêm 2 việc phát sinh ngoài checklist gốc, đã commit ở phiên 2026-07-28** (xem mục "Sai khác" #24/#25 để biết chi tiết):
 - Đổi tên 5 ảnh khuyến mãi từ `promo-*.jpg` sang tên gốc chủ dự án đặt (`gio-vang.jpg`, `steak-night.jpg`, `lang-man.jpg`, `dat-nhieu.jpg`, `combo-cuoi-tuan.jpg`), sửa `imageUrl` tương ứng trong `_mock.ts`. 5 file `promo-*.jpg` cũ trong `public/images/` giờ không còn dùng, chưa xóa.
@@ -33,7 +35,7 @@
 | 5 — Giỏ hàng + Đặt bàn (UI) | ✅ Xong | [#9](https://github.com/hungknh/BeefSteakRestaurant/pull/9) |
 | 6 — Admin UI (mock) | ✅ Xong | [#10](https://github.com/hungknh/BeefSteakRestaurant/pull/10) |
 | Checkpoint — Chốt frontend | ✅ Xong | [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) |
-| 7 — Database (Prisma + SQLite) | ⬜ Chưa làm | |
+| 7 — Database (Prisma + SQLite) | 🔶 Đang làm | [feat/gd7-database](https://github.com/hungknh/BeefSteakRestaurant/tree/feat/gd7-database) (chưa mở PR) |
 | 8 — Auth | ⬜ Chưa làm | |
 | 9 — Nối data thật | ⬜ Chưa làm | |
 | 10 — Review | ⬜ Chưa làm | |
@@ -45,15 +47,16 @@
 
 ## Việc cần làm tiếp (Giai đoạn 7 — Database, PLAN.md mục 7 "GIAI ĐOẠN 7")
 
-Chưa bắt đầu. Tạo nhánh mới từ `main` (vd `feat/gd7-database`), rồi:
+Nhánh đang làm: `feat/gd7-database`, đã push, **chưa mở PR**.
 
-- [ ] `npm i prisma @prisma/client && npx prisma init --datasource-provider sqlite`
-- [ ] `schema.prisma` — dịch nguyên `src/types/index.ts` sang model, theo đúng quy tắc cuối PLAN.md mục 5 (String thay enum, không dùng scalar list, tiền là Int)
-- [ ] Index: `Dish.slug @unique`, `Promotion.slug @unique`, `Reservation.date`, `Order.code @unique`
-- [ ] `avgRating`/`reviewCount` trên `Dish` — cột lưu sẵn, không tính lại mỗi query
-- [ ] `npx prisma migrate dev --name init`
-- [ ] `prisma/seed.ts` — bê thẳng `_mock.ts` vào
-- [ ] `src/lib/prisma.ts` — singleton client, tránh tạo lại connection khi hot-reload
+- [x] `npm i prisma @prisma/client`, `npx prisma init --datasource-provider sqlite` — xem #27 về khác biệt Prisma 7
+- [x] `schema.prisma` — dịch nguyên `src/types/index.ts` sang 8 model, theo đúng quy tắc PLAN.md mục 5 (String thay enum, CSV thay scalar list, tiền là Int). `createdAt`/`date`/`startDate`/`endDate`/`startTime`/`endTime` cũng để String (không phải DateTime) để khớp đúng type `string` trong types/index.ts — xem comment đầu `schema.prisma`.
+- [x] Index: `Category.slug`/`Dish.slug`/`Promotion.slug`/`Order.code` `@unique`, `Reservation.date` `@@index`
+- [x] `avgRating`/`reviewCount` trên `Dish` — cột lưu sẵn (Float/Int), không tính lại mỗi query
+- [x] `npx prisma migrate dev --name init` — xem #29 về vị trí file `dev.db`
+- [x] `prisma/seed.ts` — bê thẳng `_mock.ts` vào, đã chạy `npx prisma db seed` thật và verify bằng query trực tiếp (15 dish, order kèm items đúng)
+- [x] `src/lib/prisma.ts` — singleton client (dùng driver adapter, xem #28)
+- [ ] Mở PR cho `feat/gd7-database` — cần chủ dự án xác nhận trước khi merge (giống quy trình checkpoint trước)
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -126,6 +129,12 @@ Chưa bắt đầu. Tạo nhánh mới từ `main` (vd `feat/gd7-database`), r�
     - **Chưa verify trực quan bằng trình duyệt** — sandbox này không kết nối được Chrome extension (`mcp__claude-in-chrome__tabs_context_mcp` báo "Browser extension is not connected"). Chỉ xác nhận `next dev` compile sạch, không lỗi. Chủ dự án cần tự mở `localhost:3000` kiểm tra bằng mắt, đặc biệt cỡ chữ/line-height vì đổi họ font có thể lệch nhịp đọc ở vài chỗ.
 
 26. **Deploy Vercel lần đầu (2026-07-28) làm bằng `npx vercel --prod --yes`, KHÔNG qua GitHub Integration.** CLI tự tạo project `hung-dfd0/beefsteakhouse` (tên phải lowercase — thư mục `BeefSteak` bị Vercel từ chối vì có chữ hoa, phải truyền tên qua package.json `beefsteakhouse`) và deploy thẳng file local, bỏ qua bước push git trước. Bước "Connecting GitHub repository" tự động bị lỗi (`Failed to connect hungknh/BeefSteakRestaurant to project`) — nghi do sandbox không có quyền OAuth GitHub App của Vercel, không phải lỗi tên repo. **Hệ quả: các commit sau này KHÔNG tự deploy** — mỗi lần muốn cập nhật demo phải chạy lại `npx vercel --prod --yes` thủ công, hoặc chủ dự án tự vào Vercel Dashboard → Project Settings → Git để nối GitHub repo (khuyến nghị làm việc này để khớp quy trình CI ở Giai đoạn 12/13).
+
+27. **Prisma cài thực tế là 7.9.1** (PLAN.md mục 0 hình dung bản Prisma cũ, generator mặc định `prisma-client-js` xuất thẳng vào `node_modules/@prisma/client`). Bản 7 dùng generator mới `prisma-client`, xuất code ra `src/generated/prisma` (đã gitignore, chạy `prisma generate` để tạo lại). Import `PrismaClient` từ `@/generated/prisma/client`, **không phải** `@prisma/client` (package `@prisma/client` giờ chỉ chứa runtime/type phụ trợ). `prisma init` cũng tự tạo `prisma.config.ts` ở root (thay cho khai báo `"prisma"` trong `package.json` của bản cũ) — sửa seed command, schema path ở đây.
+28. **Prisma 7 bắt buộc "driver adapter" ngay cả với SQLite** — khởi tạo `new PrismaClient()` trơn báo lỗi `PrismaClientInitializationError`. Thử `@prisma/adapter-better-sqlite3` trước (theo skill doc chính thức) nhưng `better-sqlite3` cần biên dịch native qua `node-gyp`, máy này không có Visual Studio C++ Build Tools nên cài lỗi. Chuyển sang **`@prisma/adapter-libsql`** (`@libsql/client`) — có binary build sẵn cho Windows, không cần compiler. Cả `src/lib/prisma.ts` và `prisma/seed.ts` đều khởi tạo `PrismaLibSql({ url: ... })` rồi truyền vào `new PrismaClient({ adapter })`. Nếu sau này đổi sang Postgres (Giai đoạn 13) phải đổi sang adapter Postgres tương ứng (`@prisma/adapter-pg` hoặc dùng Prisma Postgres/Neon adapter riêng), không phải chỉ đổi `provider` trong schema như Prisma cũ.
+29. **`DATABASE_URL` phải ghi tường minh `file:./prisma/dev.db`, không phải `file:./dev.db`.** Prisma 7 (qua `prisma.config.ts`) resolve đường dẫn SQLite tương đối theo thư mục chạy lệnh (project root), khác bản cũ resolve theo vị trí `schema.prisma`. Ban đầu để `file:./dev.db` thì `prisma migrate dev` tạo nhầm file ở root (`./dev.db`) — không khớp `.gitignore` sẵn có (`/prisma/dev.db`), suýt lọt vào git. Đã sửa `.env` thành `file:./prisma/dev.db` và migrate lại đúng chỗ.
+30. **Đã thêm `"postinstall": "prisma generate"` vào `package.json` ngay từ Giai đoạn 7**, sớm hơn dự tính của PLAN.md mục Giai đoạn 13 (`"build": "prisma generate && next build"`). Lý do: `next build` typecheck theo `tsconfig.json` (`include: **/*.ts`), bao trùm cả `prisma/seed.ts`/`src/lib/prisma.ts` dù chưa có page nào import — build sẽ lỗi `Cannot find module '.../generated/prisma/client'` trên máy sạch/CI nếu client chưa được generate sẵn (đã tự tay verify bằng cách xóa `src/generated` rồi build lại, thấy lỗi, thêm `postinstall` xong hết lỗi).
+31. **`prisma init` (bản 7) tự cài thêm tài liệu "skill" cho AI coding assistant** vào `.agents/`, `.claude/`, `.windsurf/`, `skills-lock.json` ở root (tham khảo CLI/Client API/driver adapter...). Không phải code dự án, đã thêm vào `.gitignore` để không commit — nếu cần tra cứu Prisma 7 thì đọc trực tiếp các file này trên máy (không có trên git).
 
 ## Cách tiếp tục ở phiên mới
 

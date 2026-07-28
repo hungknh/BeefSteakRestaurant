@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Quy tắc để đổi SQLite -> Postgres không đau (xem PLAN.md mục 5):
+// - Role/Status/Doneness/DiscountType/PromoScope là String, không dùng enum (SQLite không hỗ trợ).
+// - daysOfWeek là chuỗi CSV ("1,4,6"), không dùng scalar list.
+// - price/subtotal/discount/shippingFee/total/minSubtotal/discountValue là Int, đơn vị đồng.
+// - createdAt/date/startDate/endDate/startTime/endTime là String để khớp đúng type `string` trong
+//   src/types/index.ts (không phải DateTime) — Server Action tạo record mới tự sinh ISO string
+//   (`new Date().toISOString()`), không dùng @default(now()).
+
+model Category {
+  id        String @id
+  name      String
+  slug      String @unique
+  sortOrder Int
+
+  dishes Dish[]
+}
+
+model Dish {
+  id          String   @id
+  name        String
+  slug        String   @unique
+  description String
+  price       Int
+  imageUrl    String
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  isAvailable Boolean
+  isFeatured  Boolean
+  weightGram  Int?
+  hasDoneness Boolean
+  avgRating   Float
+  reviewCount Int
+
+  reviews    Review[]
+  orderItems OrderItem[]
+}
+
+model Promotion {
+  id          String @id
+  title       String
+  slug        String @unique
+  description String
+  imageUrl    String
+
+  badgeLabel   String
+  badgeOffer   String
+  scheduleText String
+
+  discountType     String // PERCENT | FIXED | NONE
+  discountValue    Int
+  scope            String // ALL | CATEGORY | DISH
+  targetCategoryId String?
+  targetDishId     String?
+  daysOfWeek       String // CSV "1,4,6" (0=CN), rỗng = mọi ngày
+  startTime        String?
+  endTime          String?
+  minSubtotal      Int
+  startDate        String?
+  endDate          String?
+  isActive         Boolean
+  sortOrder        Int
+
+  reservations Reservation[]
+  orders       Order[]
+}
+
+model User {
+  id    String  @id
+  name  String
+  email String  @unique
+  image String?
+  role  String // USER | ADMIN
+
+  reviews      Review[]
+  reservations Reservation[]
+  orders       Order[]
+}
+
+model Reservation {
+  id          String     @id
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id])
+  promotionId String?
+  promotion   Promotion? @relation(fields: [promotionId], references: [id])
+  guestName   String
+  guestPhone  String
+  guestEmail  String
+  date        String
+  timeSlot    String
+  partySize   Int
+  note        String?
+  status      String // PENDING | CONFIRMED | SEATED | CANCELLED | NO_SHOW
+  createdAt   String
+
+  @@index([date])
+}
+
+model Order {
+  id     String  @id
+  code   String  @unique
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+  status String // PENDING | CONFIRMED | PREPARING | DELIVERING | COMPLETED | CANCELLED
+
+  items OrderItem[]
+
+  subtotal    Int
+  discount    Int
+  shippingFee Int
+  total       Int
+
+  appliedPromotionId    String?
+  appliedPromotion      Promotion? @relation(fields: [appliedPromotionId], references: [id])
+  appliedPromotionTitle String? // snapshot lịch sử, xem PLAN.md mục 5
+
+  receiverName  String
+  receiverPhone String
+  address       String
+  createdAt     String
+}
+
+model OrderItem {
+  id        String  @id
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  dishId    String
+  dish      Dish    @relation(fields: [dishId], references: [id])
+  quantity  Int
+  unitPrice Int
+  doneness  String? // RARE | MEDIUM_RARE | MEDIUM | MEDIUM_WELL | WELL_DONE
+  note      String?
+}
+
+model Review {
+  id        String @id
+  dishId    String
+  dish      Dish   @relation(fields: [dishId], references: [id])
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+  rating    Int
+  content   String
+  createdAt String
+}
