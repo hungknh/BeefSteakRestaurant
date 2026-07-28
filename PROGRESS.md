@@ -16,7 +16,7 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong đến hết Giai đoạn 6.** **Checkpoint "Chốt frontend" đã xong toàn bộ checklist** trên nhánh `fix/checkpoint-responsive-a11y` (PR [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11), **chưa merge**). Đã thay ảnh thật, đổi thương hiệu sang **"Beef Haven"** + thêm logo, chụp screenshot README, đổi tên ảnh khuyến mãi theo tên gốc, đổi font toàn site, và **deploy Vercel lần đầu (2026-07-28, xác nhận bởi chủ dự án)** — tất cả **đã commit lên nhánh này** (xem mục "Sai khác" #24/#25/#26 để biết chi tiết). **Link demo: https://beefsteakhouse.vercel.app** (project `hung-dfd0/beefsteakhouse` trên Vercel). Việc còn lại duy nhất là **merge PR #11 vào `main`** rồi mới sang Giai đoạn 7 — chưa merge vì đó là hành động ảnh hưởng nhánh `main` chung, cần chủ dự án xác nhận riêng. Phiên mới muốn tiếp tục thì `git checkout fix/checkpoint-responsive-a11y`, đừng bắt đầu từ `main`; chạy `git status` trước để biết có đang có thay đổi working-tree nào còn treo chưa commit không.
+**Đã xong đến hết Checkpoint "Chốt frontend".** PR [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) đã **squash merge vào `main` và xóa nhánh** (2026-07-28, xác nhận bởi chủ dự án). Đã thay ảnh thật, đổi thương hiệu sang **"Beef Haven"** + thêm logo, chụp screenshot README, đổi tên ảnh khuyến mãi theo tên gốc, đổi font toàn site, và **deploy Vercel lần đầu** — xem mục "Sai khác" #24/#25/#26 để biết chi tiết. **Link demo: https://beefsteakhouse.vercel.app** (project `hung-dfd0/beefsteakhouse` trên Vercel, chưa nối GitHub Integration nên chưa auto-deploy mỗi push, xem #26). **Sẵn sàng bắt đầu Giai đoạn 7 — Database.** Phiên mới: `git checkout main && git pull` trước khi tạo nhánh mới cho Giai đoạn 7.
 
 **⚠️ Phiên 2026-07-22 có thêm 2 việc phát sinh ngoài checklist gốc, đã commit ở phiên 2026-07-28** (xem mục "Sai khác" #24/#25 để biết chi tiết):
 - Đổi tên 5 ảnh khuyến mãi từ `promo-*.jpg` sang tên gốc chủ dự án đặt (`gio-vang.jpg`, `steak-night.jpg`, `lang-man.jpg`, `dat-nhieu.jpg`, `combo-cuoi-tuan.jpg`), sửa `imageUrl` tương ứng trong `_mock.ts`. 5 file `promo-*.jpg` cũ trong `public/images/` giờ không còn dùng, chưa xóa.
@@ -32,7 +32,7 @@
 | 4 — Discount engine | ✅ Xong | [#8](https://github.com/hungknh/BeefSteakRestaurant/pull/8) |
 | 5 — Giỏ hàng + Đặt bàn (UI) | ✅ Xong | [#9](https://github.com/hungknh/BeefSteakRestaurant/pull/9) |
 | 6 — Admin UI (mock) | ✅ Xong | [#10](https://github.com/hungknh/BeefSteakRestaurant/pull/10) |
-| Checkpoint — Chốt frontend | 🔶 Đang làm | [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) (chưa merge) |
+| Checkpoint — Chốt frontend | ✅ Xong | [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) |
 | 7 — Database (Prisma + SQLite) | ⬜ Chưa làm | |
 | 8 — Auth | ⬜ Chưa làm | |
 | 9 — Nối data thật | ⬜ Chưa làm | |
@@ -43,21 +43,17 @@
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
-## Việc cần làm tiếp (Checkpoint "Chốt frontend" — PLAN.md, trước Giai đoạn 7)
+## Việc cần làm tiếp (Giai đoạn 7 — Database, PLAN.md mục 7 "GIAI ĐOẠN 7")
 
-Nhánh đang làm: `fix/checkpoint-responsive-a11y` (PR #11, chưa merge — commit tiếp lên nhánh này, đừng tạo nhánh mới cho phần còn lại của checkpoint).
+Chưa bắt đầu. Tạo nhánh mới từ `main` (vd `feat/gd7-database`), rồi:
 
-- [x] Responsive không vỡ — **không verify pixel-perfect 375/768/1440 được** vì sandbox không resize viewport Chrome chính xác (xem mục "Sai khác" #6, đã thử lại và xác nhận lần nữa ở #21). Đã bù bằng audit code toàn bộ layout/grid cố định, tìm và fix 1 bug thật: 5 bảng admin tràn ngang do thiếu `overflow-x-auto` (xem #21). Nếu có máy thật/DevTools thì nên tự kiểm lại pixel-perfect trước khi tick hẳn mục này.
-- [x] Tab qua hết mọi nút, focus ring rõ trên nền tối — fix xong, xem #22.
-- [x] Contrast chữ muted kiểm bằng DevTools (≥ 4.5:1) — verify bằng công thức WCAG trực tiếp trên giá trị hex token (không cần trình duyệt), tất cả cặp màu đều ≥ 7:1 (AAA), không cần sửa.
-- [x] Mọi ảnh có `alt`, console không warning — verify xong, không cần sửa (9/9 chỗ dùng `<Image>` đều có alt có nghĩa).
-- [x] **Thay ảnh `picsum.photos` bằng ảnh món ăn thật** — chủ dự án đưa 23 ảnh vào folder `img/` ở root project (đúng tên file gợi ý). Đã copy cả 23 file vào `public/images/`, sửa `imageUrl` trong `_mock.ts` (15 dish + 5 promo, dùng `sed` map theo id) và 3 chỗ hardcode URL picsum trong `hero.tsx`/`reservation-cta.tsx`/`menu-preview.tsx` sang path local `/images/...`. Verify: không còn chuỗi `picsum` nào trong `src/`, `curl` các route `/`, `/thuc-don` và vài file ảnh đều trả `200`. Folder `img/` gốc ở root vẫn còn (chưa xóa, không track git — có thể dọn sau).
-- [x] **Commit các thay đổi thay ảnh — đã được chủ dự án xác nhận, commit xong lên `fix/checkpoint-responsive-a11y`.** `public/images/` (23 ảnh món/khuyến mãi + `logo.jpg`), `_mock.ts`, `hero.tsx`, `menu-preview.tsx`, `reservation-cta.tsx`. `img/` gốc ở root vẫn giữ nguyên, không track git (tham khảo/dọn sau).
-- [x] **Đổi thương hiệu "BeefSteakHouse" → "Beef Haven" + thêm logo** (chủ dự án cung cấp `img/logo.jpg`, đầu bò vàng nền đen). Đổi tên hiển thị ở `header.tsx`, `footer.tsx` (kèm email `lienhe@beefhaven.vn`, copyright), `admin-sidebar.tsx`, metadata title (`layout.tsx`), mô tả trang `/khuyen-mai` + `/thuc-don`, alt text ảnh hero/menu-preview/reservation-cta, comment `globals.css`. Xem "Sai khác" #23 về bug `next/image` gặp phải khi thêm logo. **Cố tình không đổi** (không phải nội dung hiển thị): tên package `beefsteakhouse` trong `package.json`, key localStorage `beefsteak-cart` (`store/cart.ts`), mã đơn hàng mock `BS-...` (`_mock.ts`).
-- [x] Screenshot cho README — đã chụp 4 trang (Trang chủ, Khuyến Mãi, Thực Đơn, Admin) sau khi có ảnh thật + logo mới, lưu ở `screenshots/`, gắn vào `README.md`.
-- [x] **Deploy Vercel lần đầu để có link demo sớm** — chủ dự án xác nhận (2026-07-28), đã deploy bằng `npx vercel --prod --yes`. Project `hung-dfd0/beefsteakhouse`, production URL **https://beefsteakhouse.vercel.app**. Xem #26 về giới hạn (chưa auto-deploy theo git push).
-
-Còn lại duy nhất trước khi sang Giai đoạn 7: `gh pr merge 11 --squash --delete-branch` (cần chủ dự án xác nhận riêng vì ảnh hưởng `main` chung) → mới sang **Giai đoạn 7 — Database**: `npx prisma init`, dịch `src/types/index.ts` sang `schema.prisma`, `prisma/seed.ts` bê `_mock.ts` vào. Xem PLAN.md mục 7 "GIAI ĐOẠN 7".
+- [ ] `npm i prisma @prisma/client && npx prisma init --datasource-provider sqlite`
+- [ ] `schema.prisma` — dịch nguyên `src/types/index.ts` sang model, theo đúng quy tắc cuối PLAN.md mục 5 (String thay enum, không dùng scalar list, tiền là Int)
+- [ ] Index: `Dish.slug @unique`, `Promotion.slug @unique`, `Reservation.date`, `Order.code @unique`
+- [ ] `avgRating`/`reviewCount` trên `Dish` — cột lưu sẵn, không tính lại mỗi query
+- [ ] `npx prisma migrate dev --name init`
+- [ ] `prisma/seed.ts` — bê thẳng `_mock.ts` vào
+- [ ] `src/lib/prisma.ts` — singleton client, tránh tạo lại connection khi hot-reload
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
