@@ -41,7 +41,7 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 | 10 — Review | ✅ Xong | [#22](https://github.com/hungknh/BeefSteakRestaurant/pull/22) |
 | 11 — Admin backend | ✅ Xong (upload ảnh UploadThing đã **cắt khỏi phạm vi** theo quyết định chủ dự án — xem "Sai khác" #45) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24), [#25](https://github.com/hungknh/BeefSteakRestaurant/pull/25) |
 | 12 — Hoàn thiện (SEO/test/CI) | ✅ Xong (Playwright đã **cắt khỏi phạm vi** — xem "Sai khác" #46) | [#27](https://github.com/hungknh/BeefSteakRestaurant/pull/27) |
-| 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
+| 13 — Deploy production | ✅ Xong (2 env trong checklist PLAN.md không set vì tính năng tương ứng đã cắt — xem "Sai khác" #70) | |
 | 14 — Đóng gói cho CV | ✅ Xong | [#28](https://github.com/hungknh/BeefSteakRestaurant/pull/28) |
 | 15 — Optional: i18n Việt/Anh | ✅ Xong (3/3 PR) — chỉ làm i18n, 3 mục còn lại đã cắt | [#29](https://github.com/hungknh/BeefSteakRestaurant/pull/29), [#30](https://github.com/hungknh/BeefSteakRestaurant/pull/30), [#31](https://github.com/hungknh/BeefSteakRestaurant/pull/31) |
 
@@ -285,6 +285,21 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
     ⚠️ **Mục tiêu KHÔNG phải 0 tuyệt đối.** Có 3 nhóm **cố ý** giữ tiếng Việt, phải loại trừ khi đếm: (1) địa chỉ nhà hàng "12 Lê Lợi, Quận 1, TP. Hồ Chí Minh" — danh từ riêng, hiện ở Footer mọi trang; (2) tên người đánh giá; (3) nội dung đánh giá khách viết. Cũng nhớ tên món tiếng Việt vẫn nằm trong RSC payload (props truyền xuống client) — **không phải lỗi hiển thị**, đã kiểm `Sườn Bò Nướng` xuất hiện 0 lần trong text render.
 
 69. **`computeCartTotals` trả về object `promotion`, KHÔNG phải `promotionTitle`.** Trả mỗi title thì đó luôn là bản tiếng Việt, nên dòng "Ưu đãi: …" trong giỏ hàng hiện tiếng Việt ngay ở bản tiếng Anh. Có object thì chỗ hiển thị tự gọi `promoTitle(promotion, locale)`. Ngược lại, `appliedPromotionTitle` lưu trong `Order` **cố ý giữ bản tiếng Việt** — đó là snapshot lịch sử, không phải chữ trên UI (cùng lý do `PICKUP_ADDRESS`).
+
+70. **Giai đoạn 13 (Deploy production) — đối chiếu từng gạch đầu dòng của PLAN.md.** Trước đây bảng trạng thái ghi "🔶 Một phần, còn lại custom domain", nhưng custom domain **không nằm trong checklist PLAN.md** và chủ dự án đã quyết định không dùng (domain `*.vercel.app` là đủ cho quy mô CV). Đối chiếu thật:
+
+    | Yêu cầu PLAN.md | Trạng thái |
+    |---|---|
+    | Neon project → `DATABASE_URL` | ✅ làm sớm ở Giai đoạn 9 (#37–#38) |
+    | `provider` sang `postgresql`, migrate lại | ✅ (#38) |
+    | Seed lên Neon | ✅ 632 đơn + 457 đặt bàn + 113 đánh giá (#41) |
+    | Vercel env `DATABASE_URL`, `AUTH_SECRET` | ✅ cả Production + Preview (#54) |
+    | Vercel env `AUTH_GOOGLE_ID/SECRET` | ❌ **không set, có chủ đích** — provider Google khai trong `src/auth.ts` nhưng UI đăng nhập không có nút Google nên không ai gọi tới. Muốn bật thì thêm nút vào form đăng nhập rồi mới cần 2 biến này. |
+    | Vercel env `UPLOADTHING_TOKEN` | ❌ **không set, có chủ đích** — tính năng upload ảnh đã cắt (#45) |
+    | `prisma generate` trước `next build` | ✅ làm bằng `postinstall` thay vì sửa script `build` (#30) |
+    | Tài khoản demo cho nhà tuyển dụng | ✅ admin + tài khoản khách có lịch sử thật (#56) |
+
+    Làm thêm ngoài checklist: nối GitHub ↔ Vercel để mỗi push tự deploy (#54), và bật env cho môi trường Preview.
 
 ## Cách tiếp tục ở phiên mới
 
