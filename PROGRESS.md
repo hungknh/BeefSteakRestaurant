@@ -19,7 +19,9 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong toàn bộ Giai đoạn 0–15.** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Từ 2026-07-30 bản deploy Vercel **tự cập nhật theo mỗi push lên `main`** (đã nối GitHub ↔ Vercel — xem "Sai khác" #54, thay thế #26).
+**Đã xong toàn bộ Giai đoạn 0–15.** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc `hang.do@example.com` / `password123` (khách, xem #56).
+
+⚠️ **Việc còn nợ duy nhất: nối lại Vercel ↔ GitHub — push lên `main` hiện KHÔNG tự deploy.** Hỏng sau khi tạo lại repo ngày 2026-07-30. Site vẫn chạy và vẫn đúng code, chỉ là không tự cập nhật. Cách làm + các bẫy đã gặp: xem "Sai khác" #74 (thay thế #54 và #26).
 
 **Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
@@ -352,7 +354,14 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
     **Bản sao lưu trước khi xoá:** `C:\Project\_backup\BeefSteakRestaurant-main-backup.bundle` (51MB, đã `git bundle verify` → "records a complete history"). Khôi phục nếu cần: `git clone <đường-dẫn-bundle> <thư-mục-mới>`.
 
-    **Việc phải làm sau khi tạo lại repo** (đã làm, ghi lại để lần sau khỏi quên): đổi default branch về `main` — GitHub tự đặt nhánh **đầu tiên được push** làm default, và **không cho xoá nhánh đang là default** (gặp đúng lỗi `refusing to delete the current branch`); nối lại Vercel ↔ GitHub; sửa link PR chết trong `PROGRESS.md`.
+    **Việc phải làm sau khi tạo lại repo:** đổi default branch về `main` — GitHub tự đặt nhánh **đầu tiên được push** làm default, và **không cho xoá nhánh đang là default** (gặp đúng lỗi `refusing to delete the current branch`); sửa link PR chết trong `PROGRESS.md`. Cả hai đã xong.
+
+    **⚠️ CÒN NỢ: Vercel ↔ GitHub đang NGẮT KẾT NỐI, push lên `main` KHÔNG tự deploy nữa.** Đây là việc duy nhất chưa xong sau vụ tạo lại repo.
+    - Xoá repo rồi tạo lại cùng tên vẫn làm hỏng kết nối, vì **Vercel lưu theo repo ID của GitHub, không theo tên** — ID đổi nên link cũ thành rác. Triệu chứng lừa người: `npx vercel git connect` báo *"already connected"* trong khi thực tế push không sinh deployment nào (kiểm bằng `gh pr checks` — chỉ thấy check của GitHub Actions, không có check nào của Vercel).
+    - Đã `npx vercel git disconnect` (thành công) rồi `git connect` lại → **thất bại**: `Failed to connect ... Make sure there aren't any typos`. Đúng lỗi đã gặp ở #26 — CLI trong môi trường này không có quyền OAuth GitHub App của Vercel. **Đừng mất thời gian thử lại bằng CLI.**
+    - **Cách làm:** Vercel Dashboard → project `beefsteakhouse` → Settings → Git → *Connected Git Repository* → "Continue with GitHub" → chọn `hungknh/BeefSteakRestaurant`. Bước này là **cấp quyền OAuth/GitHub App nên phải do chủ dự án tự bấm**. Nếu repo không hiện trong danh sách thì vào GitHub → Settings → Applications → Installed GitHub Apps → Vercel → *Repository access* → thêm `BeefSteakRestaurant` (repo tạo lại không tự được thêm vào danh sách cũ).
+    - Nối xong nhớ kiểm lại **3 biến env vẫn còn đủ cho cả Production + Preview** (`AUTH_SECRET`, `DATABASE_URL`, `DIRECT_URL` — xem #54, đọc kỹ đoạn về cờ Sensitive trước khi sửa) rồi push 1 commit để xác nhận auto-deploy chạy.
+    - **Bản production đang chạy vẫn đúng code:** thay đổi code cuối cùng là search server-side (#71), đã deploy xong trước khi xoá repo; từ đó tới giờ chỉ có commit sửa tài liệu. Nên site không bị lệch so với `main`, chỉ là tạm thời không tự cập nhật.
 
     Cũng vì lịch sử `main` bị rewrite ở #44 rồi push sang repo mới, **mọi clone cũ trên máy khác đều không còn dùng được** — clone lại từ đầu, đừng `git pull`.
 
