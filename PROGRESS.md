@@ -17,7 +17,7 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong Giai đoạn 10 (Review), 11 (Admin backend) và 12 (Hoàn thiện).** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. Còn lại: phần cuối Giai đoạn 13 (nối GitHub↔Vercel) và Giai đoạn 14 (đóng gói CV). **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Từ 2026-07-30 bản deploy Vercel **tự cập nhật theo mỗi push lên `main`** (đã nối GitHub ↔ Vercel — xem "Sai khác" #54, thay thế #26).
+**Đã xong toàn bộ Giai đoạn 0–15.** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Từ 2026-07-30 bản deploy Vercel **tự cập nhật theo mỗi push lên `main`** (đã nối GitHub ↔ Vercel — xem "Sai khác" #54, thay thế #26).
 
 **Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
@@ -47,12 +47,10 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 
 ## Việc cần làm tiếp
 
-**Bước tiếp theo ngay: Giai đoạn 13 (phần còn lại) rồi Giai đoạn 14 (đóng gói CV).**
-
-**Đã xong toàn bộ Giai đoạn 0–15. Website hoàn chỉnh.** Những mục dưới đây chỉ làm nếu chủ dự án muốn:
+**Đã xong toàn bộ Giai đoạn 0–15. Website hoàn chỉnh. Không còn việc bắt buộc.** Những mục dưới đây chỉ làm nếu chủ dự án muốn:
 
 1. **Dịch khu admin sang tiếng Anh** — hiện cố ý chỉ có tiếng Việt (#59). Catalog messages đã có sẵn hạ tầng, chỉ cần thêm namespace.
-2. **Search server-side cho `/admin/orders` và `/admin/reservations`** — hiện ô tìm kiếm chỉ hoạt động trong 20 dòng của trang hiện tại (xem cảnh báo đánh đổi ở trên).
+2. **Sort server-side cho `/admin/orders` và `/admin/reservations`** — search đã lên server (#71), riêng sort vẫn chỉ xếp trong 20 dòng của trang hiện tại.
 3. **Quay lại `npm ci` trong CI** khi xung đột ajv upstream được sửa (#62).
 4. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`).
 5. **Các mục Giai đoạn 15 đã cắt**: VNPay/Momo sandbox, email Resend, Blog/CMS (xem #58).
@@ -61,7 +59,7 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
 **Đã xong toàn bộ Giai đoạn 10, 11, 12.** Giai đoạn 11: mọi CRUD/đổi trạng thái/phân trang admin đều nối Server Action thật, tự check `role === "ADMIN"` qua `requireAdminSession()` (`src/lib/auth/require-admin.ts`, dùng chung), đã test qua browser thật. Chi tiết xem "Sai khác" #42–#44. Mục "Stat" của Giai đoạn 11 (doanh thu/số đơn/booking hôm nay/món bán chạy) **đã xong sẵn từ Giai đoạn 9**, không cần làm lại.
 
-⚠️ **Đánh đổi đã biết ở phân trang admin** (`/admin/orders`, `/admin/reservations`): ô tìm kiếm/sort trong 2 bảng này giờ chỉ hoạt động trong phạm vi 20 dòng của trang hiện tại, không tìm xuyên suốt toàn bộ 632 đơn/460 đặt bàn (search vẫn client-side, PLAN.md chỉ yêu cầu phân trang server-side chứ không yêu cầu search server-side). Muốn tìm toàn bộ thì phải thêm `searchParams.q` — chưa làm, chỉ làm nếu chủ dự án cần.
+⚠️ **Đánh đổi còn lại ở phân trang admin** (`/admin/orders`, `/admin/reservations`): **search đã lên server-side** (`searchParams.q`, xem #71) nên tìm xuyên toàn bộ 632 đơn / 457 đặt bàn. Riêng **sort vẫn là client-side**, chỉ xếp trong 20 dòng của trang hiện tại — cố ý chưa làm.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -300,6 +298,29 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
     | Tài khoản demo cho nhà tuyển dụng | ✅ admin + tài khoản khách có lịch sử thật (#56) |
 
     Làm thêm ngoài checklist: nối GitHub ↔ Vercel để mỗi push tự deploy (#54), và bật env cho môi trường Preview.
+
+71. **Search server-side cho `/admin/orders` + `/admin/reservations` (2026-07-30) — gỡ đánh đổi ghi ở đầu file.** Ô tìm kiếm giờ query thẳng DB qua `searchParams.q`, không còn lọc trong 20 dòng của trang hiện tại. `getOrdersPaged(page, q)` tìm theo `code` + `receiverName`, `getReservationsPaged(page, q)` theo `guestName` — đúng phạm vi search client-side cũ, không mở rộng thêm cột.
+
+    **⚠️⚠️ `<form action="">` — dấu `action` rỗng là BẮT BUỘC, đừng dọn đi cho gọn.** Viết `<form>` không có `action` thì **React 19 nuốt luôn sự kiện submit**: sự kiện `submit` vẫn bắn, `defaultPrevented` đọc ở listener cấp form vẫn `false` (listener của React gắn ở root nên chạy SAU), nhưng trình duyệt không điều hướng — cả phím Enter lẫn nút "Tìm" đều im lặng không làm gì. Thêm `action=""` (= URL hiện tại) là hết. **Lint, `npm test`, `next build` đều xanh với bản hỏng** — chỉ browser thật mới lộ ra. Xem `src/components/admin/search-form.tsx`.
+
+    Vài điểm khác của thiết kế này:
+    - **Không dùng `useRouter`/debounce** — form GET thuần, không cần state, không cần `"use client"` cho chính `AdminSearchForm`.
+    - **`page` tự về 1 khi tìm mới**: form GET thay thế nguyên query string cũ nên `?page=3` tự rụng, không phải xử lý gì thêm.
+    - **`Pager` nhận thêm prop `search`** để giữ `q` khi chuyển trang (thiếu là bấm "Sau" mất kết quả tìm). Href giờ dựng bằng `URLSearchParams`.
+    - **`q` bị `.trim().slice(0, 100)`** ở page trước khi xuống DB. Prisma tham số hoá nên không có injection, cắt chỉ để chặn chuỗi rác dài từ URL.
+    - **Không bỏ dấu tiếng Việt**: `mode: "insensitive"` chỉ lo hoa/thường, gõ "hang" không ra "Hằng" — y hệt search client-side cũ, không phải hồi quy. Muốn khớp không dấu phải thêm `unaccent`/`pg_trgm` ở Postgres.
+    - **Sort vẫn là trong-trang**, cố ý không làm: chỉ xếp 20 dòng đang hiện. Muốn sort toàn bảng thì đẩy `orderBy` xuống 2 hàm `*Paged`.
+    - `filterBySearch` trong `lib/admin/table-utils.ts` **vẫn còn dùng** cho `dishes-table`/`promotions-table` (2 bảng này nạp full list, không phân trang) — đừng xoá.
+
+72. **✅ Đã kiểm khu admin bằng browser thật (2026-07-30) — khép lại phần trước đây chỉ có typecheck/build bảo đảm.** Đăng nhập `admin@beefhaven.vn` trên `localhost:3000`, chạy thật:
+    - **Search đơn hàng**: tìm `BS-2025` → ra đơn năm 2025 vốn không nằm trong 20 dòng trang 1, "Trang 1 / 19" (lọc từ 32 trang tổng). Bấm "Sau" → `?q=BS-2025&page=2`, ô tìm kiếm giữ nguyên giá trị.
+    - **Search đặt bàn**: gõ thường không dấu-hoa `nguyễn anh quân` → 6 kết quả, cũ nhất **17/01/2025** (tháng đầu tiên của dữ liệu) ⇒ đúng là tìm xuyên toàn bảng, không phải lọc trang.
+    - **Ô bản dịch trong form món**: mở "Sửa Món Ăn" của `dish-ribeye-uc` → `toFormValues()` map đúng cả `nameEn`/`descriptionEn` từ DB, không có cảnh báo uncontrolled input. Sửa `nameEn` → Lưu → `updateDish` 200 → `/en/thuc-don` hiện ngay tên mới. **Đã sửa lại về giá trị gốc `"Australian Ribeye Steak"`** — dữ liệu demo không đổi.
+    - **Form khuyến mãi**: đủ 5 ô En (`title/description/badgeLabel/badgeOffer/scheduleText`), đều nạp đúng giá trị từ DB. Chỉ mở xem, không lưu.
+
+    ⚠️ **Bẫy khi tự động hoá Chrome trên máy này: page zoom 125%.** Toạ độ trong ảnh chụp ≈ toạ độ CSS × 1.27, nên click theo pixel trượt mục tiêu và trông y như "nút hỏng" (đã mất thời gian nghi oan cho nút "Tìm" và "Sau"). Dùng click qua DOM (`element.click()`) hoặc `ref` thay vì toạ độ. Liên quan #6/#21/#23 về các trục trặc khác của môi trường sandbox này.
+
+    ⚠️ **Nút xoá trong bảng admin xoá NGAY, không confirm** (#42) — khi thao tác bằng script/automation phải nhắm `button[aria-label="Sửa món"]` tường minh, đừng lấy nút theo thứ tự.
 
 ## Cách tiếp tục ở phiên mới
 

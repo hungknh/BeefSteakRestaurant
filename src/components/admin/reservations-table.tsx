@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { AdminSearchForm } from "@/components/admin/search-form";
 import {
   Select,
   SelectContent,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { RESERVATION_STATUS_LABELS } from "@/lib/format";
 import { updateReservationStatus } from "@/lib/actions/reservation";
-import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
+import { sortBy } from "@/lib/admin/table-utils";
 import type { Reservation, ReservationStatus } from "@/types";
 
 const STATUS_OPTIONS = Object.entries(RESERVATION_STATUS_LABELS) as [
@@ -22,20 +22,22 @@ const STATUS_OPTIONS = Object.entries(RESERVATION_STATUS_LABELS) as [
 
 export function ReservationsTable({
   initialReservations,
+  search,
 }: {
   initialReservations: Reservation[];
+  search?: string;
 }) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Reservation>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  const rows = useMemo(() => {
-    const filtered = filterBySearch(initialReservations, search, (r) => r.guestName);
-    return sortBy(filtered, sortKey, sortDir);
-  }, [initialReservations, search, sortKey, sortDir]);
+  // ponytail: xem ghi chú cùng loại trong `orders-table.tsx` — sort vẫn là trong-trang.
+  const rows = useMemo(
+    () => sortBy(initialReservations, sortKey, sortDir),
+    [initialReservations, sortKey, sortDir],
+  );
 
   const toggleSort = (key: keyof Reservation) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -59,14 +61,7 @@ export function ReservationsTable({
 
   return (
     <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border p-5">
-        <Input
-          placeholder="Tìm theo tên khách..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
-      </div>
+      <AdminSearchForm defaultValue={search} placeholder="Tìm theo tên khách..." />
       {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

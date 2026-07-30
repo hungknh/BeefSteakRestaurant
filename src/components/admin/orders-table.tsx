@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { AdminSearchForm } from "@/components/admin/search-form";
 import {
   Select,
   SelectContent,
@@ -13,7 +13,7 @@ import {
 import { Price } from "@/components/shared/price";
 import { ORDER_STATUS_LABELS } from "@/lib/format";
 import { updateOrderStatus } from "@/lib/actions/order";
-import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
+import { sortBy } from "@/lib/admin/table-utils";
 import type { Order, OrderStatus } from "@/types";
 
 const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS) as [
@@ -21,22 +21,25 @@ const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS) as [
   string,
 ][];
 
-export function OrdersTable({ initialOrders }: { initialOrders: Order[] }) {
+export function OrdersTable({
+  initialOrders,
+  search,
+}: {
+  initialOrders: Order[];
+  search?: string;
+}) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Order>("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  const rows = useMemo(() => {
-    const filtered = filterBySearch(
-      initialOrders,
-      search,
-      (o) => `${o.code} ${o.receiverName}`,
-    );
-    return sortBy(filtered, sortKey, sortDir);
-  }, [initialOrders, search, sortKey, sortDir]);
+  // ponytail: search đã lên server (query DB), chỉ còn sort xếp trong 20 dòng của
+  // trang hiện tại. Muốn sort toàn bảng thì đẩy `orderBy` xuống `getOrdersPaged`.
+  const rows = useMemo(
+    () => sortBy(initialOrders, sortKey, sortDir),
+    [initialOrders, sortKey, sortDir],
+  );
 
   const toggleSort = (key: keyof Order) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -60,14 +63,10 @@ export function OrdersTable({ initialOrders }: { initialOrders: Order[] }) {
 
   return (
     <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border p-5">
-        <Input
-          placeholder="Tìm theo mã đơn hoặc tên khách..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
-      </div>
+      <AdminSearchForm
+        defaultValue={search}
+        placeholder="Tìm theo mã đơn hoặc tên khách..."
+      />
       {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

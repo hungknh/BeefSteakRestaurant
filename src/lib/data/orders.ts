@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import type { Order } from "@/types";
 
 export async function getOrders(): Promise<Order[]> {
@@ -12,15 +13,31 @@ export async function getOrders(): Promise<Order[]> {
 
 const PAGE_SIZE = 20;
 
-export async function getOrdersPaged(page: number): Promise<{ orders: Order[]; totalPages: number }> {
+export async function getOrdersPaged(
+  page: number,
+  q?: string,
+): Promise<{ orders: Order[]; totalPages: number }> {
+  // ponytail: `contains` + mode "insensitive" (Postgres) — không bỏ dấu tiếng Việt,
+  // gõ "hang" không khớp "Hằng", y hệt search client-side trước đây. Muốn khớp
+  // không dấu thì cần cột unaccent/pg_trgm, chưa đáng cho ~600 bản ghi.
+  const where: Prisma.OrderWhereInput = q
+    ? {
+        OR: [
+          { code: { contains: q, mode: "insensitive" } },
+          { receiverName: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
+      where,
       include: { items: { include: { dish: true } } },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
-    prisma.order.count(),
+    prisma.order.count({ where }),
   ]);
   return {
     orders: orders as unknown as Order[],

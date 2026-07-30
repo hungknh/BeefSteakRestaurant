@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import type { Reservation } from "@/types";
 
 export async function getReservations(): Promise<Reservation[]> {
@@ -12,14 +13,22 @@ const PAGE_SIZE = 20;
 
 export async function getReservationsPaged(
   page: number,
+  q?: string,
 ): Promise<{ reservations: Reservation[]; totalPages: number }> {
+  // Chỉ tìm theo tên khách — đúng phạm vi search client-side trước đây. Về dấu
+  // tiếng Việt: xem ghi chú trong `getOrdersPaged`.
+  const where: Prisma.ReservationWhereInput = q
+    ? { guestName: { contains: q, mode: "insensitive" } }
+    : {};
+
   const [reservations, total] = await Promise.all([
     prisma.reservation.findMany({
+      where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
-    prisma.reservation.count(),
+    prisma.reservation.count({ where }),
   ]);
   return {
     reservations: reservations as unknown as Reservation[],
