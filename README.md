@@ -25,7 +25,13 @@ Website nhà hàng bít tết đầy đủ hai phía: khách đặt món/đặt 
 |---|---|
 | ![Thực đơn](screenshots/thuc-don.jpg) | ![Đánh giá](screenshots/danh-gia.jpg) |
 
-![Khu quản trị](screenshots/admin.jpg)
+**Khu quản trị — dashboard thống kê từ 19 tháng dữ liệu**
+
+![Dashboard quản trị](screenshots/admin.jpg)
+
+**Cùng khu đó ở bản tiếng Anh, đang sắp xếp theo tổng tiền giảm dần** — dòng đầu là đơn lớn nhất trong cả 632 đơn, không phải lớn nhất của trang đang xem:
+
+![Khu quản trị bản tiếng Anh](screenshots/admin-en.jpg)
 
 ---
 
@@ -42,15 +48,16 @@ Website nhà hàng bít tết đầy đủ hai phía: khách đặt món/đặt 
 
 **Phía quản trị** (`/admin`, chặn theo `role` trong **từng** Server Action)
 
-- Dashboard: doanh thu tháng, số đơn, đặt bàn hôm nay, món bán chạy
-- CRUD món ăn và khuyến mãi
+- Dashboard: doanh thu theo tháng, đơn theo trạng thái, món bán chạy, khách mua nhiều nhất
+- CRUD món ăn và khuyến mãi, nhập được cả bản dịch tiếng Anh cho từng bản ghi
 - Đổi trạng thái đơn hàng (6 trạng thái) và đặt bàn (5 trạng thái)
-- Phân trang server-side qua `searchParams`
+- Bảng đơn hàng / đặt bàn: **phân trang, tìm kiếm và sắp xếp đều chạy trên server** — tìm và xếp xuyên toàn bộ 632 đơn chứ không chỉ trong trang đang xem. Toàn bộ trạng thái nằm ở URL (`?q=&sort=&dir=&page=`) nên chia sẻ link hay bấm Back đều giữ đúng cái đang xem
 
 **Song ngữ Việt / Anh**
 
 - Tiếng Việt ở URL gốc (`/thuc-don`), tiếng Anh ở `/en/thuc-don` — mọi URL cũ giữ nguyên
 - Dịch cả **nội dung trong database**: tên món, mô tả, tiêu đề và badge khuyến mãi
+- Phủ **cả khu quản trị**, không riêng phía khách
 - `hreflang` + canonical trỏ đúng bản đang xem, sitemap có cả hai ngôn ngữ
 - Đánh giá của khách **không dịch** — giữ nguyên ngôn ngữ người viết, đúng thực tế
 
@@ -58,7 +65,7 @@ Website nhà hàng bít tết đầy đủ hai phía: khách đặt món/đặt 
 
 - `generateMetadata` theo từng trang, `sitemap.xml` sinh từ DB, `robots.txt`
 - JSON-LD `Restaurant` + `Menu`
-- Trang lỗi và 404 riêng, **114 unit test** (Vitest), CI chạy lint + test + build mỗi push
+- Trang lỗi và 404 riêng, **125 unit test** (Vitest), CI chạy `npm ci` → migrate → lint → test → build mỗi push
 
 ---
 
@@ -175,7 +182,7 @@ Các cột `*En` (trên `Category`, `Dish`, `Promotion`) là bản dịch tiến
 
 ---
 
-## 4 vấn đề khó nhất và cách giải
+## 5 vấn đề khó nhất và cách giải
 
 ### 1. Discount engine dùng chung client/server mà không tin client
 
@@ -216,6 +223,20 @@ Cách giải: mọi page bắt buộc đi qua tầng `src/lib/data/*`, và các 
 
 Kết quả khi cắm Postgres thật: chỉ thay **ruột** các hàm trong `lib/data/`, giữ nguyên chữ ký — không page nào phải sửa. Cùng lý do đó, đổi từ SQLite sang Neon Postgres sau này cũng chỉ là đổi driver adapter, không lan ra tầng UI.
 
+### 5. Bảng quản trị 632 dòng: tìm và sắp xếp trên server, không phải trong trang
+
+Bản đầu phân trang server-side nhưng tìm kiếm và sắp xếp vẫn chạy client — nghĩa là chúng chỉ thao tác trên 20 dòng đang hiển thị. Gõ tên một khách đặt bàn từ tháng 1/2025 thì không ra gì, dù bản ghi đó có thật. Đây là loại lỗi trông như "đã xong" cho tới khi có người dùng thật.
+
+Đẩy cả hai xuống database thì phát sinh ba vấn đề không hiển nhiên:
+
+- **`sort` từ URL đi thẳng vào `orderBy` của Prisma.** Tên cột lạ làm truy vấn ném lỗi (khách thấy trang 500) và cho người ngoài dò được tên cột trong schema. Giải bằng whitelist khai ngay cạnh hàm query, giá trị không khớp thì rơi về mặc định.
+- **Phân trang không ổn định nếu thiếu tiêu chí sắp xếp phụ.** Sắp theo cột có nhiều giá trị trùng — nhiều đơn cùng tổng tiền, nhiều bàn cùng ngày — thì Postgres không bảo đảm thứ tự giữa hai truy vấn khác `OFFSET`. Hệ quả: cùng một bản ghi xuất hiện ở cả trang 1 lẫn trang 2, hoặc biến mất hẳn. Thêm `{ id: "asc" }` làm tiêu chí phụ là hết.
+- **Form GET thay thế toàn bộ query string.** Đang sắp xếp theo tổng tiền rồi gõ tìm kiếm là mất thứ tự, nên `sort`/`dir` phải đi kèm dưới dạng hidden input — nhưng cố ý *không* mang theo `page`, vì tìm kiếm mới thì phải quay về trang 1.
+
+Toàn bộ trạng thái bảng nằm ở URL nên chia sẻ link, refresh hay bấm Back đều giữ đúng cái đang xem — thứ mà state trong React không làm được.
+
+Một chi tiết chỉ browser mới bắt được: form tìm kiếm viết `<form>` GET thuần, không `useRouter`. Thiếu thuộc tính `action=""` thì **React 19 nuốt luôn sự kiện submit** — bấm Enter lẫn bấm nút đều im lặng không làm gì, trong khi lint, test và build đều xanh.
+
 ---
 
 ## Chạy trên máy
@@ -238,7 +259,7 @@ npm run dev                 # http://localhost:3000
 Các lệnh khác:
 
 ```bash
-npm test          # Vitest, 114 test
+npm test          # Vitest, 125 test
 npm run lint      # ESLint
 npm run build     # Next production build
 ```
@@ -252,10 +273,11 @@ Lưu ý về `.env`: `DATABASE_URL` nên là connection **pooled** (PgBouncer) c
 ```
 src/
 ├── app/
-│   ├── (public)/           # trang khách — có Header/Footer
-│   ├── (auth)/             # đăng nhập, đăng ký — layout tối giản
-│   ├── admin/              # khu quản trị — sidebar riêng
-│   ├── sitemap.ts          # sinh từ DB
+│   ├── [locale]/           # mọi page nằm trong đây — root layout phải biết locale
+│   │   ├── (public)/       # trang khách — có Header/Footer
+│   │   ├── (auth)/         # đăng nhập, đăng ký — layout tối giản
+│   │   └── admin/          # khu quản trị — sidebar riêng
+│   ├── sitemap.ts          # sinh từ DB — ở ngoài [locale] vì không phải page
 │   └── robots.ts
 ├── components/             # ui/ (shadcn) + theo miền: home, menu, admin, review...
 ├── lib/
@@ -264,6 +286,8 @@ src/
 │   ├── promotions/apply.ts # ⭐ discount engine, hàm thuần
 │   ├── validations/        # schema Zod dùng chung client/server
 │   ├── auth/               # requireAdminSession()
+│   ├── admin/              # parse + whitelist searchParams của bảng admin
+│   ├── i18n-content.ts     # chọn bản dịch cho dữ liệu DB, rơi về tiếng Việt
 │   └── seo/                # JSON-LD
 ├── i18n/                   # ⭐ routing locale, Link/router locale-aware
 ├── store/cart.ts           # Zustand
