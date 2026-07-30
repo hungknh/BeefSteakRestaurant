@@ -7,14 +7,16 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useCartStore } from "@/store/cart";
-import { DONENESS_LABELS } from "@/lib/format";
+import { DONENESS_LABELS, donenessLabel } from "@/lib/format";
 import type { Dish, Doneness } from "@/types";
+import { useLocale, useTranslations } from "next-intl";
 
-const DONENESS_OPTIONS = (Object.entries(DONENESS_LABELS) as [Doneness, string][]).map(
-  ([value, label]) => ({ value, label }),
-);
+// Chỉ giữ danh sách giá trị; nhãn lấy theo locale lúc render (donenessLabel).
+const DONENESS_VALUES = Object.keys(DONENESS_LABELS) as Doneness[];
 
 export function OrderPanel({ dish }: { dish: Dish }) {
+  const t = useTranslations("OrderPanel");
+  const locale = useLocale();
   const addItem = useCartStore((s) => s.addItem);
   const [doneness, setDoneness] = useState<Doneness>("MEDIUM_RARE");
   const [quantity, setQuantity] = useState(1);
@@ -32,7 +34,7 @@ export function OrderPanel({ dish }: { dish: Dish }) {
       {dish.hasDoneness ? (
         <div>
           <Label htmlFor="doneness" className="text-sm font-medium text-foreground">
-            Độ chín
+            {t("doneness")}
           </Label>
           <RadioGroup
             id="doneness"
@@ -40,13 +42,13 @@ export function OrderPanel({ dish }: { dish: Dish }) {
             onValueChange={(value) => setDoneness(value as Doneness)}
             className="mt-3"
           >
-            {DONENESS_OPTIONS.map((option) => (
+            {DONENESS_VALUES.map((value) => (
               <label
-                key={option.value}
+                key={value}
                 className="flex items-center gap-2 text-sm text-muted-foreground"
               >
-                <RadioGroupItem value={option.value} />
-                {option.label}
+                <RadioGroupItem value={value} />
+                {donenessLabel(value, locale)}
               </label>
             ))}
           </RadioGroup>
@@ -54,13 +56,13 @@ export function OrderPanel({ dish }: { dish: Dish }) {
       ) : null}
 
       <div>
-        <Label className="text-sm font-medium text-foreground">Số lượng</Label>
+        <Label className="text-sm font-medium text-foreground">{t("quantity")}</Label>
         <div className="mt-3 flex items-center gap-3">
           <Button
             type="button"
             variant="gold-outline"
             size="icon"
-            aria-label="Giảm số lượng"
+            aria-label={t("decrease")}
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
           >
             <Minus className="size-4" strokeWidth={1.5} />
@@ -70,7 +72,7 @@ export function OrderPanel({ dish }: { dish: Dish }) {
             type="button"
             variant="gold-outline"
             size="icon"
-            aria-label="Tăng số lượng"
+            aria-label={t("increase")}
             onClick={() => setQuantity((q) => q + 1)}
           >
             <Plus className="size-4" strokeWidth={1.5} />
@@ -80,19 +82,19 @@ export function OrderPanel({ dish }: { dish: Dish }) {
 
       <div>
         <Label htmlFor="note" className="text-sm font-medium text-foreground">
-          Ghi chú (tùy chọn)
+          {t("noteOptional")}
         </Label>
         <Textarea
           id="note"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Ví dụ: không hành, ít cay..."
+          placeholder={t("notePlaceholder")}
           className="mt-3"
         />
       </div>
 
       <Button size="lg" type="button" onClick={handleAddToCart}>
-        {justAdded ? "Đã Thêm Vào Giỏ ✓" : "Thêm Vào Giỏ"}
+        {justAdded ? t("added") : t("addToCart")}
       </Button>
     </div>
   );

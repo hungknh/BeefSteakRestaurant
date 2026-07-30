@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { reviewFormSchema, type ReviewFormValues } from "@/lib/validations/review";
+import { getTranslations } from "next-intl/server";
 
 async function recalcDishRating(tx: Prisma.TransactionClient, dishId: string) {
   const agg = await tx.review.aggregate({
@@ -20,11 +21,12 @@ async function recalcDishRating(tx: Prisma.TransactionClient, dishId: string) {
 }
 
 export async function createReview(dishId: string, slug: string, values: ReviewFormValues) {
+  const t = await getTranslations("Errors");
   const parsed = reviewFormSchema.safeParse(values);
-  if (!parsed.success) return { error: "Dữ liệu không hợp lệ." };
+  if (!parsed.success) return { error: t("invalidData") };
 
   const session = await auth();
-  if (!session?.user?.id) return { error: "Vui lòng đăng nhập để đánh giá." };
+  if (!session?.user?.id) return { error: t("signInToReview") };
   const userId = session.user.id;
 
   const purchased = await prisma.orderItem.findFirst({
@@ -32,13 +34,13 @@ export async function createReview(dishId: string, slug: string, values: ReviewF
     select: { id: true },
   });
   if (!purchased) {
-    return { error: "Bạn cần đặt món này và đơn đã hoàn thành mới có thể đánh giá." };
+    return { error: t("mustPurchaseFirst") };
   }
 
   const existing = await prisma.review.findUnique({
     where: { userId_dishId: { userId, dishId } },
   });
-  if (existing) return { error: "Bạn đã đánh giá món này rồi." };
+  if (existing) return { error: t("alreadyReviewed") };
 
   await prisma.$transaction(async (tx) => {
     await tx.review.create({
@@ -59,15 +61,16 @@ export async function createReview(dishId: string, slug: string, values: ReviewF
 }
 
 export async function updateReview(reviewId: string, slug: string, values: ReviewFormValues) {
+  const t = await getTranslations("Errors");
   const parsed = reviewFormSchema.safeParse(values);
-  if (!parsed.success) return { error: "Dữ liệu không hợp lệ." };
+  if (!parsed.success) return { error: t("invalidData") };
 
   const session = await auth();
-  if (!session?.user?.id) return { error: "Vui lòng đăng nhập." };
+  if (!session?.user?.id) return { error: t("signInRequired") };
 
   const review = await prisma.review.findUnique({ where: { id: reviewId } });
-  if (!review) return { error: "Không tìm thấy đánh giá." };
-  if (review.userId !== session.user.id) return { error: "Bạn không có quyền sửa đánh giá này." };
+  if (!review) return { error: t("reviewNotFound") };
+  if (review.userId !== session.user.id) return { error: t("cannotEditReview") };
 
   await prisma.$transaction(async (tx) => {
     await tx.review.update({
@@ -82,12 +85,13 @@ export async function updateReview(reviewId: string, slug: string, values: Revie
 }
 
 export async function deleteReview(reviewId: string, slug: string) {
+  const t = await getTranslations("Errors");
   const session = await auth();
-  if (!session?.user?.id) return { error: "Vui lòng đăng nhập." };
+  if (!session?.user?.id) return { error: t("signInRequired") };
 
   const review = await prisma.review.findUnique({ where: { id: reviewId } });
-  if (!review) return { error: "Không tìm thấy đánh giá." };
-  if (review.userId !== session.user.id) return { error: "Bạn không có quyền xóa đánh giá này." };
+  if (!review) return { error: t("reviewNotFound") };
+  if (review.userId !== session.user.id) return { error: t("cannotDeleteReview") };
 
   await prisma.$transaction(async (tx) => {
     await tx.review.delete({ where: { id: reviewId } });

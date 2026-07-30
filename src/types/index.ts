@@ -117,11 +117,23 @@ export type Order = {
   createdAt: string;
 };
 
+/**
+ * Thông tin người viết đánh giá được phép hiển thị công khai — CHỈ tên.
+ *
+ * ⚠️ Cố ý KHÔNG dùng `User` ở đây. Đánh giá hiện trên trang món (trang công khai), nên mọi
+ * field lọt vào RSC payload trong HTML là ai cũng đọc được. Trước đây `user?: User` cộng
+ * với `select` liệt kê thừa `email` làm lộ email khách ra trang công khai.
+ *
+ * Giữ type hẹp thì đọc `review.user.email` sẽ KHÔNG biên dịch được — lỗi không quay lại
+ * được, thay vì chỉ dựa vào việc nhớ giữ `select` cho hẹp.
+ */
+export type ReviewAuthor = { name: string };
+
 export type Review = {
   id: string;
   dishId: string;
   userId: string;
-  user?: User;
+  user?: ReviewAuthor;
   rating: number;
   content: string;
   createdAt: string;

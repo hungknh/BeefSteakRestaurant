@@ -7,24 +7,40 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { getDishes } from "@/lib/data/dishes";
 import { getCategories } from "@/lib/data/categories";
 import { menuJsonLd } from "@/lib/seo/structured-data";
+import { localeAlternates } from "@/lib/seo/alternates";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Thực Đơn",
-  description: "Toàn bộ món ăn tại Beef Haven.",
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ category?: string }>;
 };
 
-type Props = { searchParams: Promise<{ category?: string }> };
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Pages" });
+  return {
+    title: t("menuMetaTitle"),
+    description: t("menuMetaDescription"),
+    alternates: localeAlternates("/thuc-don", locale),
+  };
+}
 
-export default async function ThucDonPage({ searchParams }: Props) {
+export default async function ThucDonPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const { category } = await searchParams;
-  const [dishes, categories] = await Promise.all([getDishes({ category }), getCategories()]);
+  const [dishes, categories, t] = await Promise.all([
+    getDishes({ category }),
+    getCategories(),
+    getTranslations("Pages"),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
       {/* Chỉ phát Menu JSON-LD ở trang thực đơn đầy đủ — bản đã lọc danh mục là tập con,
           khai báo nó như toàn bộ thực đơn sẽ sai. */}
       {!category && <JsonLd data={menuJsonLd(dishes)} />}
-      <SectionHeading eyebrow="Thực đơn" title="Món Ăn Của Chúng Tôi" />
+      <SectionHeading eyebrow={t("menuEyebrow")} title={t("menuTitle")} />
 
       <div className="mt-10">
         <CategoryFilter categories={categories} active={category} />
@@ -39,7 +55,7 @@ export default async function ThucDonPage({ searchParams }: Props) {
       ) : (
         <div className="mt-16 flex flex-col items-center gap-3 text-center">
           <PackageOpen className="size-10 text-muted-foreground" strokeWidth={1.5} />
-          <p className="text-muted-foreground">Không tìm thấy món nào trong danh mục này.</p>
+          <p className="text-muted-foreground">{t("menuEmpty")}</p>
         </div>
       )}
     </div>

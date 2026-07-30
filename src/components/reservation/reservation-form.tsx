@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CalendarClock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { translateFieldError } from "@/lib/validations/translate-error";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,8 +21,10 @@ import { cn } from "@/lib/utils";
 import type { Promotion } from "@/types";
 
 export function ReservationForm({ promo }: { promo: Promotion | null }) {
+  const tv = useTranslations("Validation");
   const locale = useLocale();
   const tPromo = useTranslations("Reservation");
+  const t = useTranslations("ReservationForm");
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const today = toLocalDateStr(new Date());
@@ -38,7 +41,9 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
       guestPhone: "",
       guestEmail: "",
       date: today,
-      timeSlot: "",
+      // undefined = chưa chọn khung giờ. Không dùng "" vì schema chỉ nhận đúng các
+      // khung giờ trong TIME_SLOTS — "" không còn là giá trị hợp lệ.
+      timeSlot: undefined,
       partySize: 2,
       note: "",
     },
@@ -59,8 +64,8 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
   if (submitted) {
     return (
       <div className="mt-10 flex flex-col items-center gap-3 rounded-lg border border-border bg-card py-16 text-center">
-        <h2 className="font-serif text-xl text-foreground">Đã Nhận Yêu Cầu Đặt Bàn</h2>
-        <p className="text-muted-foreground">Chúng tôi sẽ gọi xác nhận trong ít phút.</p>
+        <h2 className="font-serif text-xl text-foreground">{t("submittedTitle")}</h2>
+        <p className="text-muted-foreground">{t("submittedText")}</p>
       </div>
     );
   }
@@ -80,37 +85,37 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
       ) : null}
 
       <div>
-        <Label htmlFor="guestName">Họ tên</Label>
+        <Label htmlFor="guestName">{t("name")}</Label>
         <Input id="guestName" className="mt-2" {...register("guestName")} />
         {errors.guestName ? (
-          <p className="mt-1 text-xs text-destructive">{errors.guestName.message}</p>
+          <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.guestName.message)}</p>
         ) : null}
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <Label htmlFor="guestPhone">Số điện thoại</Label>
+          <Label htmlFor="guestPhone">{t("phone")}</Label>
           <Input id="guestPhone" className="mt-2" {...register("guestPhone")} />
           {errors.guestPhone ? (
-            <p className="mt-1 text-xs text-destructive">{errors.guestPhone.message}</p>
+            <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.guestPhone.message)}</p>
           ) : null}
         </div>
         <div>
-          <Label htmlFor="guestEmail">Email (tùy chọn)</Label>
+          <Label htmlFor="guestEmail">{t("emailOptional")}</Label>
           <Input id="guestEmail" className="mt-2" {...register("guestEmail")} />
           {errors.guestEmail ? (
-            <p className="mt-1 text-xs text-destructive">{errors.guestEmail.message}</p>
+            <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.guestEmail.message)}</p>
           ) : null}
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <Label htmlFor="date">Ngày</Label>
+          <Label htmlFor="date">{t("date")}</Label>
           <Input id="date" type="date" min={today} className="mt-2" {...register("date")} />
         </div>
         <div>
-          <Label htmlFor="partySize">Số khách</Label>
+          <Label htmlFor="partySize">{t("partySize")}</Label>
           <Input
             id="partySize"
             type="number"
@@ -120,13 +125,13 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
             {...register("partySize")}
           />
           {errors.partySize ? (
-            <p className="mt-1 text-xs text-destructive">{errors.partySize.message}</p>
+            <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.partySize.message)}</p>
           ) : null}
         </div>
       </div>
 
       <div>
-        <Label>Khung giờ</Label>
+        <Label>{t("timeSlot")}</Label>
         <div className="mt-2 grid grid-cols-5 gap-2">
           {TIME_SLOTS.map((slot) => {
             const disabled = isSlotDisabled(slot, date, new Date());
@@ -148,19 +153,19 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
           })}
         </div>
         {errors.timeSlot ? (
-          <p className="mt-1 text-xs text-destructive">{errors.timeSlot.message}</p>
+          <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.timeSlot.message)}</p>
         ) : null}
       </div>
 
       <div>
-        <Label htmlFor="note">Ghi chú (tùy chọn)</Label>
+        <Label htmlFor="note">{t("noteOptional")}</Label>
         <Textarea id="note" className="mt-2" {...register("note")} />
       </div>
 
       {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
 
       <Button size="lg" type="submit" disabled={isSubmitting}>
-        Xác Nhận Đặt Bàn
+        {t("submit")}
       </Button>
     </form>
   );

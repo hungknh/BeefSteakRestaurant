@@ -1,43 +1,32 @@
 import { ChefHat, Flame, Leaf, Wine } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SectionHeading } from "@/components/shared/section-heading";
 
+// Chỉ giữ icon + tên key ở đây, chữ lấy từ messages. Thêm mục mới thì thêm cặp
+// `<key>Title`/`<key>Text` vào cả 2 file messages, không hard-code chữ lại vào đây.
 const STANDARDS = [
-  {
-    icon: Leaf,
-    title: "Nguyên Liệu Tuyển Chọn",
-    description: "Thịt bò nhập khẩu, kiểm định nguồn gốc rõ ràng.",
-  },
-  {
-    icon: Flame,
-    title: "Nướng Trên Than Hoa",
-    description: "Giữ trọn vị ngọt tự nhiên, thơm mùi khói than.",
-  },
-  {
-    icon: ChefHat,
-    title: "Đầu Bếp Giàu Kinh Nghiệm",
-    description: "Hơn 10 năm chế biến bít tết tại các nhà hàng 5 sao.",
-  },
-  {
-    icon: Wine,
-    title: "Không Gian Sang Trọng",
-    description: "Ánh nến ấm áp, phù hợp cho những dịp đặc biệt.",
-  },
-];
+  { icon: Leaf, key: "ingredients" },
+  { icon: Flame, key: "charcoal" },
+  { icon: ChefHat, key: "chef" },
+  { icon: Wine, key: "space" },
+] as const;
 
 export function StandardCards() {
+  const t = useTranslations("Home.standardCards");
+
   return (
     <section className="py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading eyebrow="Vì sao chọn chúng tôi" title="Chuẩn Mực Beefsteak" />
+        <SectionHeading eyebrow={t("eyebrow")} title={t("title")} />
 
         <div className="mt-14 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {STANDARDS.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="flex flex-col items-center text-center">
+          {STANDARDS.map(({ icon: Icon, key }) => (
+            <div key={key} className="flex flex-col items-center text-center">
               <span className="flex size-16 items-center justify-center rounded-full border border-primary text-primary">
                 <Icon className="size-7" strokeWidth={1.5} />
               </span>
-              <h3 className="mt-5 font-serif text-lg text-foreground">{title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+              <h3 className="mt-5 font-serif text-lg text-foreground">{t(`${key}Title`)}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{t(`${key}Text`)}</p>
             </div>
           ))}
         </div>

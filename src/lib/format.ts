@@ -7,30 +7,89 @@ export function formatVND(amount: number): string {
   }).format(amount);
 }
 
-export const DONENESS_LABELS: Record<Doneness, string> = {
-  RARE: "Tái",
-  MEDIUM_RARE: "Tái Chín",
-  MEDIUM: "Chín Vừa",
-  MEDIUM_WELL: "Chín Vừa Kỹ",
-  WELL_DONE: "Chín Kỹ",
+/**
+ * Nhãn trạng thái / độ chín theo ngôn ngữ.
+ *
+ * Giữ dạng bảng tra trong code (không đưa vào `messages/*.json`) vì key là giá trị enum
+ * của DB — tra ở đây thì TypeScript kiểm được đủ nhánh (`Record<OrderStatus, string>`),
+ * còn để trong JSON thì thêm trạng thái mới sẽ lặng lẽ hiện key thay vì lỗi lúc build.
+ *
+ * Khu admin cố tình chỉ dùng bản tiếng Việt (xem PROGRESS.md #59).
+ */
+
+export const DONENESS_LABELS_BY_LOCALE: Record<string, Record<Doneness, string>> = {
+  vi: {
+    RARE: "Tái",
+    MEDIUM_RARE: "Tái Chín",
+    MEDIUM: "Chín Vừa",
+    MEDIUM_WELL: "Chín Vừa Kỹ",
+    WELL_DONE: "Chín Kỹ",
+  },
+  en: {
+    RARE: "Rare",
+    MEDIUM_RARE: "Medium Rare",
+    MEDIUM: "Medium",
+    MEDIUM_WELL: "Medium Well",
+    WELL_DONE: "Well Done",
+  },
 };
 
-export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING: "Chờ Xác Nhận",
-  CONFIRMED: "Đã Xác Nhận",
-  PREPARING: "Đang Chuẩn Bị",
-  DELIVERING: "Đang Giao",
-  COMPLETED: "Hoàn Thành",
-  CANCELLED: "Đã Hủy",
+export const ORDER_STATUS_LABELS_BY_LOCALE: Record<string, Record<OrderStatus, string>> = {
+  vi: {
+    PENDING: "Chờ Xác Nhận",
+    CONFIRMED: "Đã Xác Nhận",
+    PREPARING: "Đang Chuẩn Bị",
+    DELIVERING: "Đang Giao",
+    COMPLETED: "Hoàn Thành",
+    CANCELLED: "Đã Hủy",
+  },
+  en: {
+    PENDING: "Pending",
+    CONFIRMED: "Confirmed",
+    PREPARING: "Preparing",
+    DELIVERING: "Out for Delivery",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
+  },
 };
 
-export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
-  PENDING: "Chờ Xác Nhận",
-  CONFIRMED: "Đã Xác Nhận",
-  SEATED: "Đã Nhận Bàn",
-  CANCELLED: "Đã Hủy",
-  NO_SHOW: "Không Đến",
+export const RESERVATION_STATUS_LABELS_BY_LOCALE: Record<
+  string,
+  Record<ReservationStatus, string>
+> = {
+  vi: {
+    PENDING: "Chờ Xác Nhận",
+    CONFIRMED: "Đã Xác Nhận",
+    SEATED: "Đã Nhận Bàn",
+    CANCELLED: "Đã Hủy",
+    NO_SHOW: "Không Đến",
+  },
+  en: {
+    PENDING: "Pending",
+    CONFIRMED: "Confirmed",
+    SEATED: "Seated",
+    CANCELLED: "Cancelled",
+    NO_SHOW: "No Show",
+  },
 };
+
+export function donenessLabel(doneness: Doneness, locale = "vi"): string {
+  return (DONENESS_LABELS_BY_LOCALE[locale] ?? DONENESS_LABELS_BY_LOCALE.vi)[doneness];
+}
+
+export function orderStatusLabel(status: OrderStatus, locale = "vi"): string {
+  return (ORDER_STATUS_LABELS_BY_LOCALE[locale] ?? ORDER_STATUS_LABELS_BY_LOCALE.vi)[status];
+}
+
+export function reservationStatusLabel(status: ReservationStatus, locale = "vi"): string {
+  return (RESERVATION_STATUS_LABELS_BY_LOCALE[locale] ??
+    RESERVATION_STATUS_LABELS_BY_LOCALE.vi)[status];
+}
+
+// Giữ tên cũ cho khu admin (chỉ tiếng Việt) — nhiều chỗ đang dùng, không cần sửa.
+export const DONENESS_LABELS = DONENESS_LABELS_BY_LOCALE.vi;
+export const ORDER_STATUS_LABELS = ORDER_STATUS_LABELS_BY_LOCALE.vi;
+export const RESERVATION_STATUS_LABELS = RESERVATION_STATUS_LABELS_BY_LOCALE.vi;
 
 const WEEKDAY_LABELS: Record<string, Record<string, string>> = {
   vi: {

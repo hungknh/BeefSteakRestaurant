@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { translateFieldError } from "@/lib/validations/translate-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +14,8 @@ import { registerUser } from "@/lib/actions/register";
 import { registerFormSchema, type RegisterFormValues } from "@/lib/validations/auth";
 
 export function RegisterForm() {
+  const tv = useTranslations("Validation");
+  const t = useTranslations("Auth");
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const {
@@ -46,32 +50,32 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       <div>
-        <Label htmlFor="name">Họ tên</Label>
+        <Label htmlFor="name">{t("name")}</Label>
         <Input id="name" className="mt-2" {...register("name")} />
-        {errors.name ? <p className="mt-1 text-xs text-destructive">{errors.name.message}</p> : null}
+        {errors.name ? <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.name.message)}</p> : null}
       </div>
       <div>
         <Label htmlFor="email">Email</Label>
         <Input id="email" type="email" className="mt-2" {...register("email")} />
-        {errors.email ? <p className="mt-1 text-xs text-destructive">{errors.email.message}</p> : null}
+        {errors.email ? <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.email.message)}</p> : null}
       </div>
       <div>
-        <Label htmlFor="password">Mật khẩu</Label>
+        <Label htmlFor="password">{t("password")}</Label>
         <Input id="password" type="password" className="mt-2" {...register("password")} />
         {errors.password ? (
-          <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
+          <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.password.message)}</p>
         ) : null}
       </div>
       <div>
-        <Label htmlFor="confirmPassword">Nhập lại mật khẩu</Label>
+        <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
         <Input id="confirmPassword" type="password" className="mt-2" {...register("confirmPassword")} />
         {errors.confirmPassword ? (
-          <p className="mt-1 text-xs text-destructive">{errors.confirmPassword.message}</p>
+          <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.confirmPassword.message)}</p>
         ) : null}
       </div>
       {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
       <Button type="submit" size="lg" disabled={isSubmitting}>
-        Đăng Ký
+        {t("signUpButton")}
       </Button>
     </form>
   );

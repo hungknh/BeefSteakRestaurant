@@ -4,15 +4,17 @@ import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerFormSchema, type RegisterFormValues } from "@/lib/validations/auth";
+import { getTranslations } from "next-intl/server";
 
 export async function registerUser(values: RegisterFormValues) {
+  const t = await getTranslations("Errors");
   const parsed = registerFormSchema.safeParse(values);
-  if (!parsed.success) return { error: "Dữ liệu không hợp lệ." };
+  if (!parsed.success) return { error: t("invalidData") };
 
   const { name, email, password } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "Email đã được sử dụng." };
+  if (existing) return { error: t("emailTaken") };
 
   await prisma.user.create({
     data: {

@@ -1,9 +1,13 @@
+import { getTranslations } from "next-intl/server";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { PromoCard } from "@/components/promotion/promo-card";
 import { getPromotions } from "@/lib/data/promotions";
 
 export async function FeaturedPromotions() {
-  const promotions = await getPromotions();
+  const [promotions, t] = await Promise.all([
+    getPromotions(),
+    getTranslations("Home.featuredPromotions"),
+  ]);
   const firstRow = promotions.slice(0, 3);
   const secondRow = promotions.slice(3, 5);
 
@@ -11,9 +15,9 @@ export async function FeaturedPromotions() {
     <section className="bg-background-alt py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Ưu đãi có hạn"
-          title="Khuyến Mãi Nổi Bật"
-          description="Những ưu đãi đang áp dụng tại Beef Haven, cập nhật theo ngày trong tuần."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("subtitle")}
         />
 
         <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">

@@ -6,8 +6,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireAdminSession } from "@/lib/auth/require-admin";
 import { SITE } from "@/lib/site";
+import { isBookingDateAllowed, MAX_BOOKING_DAYS_AHEAD } from "@/lib/reservation/time-slots";
 import { reservationFormSchema, type ReservationFormValues } from "@/lib/validations/reservation";
 import type { ReservationStatus } from "@/types";
+import { getTranslations } from "next-intl/server";
 
 const RESERVATION_STATUSES: ReservationStatus[] = [
   "PENDING",
@@ -21,11 +23,18 @@ const RESERVATION_STATUSES: ReservationStatus[] = [
 const MAX_RESERVATIONS_PER_PHONE_PER_DAY = 3;
 
 export async function createReservation(values: ReservationFormValues, promotionId: string | null) {
+  const t = await getTranslations("Errors");
   const parsed = reservationFormSchema.safeParse(values);
-  if (!parsed.success) return { error: "Dữ liệu không hợp lệ." };
+  if (!parsed.success) return { error: t("invalidData") };
 
   const session = await auth();
   const { guestName, guestPhone, guestEmail, date, timeSlot, partySize, note } = parsed.data;
+
+  // `min={today}` trên input chỉ chặn ở client — request tự soạn bỏ qua được. Không kiểm
+  // ở đây thì tạo được đặt bàn cho ngày đã qua, hoặc đặt trước vài năm.
+  if (!isBookingDateAllowed(date, new Date())) {
+    return { error: t("invalidBookingDate", { days: MAX_BOOKING_DAYS_AHEAD }) };
+  }
 
   // Rate limit đếm thẳng trong DB, không cần store ngoài. Đơn đã hủy không tính vào hạn
   // mức — khách hủy rồi đặt lại giờ khác là hành vi bình thường, không phải spam.
@@ -34,7 +43,11 @@ export async function createReservation(values: ReservationFormValues, promotion
   });
   if (sameDayCount >= MAX_RESERVATIONS_PER_PHONE_PER_DAY) {
     return {
-      error: `Số điện thoại này đã có ${MAX_RESERVATIONS_PER_PHONE_PER_DAY} đặt bàn trong ngày ${date}. Vui lòng gọi ${SITE.phone} nếu cần thêm bàn.`,
+      error: t("reservationLimit", {
+        max: MAX_RESERVATIONS_PER_PHONE_PER_DAY,
+        date,
+        phone: SITE.phone,
+      }),
     };
   }
 
@@ -61,13 +74,14 @@ export async function createReservation(values: ReservationFormValues, promotion
 }
 
 export async function updateReservationStatus(reservationId: string, status: ReservationStatus) {
-  if (!RESERVATION_STATUSES.includes(status)) return { error: "Trạng thái không hợp lệ." };
+  const t = await getTranslations("Errors");
+  if (!RESERVATION_STATUSES.includes(status)) return { error: t("invalidStatus") };
 
   const session = await requireAdminSession();
-  if (!session) return { error: "Bạn không có quyền thực hiện thao tác này." };
+  if (!session) return { error: t("noPermission") };
 
   const reservation = await prisma.reservation.findUnique({ where: { id: reservationId } });
-  if (!reservation) return { error: "Không tìm thấy đặt bàn." };
+  if (!reservation) return { error: t("reservationNotFound") };
 
   await prisma.reservation.update({ where: { id: reservationId }, data: { status } });
 

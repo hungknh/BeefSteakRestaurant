@@ -2,6 +2,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RatingStars } from "@/components/shared/rating-stars";
 import type { Review } from "@/types";
+import { useTranslations } from "next-intl";
 
 export function ReviewList({
   reviews,
@@ -16,6 +17,7 @@ export function ReviewList({
   onEdit?: (review: Review) => void;
   onDelete?: (review: Review) => void;
 }) {
+  const t = useTranslations("Review");
   const distribution = [5, 4, 3, 2, 1].map((star) => {
     const count = reviews.filter((r) => r.rating === star).length;
     const percent = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
@@ -30,7 +32,7 @@ export function ReviewList({
           <span className="text-sm text-muted-foreground">/ 5</span>
         </div>
         <RatingStars rating={avgRating} />
-        <p className="text-sm text-muted-foreground">{reviews.length} đánh giá</p>
+        <p className="text-sm text-muted-foreground">{t("count", { count: reviews.length })}</p>
 
         <div className="mt-2 flex flex-col gap-1.5">
           {distribution.map(({ star, count, percent }) => (
@@ -47,14 +49,14 @@ export function ReviewList({
 
       <div className="flex flex-col divide-y divide-border">
         {reviews.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Chưa có đánh giá nào cho món này.</p>
+          <p className="text-sm text-muted-foreground">{t("none")}</p>
         ) : (
           reviews.map((review) => (
             <div key={review.id} className="py-5 first:pt-0 last:pb-0">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <p className="text-sm font-medium text-foreground">
-                    {review.user?.name ?? "Khách hàng"}
+                    {review.user?.name ?? t("customer")}
                   </p>
                   <RatingStars rating={review.rating} />
                 </div>
@@ -63,7 +65,7 @@ export function ReviewList({
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label="Sửa đánh giá"
+                      aria-label={t("edit")}
                       onClick={() => onEdit?.(review)}
                     >
                       <Pencil className="size-3.5" strokeWidth={1.5} />
@@ -71,7 +73,7 @@ export function ReviewList({
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label="Xóa đánh giá"
+                      aria-label={t("delete")}
                       className="text-muted-foreground hover:text-destructive"
                       onClick={() => onDelete?.(review)}
                     >

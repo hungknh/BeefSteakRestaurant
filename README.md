@@ -47,11 +47,18 @@ Website nhà hàng bít tết đầy đủ hai phía: khách đặt món/đặt 
 - Đổi trạng thái đơn hàng (6 trạng thái) và đặt bàn (5 trạng thái)
 - Phân trang server-side qua `searchParams`
 
+**Song ngữ Việt / Anh**
+
+- Tiếng Việt ở URL gốc (`/thuc-don`), tiếng Anh ở `/en/thuc-don` — mọi URL cũ giữ nguyên
+- Dịch cả **nội dung trong database**: tên món, mô tả, tiêu đề và badge khuyến mãi
+- `hreflang` + canonical trỏ đúng bản đang xem, sitemap có cả hai ngôn ngữ
+- Đánh giá của khách **không dịch** — giữ nguyên ngôn ngữ người viết, đúng thực tế
+
 **SEO / vận hành**
 
 - `generateMetadata` theo từng trang, `sitemap.xml` sinh từ DB, `robots.txt`
 - JSON-LD `Restaurant` + `Menu`
-- Trang lỗi và 404 riêng, 66 unit test (Vitest), CI chạy lint + test + build mỗi push
+- Trang lỗi và 404 riêng, **114 unit test** (Vitest), CI chạy lint + test + build mỗi push
 
 ---
 
@@ -66,6 +73,7 @@ Website nhà hàng bít tết đầy đủ hai phía: khách đặt món/đặt 
 | State client | Zustand — chỉ dùng cho giỏ hàng |
 | Database | Postgres (Neon) + Prisma 7 với driver adapter `@prisma/adapter-pg` |
 | Auth | Auth.js (next-auth v5), Credentials + bcrypt, session JWT |
+| i18n | next-intl (routing `[locale]`, tiếng Việt không prefix) |
 | Test / CI | Vitest, GitHub Actions |
 | Hosting | Vercel, tự deploy mỗi push lên `main` |
 
@@ -111,6 +119,7 @@ erDiagram
     }
     Dish {
         string id PK
+        string nameEn "ban dich, nullable"
         string slug UK
         int price "đơn vị đồng"
         boolean hasDoneness "cho chọn độ chín"
@@ -162,9 +171,11 @@ erDiagram
 
 `Review` có `@@unique([userId, dishId])` — mỗi người đánh giá một món đúng một lần.
 
+Các cột `*En` (trên `Category`, `Dish`, `Promotion`) là bản dịch tiếng Anh, đều nullable: chưa dịch thì giao diện tự hiển thị bản tiếng Việt thay vì để trống.
+
 ---
 
-## 3 vấn đề khó nhất và cách giải
+## 4 vấn đề khó nhất và cách giải
 
 ### 1. Discount engine dùng chung client/server mà không tin client
 
@@ -187,7 +198,17 @@ Phần khó nằm ở trải nghiệm: gọi Server Action rồi chờ round-tri
 
 Một chi tiết bảo mật dễ trượt: khi lấy review kèm thông tin người viết, `include: { user: true }` trả về cả cột `password` (bcrypt hash) ra tận client qua props của component. Phải `select` tường minh từng field. Đây là quy tắc áp cho mọi chỗ populate quan hệ tới `User`.
 
-### 3. Xây xong toàn bộ frontend rồi mới cắm database, không sửa lại page nào
+### 3. Không tin bất cứ thứ gì client gửi lên
+
+Server Action trông như gọi hàm bình thường, nhưng dữ liệu đi qua network và **type TypeScript bị xoá lúc runtime**. `createOrder(values, items)` ban đầu chỉ validate `values` bằng Zod, còn mảng `items` nhận nguyên — nên `quantity: -10` vào thẳng phép tính tiền và tạo được đơn hàng có **tổng tiền âm**. Server tính lại *giá* từ database nhưng vẫn tin *số lượng* của client.
+
+Cùng loại lỗi ở chỗ khác: `<input type="date" min={today}>` chỉ chặn người dùng bình thường, request tự soạn vẫn đặt bàn được cho ngày đã qua; `doneness` gửi lên cho món không có tuỳ chọn độ chín thì bếp nhận phiếu "Tiramisu — Chín Kỹ".
+
+Cách giải: Zod hoá **mọi** tham số của Server Action, không chỉ cái trông giống form; chuẩn hoá lại từng dòng theo dữ liệu database; và tách phần kiểm tra phụ thuộc thời gian thành hàm thuần nhận `now` qua tham số (`isBookingDateAllowed`) để test được mà không phải giả lập đồng hồ.
+
+Một biến thể tinh vi hơn của "không tin client" là **không lộ dữ liệu ra client**: `getReviews` từng `select` cả `email` của người đánh giá. Trang món là trang công khai nên field đó đi vào payload trong HTML — một trang lộ 10 email, quét hết trang là gom được gần như toàn bộ người dùng. Sửa bằng cách thu hẹp `select`, **và** thu hẹp luôn kiểu dữ liệu (`ReviewAuthor = { name: string }`) để lần sau đọc `review.user.email` sẽ không biên dịch được.
+
+### 4. Xây xong toàn bộ frontend rồi mới cắm database, không sửa lại page nào
 
 Rủi ro lớn nhất của dự án cá nhân là làm 50% của sáu mảng rồi bỏ dở. Nên frontend được làm xong trước với dữ liệu mock — nhưng nếu page gọi thẳng mock thì lúc thay database sẽ phải sửa từng page.
 
@@ -217,7 +238,7 @@ npm run dev                 # http://localhost:3000
 Các lệnh khác:
 
 ```bash
-npm test          # Vitest, 66 test
+npm test          # Vitest, 114 test
 npm run lint      # ESLint
 npm run build     # Next production build
 ```
@@ -244,8 +265,11 @@ src/
 │   ├── validations/        # schema Zod dùng chung client/server
 │   ├── auth/               # requireAdminSession()
 │   └── seo/                # JSON-LD
+├── i18n/                   # ⭐ routing locale, Link/router locale-aware
 ├── store/cart.ts           # Zustand
 └── types/index.ts          # ⭐ nguồn type gốc, viết trước cả schema
+
+messages/                   # vi.json + en.json (có test kiểm 2 file khớp key)
 
 prisma/
 ├── schema.prisma

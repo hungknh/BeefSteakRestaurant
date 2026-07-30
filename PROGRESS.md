@@ -43,17 +43,19 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 | 12 — Hoàn thiện (SEO/test/CI) | ✅ Xong (Playwright đã **cắt khỏi phạm vi** — xem "Sai khác" #46) | [#27](https://github.com/hungknh/BeefSteakRestaurant/pull/27) |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
 | 14 — Đóng gói cho CV | ✅ Xong | [#28](https://github.com/hungknh/BeefSteakRestaurant/pull/28) |
-| 15 — Optional: i18n Việt/Anh | 🔶 Đang làm (1/3 PR) — chỉ làm i18n, 3 mục còn lại đã cắt | [#29](https://github.com/hungknh/BeefSteakRestaurant/pull/29) |
+| 15 — Optional: i18n Việt/Anh | ✅ Xong (3/3 PR) — chỉ làm i18n, 3 mục còn lại đã cắt | [#29](https://github.com/hungknh/BeefSteakRestaurant/pull/29), [#30](https://github.com/hungknh/BeefSteakRestaurant/pull/30), [#31](https://github.com/hungknh/BeefSteakRestaurant/pull/31) |
 
 ## Việc cần làm tiếp
 
 **Bước tiếp theo ngay: Giai đoạn 13 (phần còn lại) rồi Giai đoạn 14 (đóng gói CV).**
 
-**Đã xong toàn bộ Giai đoạn 0–14. Không còn việc nào bắt buộc.** Những mục dưới đây chỉ làm nếu chủ dự án muốn:
+**Đã xong toàn bộ Giai đoạn 0–15. Website hoàn chỉnh.** Những mục dưới đây chỉ làm nếu chủ dự án muốn:
 
-1. **Giai đoạn 15 (Optional)** — Blog/CMS, VNPay/Momo sandbox, email xác nhận (Resend), i18n. Xem PLAN.md. Nếu làm Resend thì trang `/lien-he` đã có chỗ cắm form (xem #55).
-2. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`) — canonical URL/OG image/sitemap đều dựa vào biến này. Chưa cần làm khi còn dùng domain `*.vercel.app`.
-3. **Search server-side cho `/admin/orders` và `/admin/reservations`** — hiện ô tìm kiếm chỉ hoạt động trong 20 dòng của trang hiện tại (xem cảnh báo đánh đổi ở trên).
+1. **Dịch khu admin sang tiếng Anh** — hiện cố ý chỉ có tiếng Việt (#59). Catalog messages đã có sẵn hạ tầng, chỉ cần thêm namespace.
+2. **Search server-side cho `/admin/orders` và `/admin/reservations`** — hiện ô tìm kiếm chỉ hoạt động trong 20 dòng của trang hiện tại (xem cảnh báo đánh đổi ở trên).
+3. **Quay lại `npm ci` trong CI** khi xung đột ajv upstream được sửa (#62).
+4. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`).
+5. **Các mục Giai đoạn 15 đã cắt**: VNPay/Momo sandbox, email Resend, Blog/CMS (xem #58).
 
 Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload ảnh UploadThing (#45), Playwright E2E (#46), custom domain (dự án quy mô CV, dùng domain `*.vercel.app` là đủ).
 
@@ -263,6 +265,26 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 65. **Dữ liệu đang có trên Neon được điền bản dịch bằng `prisma/backfill-en.ts`, KHÔNG seed lại.** `prisma db seed` xoá sạch rồi sinh lại — mất 632 đơn + 457 đặt bàn + 113 đánh giá của bản demo (và bị Prisma chặn khi chạy từ AI agent, xem #35). Script chỉ `updateMany` các cột `*En` theo id, an toàn chạy lại nhiều lần, và cuối cùng in ra bản ghi nào trong DB còn thiếu bản dịch. Đã chạy: 5 danh mục + 15 món + 5 khuyến mãi. Chạy lại: `npx tsx prisma/backfill-en.ts`.
 
 66. **Form admin có ô nhập bản dịch (không bắt buộc).** Phải map DB → form qua `toFormValues()` trong `dish-form-dialog.tsx`/`promotion-form-dialog.tsx`: cột `*En` nullable trong DB nhưng input HTML cần `string`, nhồi `null` vào `value` làm input thành uncontrolled và React cảnh báo. Schema Zod dùng `z.string().trim()` (cho phép `""`) chứ **không** `.optional()` — input HTML luôn gửi `""` khi bỏ trống, `.optional()` sẽ không khớp. Fixture test của `dish.test.ts`/`promotion.test.ts` đã cập nhật theo, kèm 2 test mới kiểm "để rỗng vẫn pass".
+
+67. **⚠️⚠️ RÀ SOÁT LOGIC (2026-07-30) — 6 lỗi thật, đọc kỹ vì đều là loại lint/build KHÔNG bắt được.**
+
+    **(a) `createOrder` không validate mảng `items` từ client — nghiêm trọng nhất.** Chỉ `values` được Zod kiểm, còn `items` (dishId/quantity/doneness/note) nhận nguyên. **Type TypeScript bị xoá lúc runtime**, Server Action nhận dữ liệu qua network nên `quantity: number` không chặn gì. Đã kiểm bằng chính hàm thật: `quantity: -10` cho `subtotal = -1.000.000` → tạo được đơn có total âm. Đúng lỗ hổng PLAN.md mục 6 yêu cầu chặn — server tính lại **giá** từ DB nhưng tin **số lượng** của client. Fix: `orderItemsSchema` trong `validations/order.ts`. **Bài học chung: mọi tham số của Server Action đều phải validate, không chỉ cái trông giống "form".**
+
+    **(b) Rò rỉ email khách ra trang công khai.** `getReviews` dùng `select` (đúng, tránh lộ hash mật khẩu như #41 dặn) nhưng liệt kê thừa `email`/`role`. Trang món là trang công khai nên mọi field đi vào RSC payload trong HTML — đã kiểm: **1 trang lộ 10 email**, quét hết trang là gom gần hết 71 người dùng. Fix 2 lớp: thu hẹp `select` còn `name`, **và** đổi type thành `ReviewAuthor = { name: string }` để `review.user.email` **không biên dịch được** nữa. Nhớ: `select` hẹp thôi chưa đủ, phải để type chặn giúp.
+
+    **(c) `doneness` không kiểm theo `hasDoneness`** — lưu được "Tiramisu — Chín Kỹ". Server tự bỏ khi món không hỗ trợ.
+
+    **(d) Đặt bàn nhận ngày quá khứ + khung giờ tự do.** `<input type="date" min={today}>` là thuộc tính HTML, **chỉ chặn client**. Fix: `isBookingDateAllowed()` trong `reservation/time-slots.ts` (nhận `now` qua tham số để test được, cùng nguyên tắc `bestPromotion`) + `timeSlot: z.enum(TIME_SLOTS)` + `date` kiểm định dạng. ⚠️ Đổi `timeSlot` sang enum làm `defaultValues.timeSlot: ""` hết hợp lệ — dùng `undefined` cho trạng thái "chưa chọn".
+
+    **(e) Mã đơn trùng khi 2 đơn tạo đồng thời** → P2002 không bắt → khách thấy trang lỗi. Fix: `createOrderWithRetry`.
+
+    **(f) `total` tính bằng 2 công thức khác nhau** ở `computeCartTotals` (có kẹp 0) và `createOrder` (không kẹp). Hiện trùng số nhưng sửa engine một bên là lệch tiền. Server giờ dùng chung `computeCartTotals`.
+
+68. **Bộ dò "còn tiếng Việt trên trang /en" — cách verify i18n đáng tin nhất.** curl các trang `/en`, bỏ `<script>` (RSC payload chứa dữ liệu gốc, không phải chữ hiển thị), strip thẻ, rồi tìm **dấu riêng của tiếng Việt** (bỏ dấu dùng chung với tiếng Pháp — nếu không sẽ báo sai ở "Crème Brûlée"). Kết quả: **197 → 0** chuỗi UI.
+
+    ⚠️ **Mục tiêu KHÔNG phải 0 tuyệt đối.** Có 3 nhóm **cố ý** giữ tiếng Việt, phải loại trừ khi đếm: (1) địa chỉ nhà hàng "12 Lê Lợi, Quận 1, TP. Hồ Chí Minh" — danh từ riêng, hiện ở Footer mọi trang; (2) tên người đánh giá; (3) nội dung đánh giá khách viết. Cũng nhớ tên món tiếng Việt vẫn nằm trong RSC payload (props truyền xuống client) — **không phải lỗi hiển thị**, đã kiểm `Sườn Bò Nướng` xuất hiện 0 lần trong text render.
+
+69. **`computeCartTotals` trả về object `promotion`, KHÔNG phải `promotionTitle`.** Trả mỗi title thì đó luôn là bản tiếng Việt, nên dòng "Ưu đãi: …" trong giỏ hàng hiện tiếng Việt ngay ở bản tiếng Anh. Có object thì chỗ hiển thị tự gọi `promoTitle(promotion, locale)`. Ngược lại, `appliedPromotionTitle` lưu trong `Order` **cố ý giữ bản tiếng Việt** — đó là snapshot lịch sử, không phải chữ trên UI (cùng lý do `PICKUP_ADDRESS`).
 
 ## Cách tiếp tục ở phiên mới
 

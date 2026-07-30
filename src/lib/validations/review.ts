@@ -1,12 +1,15 @@
 import { z } from "zod";
 
+// ⚠️ Message ở đây là **key** trong namespace `Validation` của `messages/*.json`,
+// không phải chữ hiển thị. Xem ghi chú đầy đủ trong `auth.ts`.
+
 export const reviewFormSchema = z.object({
-  rating: z.number().int().min(1, "Vui lòng chọn số sao").max(5, "Tối đa 5 sao"),
+  rating: z.number().int().min(1, "ratingRequired").max(5, "ratingMax"),
   content: z
     .string()
     .trim()
-    .min(10, "Đánh giá cần ít nhất 10 ký tự")
-    .max(1000, "Đánh giá tối đa 1000 ký tự"),
+    .min(10, "reviewTooShort")
+    .max(1000, "reviewTooLong"),
 });
 
 export type ReviewFormValues = z.infer<typeof reviewFormSchema>;

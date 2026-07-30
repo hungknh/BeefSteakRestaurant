@@ -4,7 +4,12 @@ import type { Promotion } from "@/types";
 export type CartTotals = {
   subtotal: number;
   discount: number;
-  promotionTitle: string | null;
+  /**
+   * Trả về cả object khuyến mãi, KHÔNG chỉ `title`. Nếu chỉ trả title thì đó luôn là bản
+   * tiếng Việt, và dòng "Ưu đãi: …" trong giỏ hàng hiện tiếng Việt ngay cả ở bản tiếng
+   * Anh. Có object thì chỗ hiển thị tự gọi `promoTitle(promotion, locale)`.
+   */
+  promotion: Promotion | null;
   total: number;
 };
 
@@ -20,7 +25,7 @@ export function computeCartTotals(
   return {
     subtotal,
     discount,
-    promotionTitle: result?.promotion.title ?? null,
+    promotion: result?.promotion ?? null,
     total: Math.max(0, subtotal - discount) + shippingFee,
   };
 }

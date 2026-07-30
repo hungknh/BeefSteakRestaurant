@@ -55,7 +55,7 @@ describe("computeCartTotals", () => {
   it("không có khuyến mãi -> discount 0, total = subtotal", () => {
     const lines: CartLine[] = [{ dish: makeDish({ price: 300000 }), quantity: 1 }];
     const totals = computeCartTotals(lines, [], NOW);
-    expect(totals).toEqual({ subtotal: 300000, discount: 0, promotionTitle: null, total: 300000 });
+    expect(totals).toEqual({ subtotal: 300000, discount: 0, promotion: null, total: 300000 });
   });
 
   it("có khuyến mãi khớp -> trừ discount vào total", () => {
@@ -63,7 +63,7 @@ describe("computeCartTotals", () => {
     const promo = makePromo({ discountType: "PERCENT", discountValue: 10 });
     const totals = computeCartTotals(lines, [promo], NOW);
     expect(totals.discount).toBe(30000);
-    expect(totals.promotionTitle).toBe("Ưu đãi");
+    expect(totals.promotion?.title).toBe("Ưu đãi");
     expect(totals.total).toBe(270000);
   });
 
@@ -76,6 +76,6 @@ describe("computeCartTotals", () => {
 
   it("giỏ rỗng -> subtotal 0, total = shippingFee", () => {
     const totals = computeCartTotals([], [], NOW, 30000);
-    expect(totals).toEqual({ subtotal: 0, discount: 0, promotionTitle: null, total: 30000 });
+    expect(totals).toEqual({ subtotal: 0, discount: 0, promotion: null, total: 30000 });
   });
 });

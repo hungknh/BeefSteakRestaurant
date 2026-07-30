@@ -15,6 +15,7 @@ import { CartLineItem } from "@/components/cart/cart-line-item";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { useCartStore } from "@/store/cart";
 import type { Promotion } from "@/types";
+import { useTranslations } from "next-intl";
 
 // persist đọc localStorage sau khi SSR xong -> render thẳng badge sẽ lệch server/client.
 // useSyncExternalStore trả false lúc SSR, true sau khi hydrate xong (PLAN.md Giai đoạn 5).
@@ -29,6 +30,7 @@ function getServerSnapshot() {
 }
 
 export function CartDrawer({ promos }: { promos: Promotion[] }) {
+  const t = useTranslations("Cart");
   const mounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const items = useCartStore((s) => s.items);
 
@@ -37,7 +39,7 @@ export function CartDrawer({ promos }: { promos: Promotion[] }) {
   return (
     <Sheet>
       <SheetTrigger
-        render={<Button variant="ghost" size="icon" aria-label="Giỏ hàng" className="relative" />}
+        render={<Button variant="ghost" size="icon" aria-label={t("ariaLabel")} className="relative" />}
       >
         <ShoppingCart className="size-5" strokeWidth={1.5} />
         {mounted && count > 0 ? (
@@ -48,11 +50,11 @@ export function CartDrawer({ promos }: { promos: Promotion[] }) {
       </SheetTrigger>
       <SheetContent side="right" className="flex w-full flex-col sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="font-serif">Giỏ Hàng Của Bạn</SheetTitle>
+          <SheetTitle className="font-serif">{t("title")}</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-6">
           {items.length === 0 ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">Giỏ hàng trống.</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">{t("empty")}</p>
           ) : (
             <div className="divide-y divide-border">
               {items.map((item) => (
@@ -65,10 +67,10 @@ export function CartDrawer({ promos }: { promos: Promotion[] }) {
           <div className="flex flex-col gap-3 border-t border-border p-6">
             <CartSummary items={items} promos={promos} />
             <Button variant="gold-outline" nativeButton={false} render={<Link href="/gio-hang" />}>
-              Xem Giỏ Hàng
+              {t("viewCart")}
             </Button>
             <Button nativeButton={false} render={<Link href="/thanh-toan" />}>
-              Thanh Toán
+              {t("checkout")}
             </Button>
           </div>
         ) : null}

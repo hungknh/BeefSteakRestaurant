@@ -9,6 +9,7 @@ import { ReviewList } from "@/components/review/review-list";
 import { createReview, deleteReview, updateReview } from "@/lib/actions/review";
 import type { ReviewFormValues } from "@/lib/validations/review";
 import type { Review, User } from "@/types";
+import { useTranslations } from "next-intl";
 
 type OptimisticAction =
   | { type: "add"; review: Review }
@@ -39,6 +40,8 @@ export function ReviewSection({
   currentUser: User | null;
   canReview: boolean;
 }) {
+  const t = useTranslations("Review");
+  const tHeader = useTranslations("Header");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [mode, setMode] = useState<"idle" | "create" | "edit">("idle");
@@ -122,7 +125,7 @@ export function ReviewSection({
       {mode === "edit" && myReview ? (
         <ReviewForm
           defaultValues={{ rating: myReview.rating, content: myReview.content }}
-          submitLabel="Lưu Thay Đổi"
+          submitLabel={t("save")}
           pending={isPending}
           error={null}
           onCancel={() => setMode("idle")}
@@ -133,7 +136,7 @@ export function ReviewSection({
       {mode === "create" && currentUser && canReview && !myReview ? (
         <ReviewForm
           defaultValues={{ rating: 5, content: "" }}
-          submitLabel="Gửi Đánh Giá"
+          submitLabel={t("submit")}
           pending={isPending}
           error={null}
           onCancel={() => setMode("idle")}
@@ -145,17 +148,17 @@ export function ReviewSection({
         !currentUser ? (
           <p className="text-sm text-muted-foreground">
             <Link href="/dang-nhap" className="text-primary hover:underline">
-              Đăng nhập
+              {tHeader("signIn")}
             </Link>{" "}
-            để viết đánh giá.
+            {t("signInToWrite")}
           </p>
         ) : myReview ? null : canReview ? (
           <Button variant="gold-outline" size="sm" onClick={() => setMode("create")}>
-            Viết Đánh Giá
+            {t("write")}
           </Button>
         ) : (
           <p className="text-sm text-muted-foreground">
-            Bạn cần đặt món này và đơn đã hoàn thành mới có thể đánh giá.
+            {t("purchaseRequired")}
           </p>
         )
       ) : null}

@@ -4,13 +4,14 @@ import Image from "next/image";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/shared/price";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useCartStore, type CartItem } from "@/store/cart";
-import { DONENESS_LABELS } from "@/lib/format";
+import { donenessLabel } from "@/lib/format";
 import { dishName } from "@/lib/i18n-content";
 import { cn } from "@/lib/utils";
 
 export function CartLineItem({ item, compact = false }: { item: CartItem; compact?: boolean }) {
+  const t = useTranslations("Cart");
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const locale = useLocale();
@@ -34,15 +35,15 @@ export function CartLineItem({ item, compact = false }: { item: CartItem; compac
           <Price amount={item.dish.price * item.quantity} className="shrink-0 text-sm" />
         </div>
         {item.doneness ? (
-          <p className="text-xs text-muted-foreground">Độ chín: {DONENESS_LABELS[item.doneness]}</p>
+          <p className="text-xs text-muted-foreground">{t("doneness")}: {donenessLabel(item.doneness, locale)}</p>
         ) : null}
-        {item.note ? <p className="text-xs text-muted-foreground">Ghi chú: {item.note}</p> : null}
+        {item.note ? <p className="text-xs text-muted-foreground">{t("note")}: {item.note}</p> : null}
         <div className="mt-1 flex items-center gap-2">
           <Button
             type="button"
             variant="gold-outline"
             size="icon-sm"
-            aria-label="Giảm số lượng"
+            aria-label={t("decrease")}
             onClick={() => updateQuantity(item.key, item.quantity - 1)}
           >
             <Minus className="size-3.5" strokeWidth={1.5} />
@@ -52,7 +53,7 @@ export function CartLineItem({ item, compact = false }: { item: CartItem; compac
             type="button"
             variant="gold-outline"
             size="icon-sm"
-            aria-label="Tăng số lượng"
+            aria-label={t("increase")}
             onClick={() => updateQuantity(item.key, item.quantity + 1)}
           >
             <Plus className="size-3.5" strokeWidth={1.5} />
@@ -61,7 +62,7 @@ export function CartLineItem({ item, compact = false }: { item: CartItem; compac
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Xóa món"
+            aria-label={t("remove")}
             className="ml-auto text-muted-foreground hover:text-destructive"
             onClick={() => removeItem(item.key)}
           >

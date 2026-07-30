@@ -1,7 +1,9 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { translateFieldError } from "@/lib/validations/translate-error";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +25,8 @@ export function ReviewForm({
   pending: boolean;
   error: string | null;
 }) {
+  const t = useTranslations("Review");
+  const tv = useTranslations("Validation");
   const {
     handleSubmit,
     watch,
@@ -41,7 +45,7 @@ export function ReviewForm({
       className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
     >
       <div>
-        <Label>Số sao</Label>
+        <Label>{t("rating")}</Label>
         <div className="mt-2">
           <RatingInput
             value={rating}
@@ -50,15 +54,15 @@ export function ReviewForm({
           />
         </div>
         {errors.rating ? (
-          <p className="mt-1 text-xs text-destructive">{errors.rating.message}</p>
+          <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.rating.message)}</p>
         ) : null}
       </div>
 
       <div>
-        <Label htmlFor="review-content">Nhận xét</Label>
+        <Label htmlFor="review-content">{t("content")}</Label>
         <Textarea id="review-content" className="mt-2" disabled={pending} {...register("content")} />
         {errors.content ? (
-          <p className="mt-1 text-xs text-destructive">{errors.content.message}</p>
+          <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.content.message)}</p>
         ) : null}
       </div>
 
@@ -70,7 +74,7 @@ export function ReviewForm({
         </Button>
         {onCancel ? (
           <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={pending}>
-            Hủy
+            {t("cancel")}
           </Button>
         ) : null}
       </div>

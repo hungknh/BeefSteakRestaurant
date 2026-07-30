@@ -2,6 +2,7 @@
 
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export function RatingInput({
   value,
@@ -12,8 +13,9 @@ export function RatingInput({
   onChange: (rating: number) => void;
   disabled?: boolean;
 }) {
+  const t = useTranslations("Review");
   return (
-    <div className="flex items-center gap-1" role="radiogroup" aria-label="Chọn số sao">
+    <div className="flex items-center gap-1" role="radiogroup" aria-label={t("chooseRating")}>
       {Array.from({ length: 5 }, (_, i) => {
         const star = i + 1;
         const filled = star <= value;

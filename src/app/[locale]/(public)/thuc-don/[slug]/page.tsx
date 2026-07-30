@@ -13,6 +13,7 @@ import { getReviews } from "@/lib/data/reviews";
 import { dishDescription, dishName } from "@/lib/i18n-content";
 import { localeAlternates } from "@/lib/seo/alternates";
 import type { User } from "@/types";
+import { getTranslations } from "next-intl/server";
 
 type Props = { params: Promise<{ slug: string; locale: string }> };
 
@@ -39,6 +40,8 @@ export default async function DishDetailPage({ params }: Props) {
   const dish = await getDishBySlug(slug);
   if (!dish) notFound();
 
+  const tReview = await getTranslations("Review");
+
   const [reviews, sameCategoryDishes, session] = await Promise.all([
     getReviews({ dishId: dish.id }),
     getDishes({ category: dish.category?.slug }),
@@ -49,7 +52,7 @@ export default async function DishDetailPage({ params }: Props) {
   const currentUser: User | null = session?.user
     ? {
         id: session.user.id,
-        name: session.user.name ?? "Bạn",
+        name: session.user.name ?? tReview("you"),
         email: session.user.email ?? "",
         image: session.user.image ?? null,
         role: session.user.role,
@@ -91,7 +94,7 @@ export default async function DishDetailPage({ params }: Props) {
       </div>
 
       <div className="mt-20 border-t border-border pt-16">
-        <h2 className="font-serif text-2xl text-foreground">Đánh Giá Từ Thực Khách</h2>
+        <h2 className="font-serif text-2xl text-foreground">{tReview("heading")}</h2>
         <div className="mt-8">
           <ReviewSection
             dishId={dish.id}

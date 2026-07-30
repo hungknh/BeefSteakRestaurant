@@ -6,13 +6,17 @@ import { useRouter } from "@/i18n/navigation";
 import { stripLocale } from "@/i18n/strip-locale";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { translateFieldError } from "@/lib/validations/translate-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginFormSchema, type LoginFormValues } from "@/lib/validations/auth";
 
 export function LoginForm() {
+  const tv = useTranslations("Validation");
+  const t = useTranslations("Auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formError, setFormError] = useState<string | null>(null);
@@ -29,7 +33,7 @@ export function LoginForm() {
     setFormError(null);
     const result = await signIn("credentials", { ...values, redirect: false });
     if (result?.error) {
-      setFormError("Email hoặc mật khẩu không đúng.");
+      setFormError(t("badCredentials"));
       return;
     }
     // callbackUrl do next-auth sinh nên ĐÃ có thể chứa prefix locale (`/en/tai-khoan`).
@@ -45,18 +49,18 @@ export function LoginForm() {
       <div>
         <Label htmlFor="email">Email</Label>
         <Input id="email" type="email" className="mt-2" {...register("email")} />
-        {errors.email ? <p className="mt-1 text-xs text-destructive">{errors.email.message}</p> : null}
+        {errors.email ? <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.email.message)}</p> : null}
       </div>
       <div>
-        <Label htmlFor="password">Mật khẩu</Label>
+        <Label htmlFor="password">{t("password")}</Label>
         <Input id="password" type="password" className="mt-2" {...register("password")} />
         {errors.password ? (
-          <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>
+          <p className="mt-1 text-xs text-destructive">{translateFieldError(tv, errors.password.message)}</p>
         ) : null}
       </div>
       {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
       <Button type="submit" size="lg" disabled={isSubmitting}>
-        Đăng Nhập
+        {t("signInButton")}
       </Button>
     </form>
   );
