@@ -17,7 +17,7 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong Giai đoạn 10 (Review), 11 (Admin backend) và 12 (Hoàn thiện).** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. Còn lại: phần cuối Giai đoạn 13 (nối GitHub↔Vercel) và Giai đoạn 14 (đóng gói CV). **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Lưu ý: bản deploy Vercel hiện KHÔNG tự cập nhật theo commit mới (xem "Sai khác" #26) — code trên `main` đã đi trước bản demo, muốn deploy lại thì `npx vercel --prod --yes`.
+**Đã xong Giai đoạn 10 (Review), 11 (Admin backend) và 12 (Hoàn thiện).** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. Còn lại: phần cuối Giai đoạn 13 (nối GitHub↔Vercel) và Giai đoạn 14 (đóng gói CV). **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Từ 2026-07-30 bản deploy Vercel **tự cập nhật theo mỗi push lên `main`** (đã nối GitHub ↔ Vercel — xem "Sai khác" #54, thay thế #26).
 
 **Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
@@ -49,7 +49,7 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 
 **Bước tiếp theo ngay: Giai đoạn 13 (phần còn lại) rồi Giai đoạn 14 (đóng gói CV).**
 
-1. **Nối GitHub repo với Vercel** (chủ dự án tự làm: Vercel Dashboard → Project Settings → Git) — hiện mỗi lần deploy phải chạy `npx vercel --prod --yes` thủ công, xem "Sai khác" #26. Nối xong thì CI ở `.github/workflows/ci.yml` + auto-deploy mới thành 1 mạch.
+1. **Thêm `DATABASE_URL` + `DIRECT_URL` cho môi trường Preview trên Vercel** — xem "Sai khác" #54 để biết vì sao việc này phải làm thủ công và cẩn thận. Không làm thì Preview deployment (sinh ra ở mỗi PR) build được nhưng chết lúc chạy vì không có DB. Production **không** ảnh hưởng.
 2. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`) — canonical URL/OG image/sitemap đều dựa vào biến này.
 3. **Giai đoạn 14 (Đóng gói cho CV)**: README có screenshot, link demo, tài khoản demo, sơ đồ DB, và mục "3 vấn đề khó nhất đã giải" — xem PLAN.md.
 
@@ -197,6 +197,14 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 52. **CI (`.github/workflows/ci.yml`) tự dựng Postgres 17 trong container, KHÔNG dùng Neon thật.** Lý do: không cần GitHub secret (PR từ fork vẫn chạy được) và CI không có cách nào ghi bẩn vào dữ liệu demo. Job: `npm ci` (tự `prisma generate` qua postinstall, xem #30) → `prisma migrate deploy` (đồng thời kiểm migrations còn áp được sạch) → `lint` → `test` → `build`. `AUTH_SECRET` đặt giá trị giả ngay trong file YAML vì next-auth đòi biến này lúc build — không phải secret thật, đừng "sửa cho an toàn" bằng cách chuyển sang GitHub Secrets, sẽ làm fork PR vỡ. Lưu ý: **build hiện không cần DB** (mọi page đọc DB đều `force-dynamic` hoặc có searchParams), Postgres trong CI chỉ để `migrate deploy` chạy được.
 
 53. **`npx prettier --check src/**` báo lỗi ở 105 file — đây là trạng thái sẵn có của repo, không phải do Giai đoạn 12.** `.prettierrc.json` không set `printWidth` nên Prettier dùng mặc định 80, còn code trong repo viết theo ~100 cột. Prettier **không** nằm trong `npm run lint` hay CI, nên sai khác này không làm gì vỡ. Đừng chạy `prettier --write` toàn repo để "dọn" — sẽ tạo 1 diff khổng lồ vô nghĩa; nếu thật muốn thống nhất thì thêm `"printWidth": 100` vào `.prettierrc.json` trước, rồi mới format, và làm ở 1 commit `chore:` riêng.
+
+54. **✅ Đã nối GitHub ↔ Vercel (2026-07-30) — "Sai khác" #26 KHÔNG còn đúng nữa.** Repo `hungknh/BeefSteakRestaurant` giờ connected trong Vercel project `hung-dfd0/beefsteakhouse`, Production branch = `main`. **Mỗi push lên `main` tự deploy production**, không cần `npx vercel --prod --yes` nữa — và đừng dùng lệnh đó nữa vì nó bỏ qua git + upload kèm `.env` cục bộ (xem #40).
+
+    **⚠️ Cạm bẫy khi sửa env var Sensitive trên Vercel dashboard:** cả 3 biến (`AUTH_SECRET`, `DATABASE_URL`, `DIRECT_URL`) đều bật cờ **Sensitive**, nghĩa là Vercel **không gửi giá trị về browser** — mở form Edit thì ô Value **rỗng thật** (kiểm bằng `document.querySelector('textarea').value` → `''`, cái nhìn thấy chỉ là placeholder). Vì vậy không rõ Save có giữ nguyên giá trị cũ hay ghi rỗng lên. Đã thêm Preview cho `AUTH_SECRET` bằng cách này (Save báo thành công, biến vẫn còn + vẫn Sensitive), nhưng **chưa xác minh được giá trị bên trong còn nguyên** — `vercel env pull` chỉ trả về `"[SENSITIVE]"` cho cả 3, không phân biệt được. `DATABASE_URL`/`DIRECT_URL` **cố tình để nguyên Production-only**, chưa sửa, để không đánh cược với connection string.
+
+    Cách an toàn để thêm Preview cho 2 biến còn lại: **xoá rồi tạo lại** với giá trị copy từ `.env` cục bộ và tick sẵn cả Production + Preview, thay vì Edit biến có sẵn. Hoặc dùng CLI: `npx vercel env add DATABASE_URL preview` (CLI hỏi giá trị qua stdin, không dựa vào form web). Nếu `AUTH_SECRET` hoá ra đã bị ghi rỗng thì cứ tạo lại thoải mái — giá trị của nó là chuỗi random, đổi chỉ làm session đang đăng nhập bị đăng xuất, không mất dữ liệu.
+
+    Một điểm quan trọng: **thay đổi env không ảnh hưởng deployment đang chạy** — Vercel chỉ áp env mới ở lần deploy kế tiếp. Nên bản demo vẫn chạy bằng snapshot env cũ cho tới khi có deploy mới.
 
 ## Cách tiếp tục ở phiên mới
 
