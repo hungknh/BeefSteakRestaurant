@@ -421,6 +421,14 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
     **Đã verify bằng browser thật**, chạy bộ dò dấu tiếng Việt trên cả 5 trang admin bản `/en`: chỉ còn đúng 3 nhóm dữ liệu kể trên, 0 chuỗi UI. Bản tiếng Việt kiểm lại không hồi quy. ⚠️ Khi kiểm thủ công nhớ **cookie `NEXT_LOCALE`**: đã xem `/en` một lần thì gõ `/admin` sẽ bị redirect sang `/en/admin`, trông hệt như "bản tiếng Việt hỏng". Đặt lại bằng `document.cookie='NEXT_LOCALE=vi; path=/'`.
 
+78. **⚠️ `/dat-ban` thiếu `alternates` nên khai canonical là TRANG CHỦ — lỗi SEO thật, đã sửa (2026-07-30).** Phát hiện khi rà soát production.
+
+    Page nào không khai `alternates` trong `generateMetadata` sẽ **rơi về canonical mặc định của root layout, tức trang chủ**. Với `/dat-ban` điều đó nghĩa là báo với Google "trang này trùng nội dung trang chủ" — trong khi nó **có trong sitemap và không bị robots.txt chặn**, tức là trang muốn được index. Sửa bằng `alternates: localeAlternates("/dat-ban", locale)`.
+
+    Các trang khác cũng thiếu `alternates` (`/gio-hang`, `/thanh-toan`, `/dang-nhap`, `/dang-ky`, `/tai-khoan`) **không cần sửa** — đều đã `Disallow` trong `robots.txt`, canonical sai ở trang noindex thì vô hại.
+
+    ⚠️ **Cách kiểm canonical dễ cho kết quả SAI:** trang nào có streaming (vd `/thuc-don/[slug]` phải chờ review + auth) thì Next phát thẻ `<link rel="canonical">` **SAU `</head>`**, nằm trong phần thân. Cắt HTML tại `</head>` rồi tìm sẽ tưởng trang thiếu canonical — tôi đã kết luận nhầm đúng như vậy một lần. **Phải quét toàn bộ tài liệu**, đừng chỉ quét head. Cũng nhớ Next in ra `hrefLang` (chữ L hoa), regex `hreflang` phân biệt hoa thường sẽ đếm ra 0.
+
 ## Cách tiếp tục ở phiên mới
 
 1. Đọc file này + `PLAN.md`.
