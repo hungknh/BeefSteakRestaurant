@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -20,6 +21,7 @@ export function AdminSearchForm({
   sort?: string;
   dir?: string;
 }) {
+  const t = useTranslations("Admin.common");
   return (
     <form action="" className="flex gap-2 border-b border-border p-5">
       {/* Form GET thay THẾ cả query string, nên phải mang sort/dir theo bằng hidden
@@ -36,7 +38,7 @@ export function AdminSearchForm({
         className="max-w-xs"
       />
       <Button type="submit" variant="outline" size="sm">
-        Tìm
+        {t("search")}
       </Button>
     </form>
   );

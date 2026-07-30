@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,29 +24,33 @@ import {
 import { cn } from "@/lib/utils";
 import { createPromotion, updatePromotion } from "@/lib/actions/promotion";
 import type { PromotionFormValues } from "@/lib/validations/promotion";
+import { categoryName, dishName } from "@/lib/i18n-content";
 import type { Category, Dish, Promotion } from "@/types";
 
-const DISCOUNT_TYPE_LABELS: Record<Promotion["discountType"], string> = {
-  PERCENT: "Phần trăm (%)",
-  FIXED: "Số tiền cố định",
-  NONE: "Không giảm giá",
+// Bảng KEY chứ không phải chữ — hằng số ở cấp module không gọi được `t()`
+// (hook chỉ chạy trong component). Dịch lúc render.
+const DISCOUNT_TYPE_KEYS: Record<Promotion["discountType"], string> = {
+  PERCENT: "percent",
+  FIXED: "fixed",
+  NONE: "none",
 };
 
-const SCOPE_LABELS: Record<Promotion["scope"], string> = {
-  ALL: "Toàn bộ thực đơn",
-  CATEGORY: "Theo danh mục",
-  DISH: "Theo món ăn",
+const SCOPE_KEYS: Record<Promotion["scope"], string> = {
+  ALL: "scopeAll",
+  CATEGORY: "scopeCategory",
+  DISH: "scopeDish",
 };
 
+// value = thứ theo chuẩn JS getDay() (0 = Chủ Nhật), khớp cột `daysOfWeek` trong DB.
 const DAY_OPTIONS = [
-  { value: "1", label: "T2" },
-  { value: "2", label: "T3" },
-  { value: "3", label: "T4" },
-  { value: "4", label: "T5" },
-  { value: "5", label: "T6" },
-  { value: "6", label: "T7" },
-  { value: "0", label: "CN" },
-];
+  { value: "1", key: "mon" },
+  { value: "2", key: "tue" },
+  { value: "3", key: "wed" },
+  { value: "4", key: "thu" },
+  { value: "5", key: "fri" },
+  { value: "6", key: "sat" },
+  { value: "0", key: "sun" },
+] as const;
 
 const EMPTY_FORM: PromotionFormValues = {
   title: "",
@@ -102,6 +107,8 @@ export function PromotionFormDialog({
   onSaved: () => void;
   trigger: React.ReactElement;
 }) {
+  const t = useTranslations("Admin");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<PromotionFormValues>(promotion ? toFormValues(promotion) : EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
@@ -145,12 +152,12 @@ export function PromotionFormDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-serif">
-            {promotion ? "Sửa Khuyến Mãi" : "Thêm Khuyến Mãi"}
+            {promotion ? t("promotions.form.editTitle") : t("promotions.form.addTitle")}
           </DialogTitle>
         </DialogHeader>
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto">
           <div>
-            <Label htmlFor="promo-title">Tiêu đề</Label>
+            <Label htmlFor="promo-title">{t("promotions.form.title")}</Label>
             <Input
               id="promo-title"
               className="mt-2"
@@ -159,7 +166,7 @@ export function PromotionFormDialog({
             />
           </div>
           <div>
-            <Label htmlFor="promo-description">Mô tả</Label>
+            <Label htmlFor="promo-description">{t("promotions.form.description")}</Label>
             <Textarea
               id="promo-description"
               className="mt-2"
@@ -171,10 +178,10 @@ export function PromotionFormDialog({
               và mọi ô đều không bắt buộc. */}
           <div className="flex flex-col gap-4 rounded-lg border border-dashed border-border p-4">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Bản tiếng Anh — để trống ô nào thì ô đó hiện nội dung tiếng Việt
+              {t("promotions.form.enSection")}
             </p>
             <div>
-              <Label htmlFor="promo-title-en">Tiêu đề (tiếng Anh)</Label>
+              <Label htmlFor="promo-title-en">{t("promotions.form.titleEn")}</Label>
               <Input
                 id="promo-title-en"
                 className="mt-2"
@@ -183,7 +190,7 @@ export function PromotionFormDialog({
               />
             </div>
             <div>
-              <Label htmlFor="promo-description-en">Mô tả (tiếng Anh)</Label>
+              <Label htmlFor="promo-description-en">{t("promotions.form.descriptionEn")}</Label>
               <Textarea
                 id="promo-description-en"
                 className="mt-2"
@@ -193,7 +200,7 @@ export function PromotionFormDialog({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="promo-badge-label-en">Nhãn badge (EN)</Label>
+                <Label htmlFor="promo-badge-label-en">{t("promotions.form.badgeLabelEn")}</Label>
                 <Input
                   id="promo-badge-label-en"
                   className="mt-2"
@@ -203,7 +210,7 @@ export function PromotionFormDialog({
                 />
               </div>
               <div>
-                <Label htmlFor="promo-badge-offer-en">Ưu đãi (EN)</Label>
+                <Label htmlFor="promo-badge-offer-en">{t("promotions.form.badgeOfferEn")}</Label>
                 <Input
                   id="promo-badge-offer-en"
                   className="mt-2"
@@ -214,7 +221,7 @@ export function PromotionFormDialog({
               </div>
             </div>
             <div>
-              <Label htmlFor="promo-schedule-text-en">Lịch áp dụng (EN)</Label>
+              <Label htmlFor="promo-schedule-text-en">{t("promotions.form.scheduleTextEn")}</Label>
               <Input
                 id="promo-schedule-text-en"
                 className="mt-2"
@@ -225,7 +232,7 @@ export function PromotionFormDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="promo-image">Ảnh (URL)</Label>
+            <Label htmlFor="promo-image">{t("promotions.form.imageUrl")}</Label>
             <Input
               id="promo-image"
               className="mt-2"
@@ -235,39 +242,39 @@ export function PromotionFormDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="promo-badge-label">Nhãn badge</Label>
+              <Label htmlFor="promo-badge-label">{t("promotions.form.badgeLabel")}</Label>
               <Input
                 id="promo-badge-label"
                 className="mt-2"
-                placeholder="VD: HÀNG NGÀY"
+                placeholder={t("promotions.form.badgeLabelPlaceholder")}
                 value={form.badgeLabel}
                 onChange={(e) => setForm({ ...form, badgeLabel: e.target.value })}
               />
             </div>
             <div>
-              <Label htmlFor="promo-badge-offer">Nội dung ưu đãi</Label>
+              <Label htmlFor="promo-badge-offer">{t("promotions.form.badgeOffer")}</Label>
               <Input
                 id="promo-badge-offer"
                 className="mt-2"
-                placeholder="VD: GIẢM 30%"
+                placeholder={t("promotions.form.badgeOfferPlaceholder")}
                 value={form.badgeOffer}
                 onChange={(e) => setForm({ ...form, badgeOffer: e.target.value })}
               />
             </div>
           </div>
           <div>
-            <Label htmlFor="promo-schedule-text">Lịch áp dụng (hiển thị cho khách)</Label>
+            <Label htmlFor="promo-schedule-text">{t("promotions.form.scheduleText")}</Label>
             <Input
               id="promo-schedule-text"
               className="mt-2"
-              placeholder="VD: THỨ 5 HÀNG TUẦN"
+              placeholder={t("promotions.form.scheduleTextPlaceholder")}
               value={form.scheduleText}
               onChange={(e) => setForm({ ...form, scheduleText: e.target.value })}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="promo-discount-type">Loại giảm giá</Label>
+              <Label htmlFor="promo-discount-type">{t("promotions.form.discountType")}</Label>
               <Select
                 value={form.discountType}
                 onValueChange={(v) =>
@@ -276,17 +283,19 @@ export function PromotionFormDialog({
               >
                 <SelectTrigger id="promo-discount-type" className="mt-2 w-full">
                   <SelectValue>
-                    {(value: Promotion["discountType"]) => DISCOUNT_TYPE_LABELS[value]}
+                    {(value: Promotion["discountType"]) =>
+                      t(`promotions.form.${DISCOUNT_TYPE_KEYS[value]}`)
+                    }
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PERCENT">Phần trăm (%)</SelectItem>
-                  <SelectItem value="FIXED">Số tiền cố định</SelectItem>
+                  <SelectItem value="PERCENT">{t("promotions.form.percent")}</SelectItem>
+                  <SelectItem value="FIXED">{t("promotions.form.fixed")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="promo-discount-value">Giá trị giảm</Label>
+              <Label htmlFor="promo-discount-value">{t("promotions.form.discountValue")}</Label>
               <Input
                 id="promo-discount-value"
                 type="number"
@@ -297,7 +306,7 @@ export function PromotionFormDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="promo-scope">Phạm vi áp dụng</Label>
+            <Label htmlFor="promo-scope">{t("promotions.form.scope")}</Label>
             <Select
               value={form.scope}
               onValueChange={(v) =>
@@ -305,31 +314,36 @@ export function PromotionFormDialog({
               }
             >
               <SelectTrigger id="promo-scope" className="mt-2 w-full">
-                <SelectValue>{(value: Promotion["scope"]) => SCOPE_LABELS[value]}</SelectValue>
+                <SelectValue>
+                  {(value: Promotion["scope"]) => t(`promotions.form.${SCOPE_KEYS[value]}`)}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">Toàn bộ thực đơn</SelectItem>
-                <SelectItem value="CATEGORY">Theo danh mục</SelectItem>
-                <SelectItem value="DISH">Theo món ăn</SelectItem>
+                <SelectItem value="ALL">{t("promotions.form.scopeAll")}</SelectItem>
+                <SelectItem value="CATEGORY">{t("promotions.form.scopeCategory")}</SelectItem>
+                <SelectItem value="DISH">{t("promotions.form.scopeDish")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           {form.scope === "CATEGORY" ? (
             <div>
-              <Label htmlFor="promo-category">Danh mục áp dụng</Label>
+              <Label htmlFor="promo-category">{t("promotions.form.category")}</Label>
               <Select
                 value={form.targetCategoryId ?? ""}
                 onValueChange={(v) => setForm({ ...form, targetCategoryId: v ?? null })}
               >
                 <SelectTrigger id="promo-category" className="mt-2 w-full">
-                  <SelectValue placeholder="Chọn danh mục">
-                    {(value: string) => categories.find((c) => c.id === value)?.name}
+                  <SelectValue placeholder={t("promotions.form.categoryPlaceholder")}>
+                    {(value: string) => {
+                      const cat = categories.find((c) => c.id === value);
+                      return cat ? categoryName(cat, locale) : "";
+                    }}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name}
+                      {categoryName(c, locale)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -338,20 +352,23 @@ export function PromotionFormDialog({
           ) : null}
           {form.scope === "DISH" ? (
             <div>
-              <Label htmlFor="promo-dish">Món áp dụng</Label>
+              <Label htmlFor="promo-dish">{t("promotions.form.dish")}</Label>
               <Select
                 value={form.targetDishId ?? ""}
                 onValueChange={(v) => setForm({ ...form, targetDishId: v ?? null })}
               >
                 <SelectTrigger id="promo-dish" className="mt-2 w-full">
-                  <SelectValue placeholder="Chọn món">
-                    {(value: string) => dishes.find((d) => d.id === value)?.name}
+                  <SelectValue placeholder={t("promotions.form.dishPlaceholder")}>
+                    {(value: string) => {
+                      const d = dishes.find((x) => x.id === value);
+                      return d ? dishName(d, locale) : "";
+                    }}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {dishes.map((d) => (
                     <SelectItem key={d.id} value={d.id}>
-                      {d.name}
+                      {dishName(d, locale)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -359,7 +376,7 @@ export function PromotionFormDialog({
             </div>
           ) : null}
           <div>
-            <Label>Ngày trong tuần (bỏ trống = mọi ngày)</Label>
+            <Label>{t("promotions.form.daysOfWeek")}</Label>
             <div className="mt-2 flex flex-wrap gap-2">
               {DAY_OPTIONS.map((d) => (
                 <button
@@ -372,14 +389,14 @@ export function PromotionFormDialog({
                       "border-primary bg-primary text-primary-foreground",
                   )}
                 >
-                  {d.label}
+                  {t(`common.dayShort.${d.key}`)}
                 </button>
               ))}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="promo-start-time">Giờ bắt đầu</Label>
+              <Label htmlFor="promo-start-time">{t("promotions.form.startTime")}</Label>
               <Input
                 id="promo-start-time"
                 type="time"
@@ -389,7 +406,7 @@ export function PromotionFormDialog({
               />
             </div>
             <div>
-              <Label htmlFor="promo-end-time">Giờ kết thúc</Label>
+              <Label htmlFor="promo-end-time">{t("promotions.form.endTime")}</Label>
               <Input
                 id="promo-end-time"
                 type="time"
@@ -401,7 +418,7 @@ export function PromotionFormDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="promo-start-date">Ngày bắt đầu (tùy chọn)</Label>
+              <Label htmlFor="promo-start-date">{t("promotions.form.startDate")}</Label>
               <Input
                 id="promo-start-date"
                 type="date"
@@ -411,7 +428,7 @@ export function PromotionFormDialog({
               />
             </div>
             <div>
-              <Label htmlFor="promo-end-date">Ngày kết thúc (tùy chọn)</Label>
+              <Label htmlFor="promo-end-date">{t("promotions.form.endDate")}</Label>
               <Input
                 id="promo-end-date"
                 type="date"
@@ -422,7 +439,7 @@ export function PromotionFormDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="promo-min-subtotal">Hóa đơn tối thiểu (VNĐ)</Label>
+            <Label htmlFor="promo-min-subtotal">{t("promotions.form.minSubtotal")}</Label>
             <Input
               id="promo-min-subtotal"
               type="number"
@@ -438,13 +455,13 @@ export function PromotionFormDialog({
               onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
               className="size-4 rounded border-border"
             />
-            Đang kích hoạt
+            {t("promotions.form.isActive")}
           </label>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
           <Button onClick={handleSubmit} disabled={isPending}>
-            {promotion ? "Lưu Thay Đổi" : "Thêm Khuyến Mãi"}
+            {promotion ? t("common.save") : t("promotions.add")}
           </Button>
         </DialogFooter>
       </DialogContent>

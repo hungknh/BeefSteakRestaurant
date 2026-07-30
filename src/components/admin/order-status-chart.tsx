@@ -1,4 +1,5 @@
-import { ORDER_STATUS_LABELS } from "@/lib/format";
+import { useLocale, useTranslations } from "next-intl";
+import { orderStatusLabel } from "@/lib/format";
 import type { OrderStatus } from "@/types";
 
 const STATUS_ORDER: OrderStatus[] = [
@@ -29,16 +30,18 @@ export function OrderStatusChart({
 }: {
   statusCounts: Partial<Record<OrderStatus, number>>;
 }) {
+  const t = useTranslations("Admin");
+  const locale = useLocale();
   const counts = STATUS_ORDER.map((status) => ({
     status,
-    label: ORDER_STATUS_LABELS[status],
+    label: orderStatusLabel(status, locale),
     count: statusCounts[status] ?? 0,
   }));
   const max = Math.max(1, ...counts.map((c) => c.count));
 
   return (
     <div className="rounded-lg border border-border bg-card p-5">
-      <h2 className="mb-5 font-serif text-lg text-foreground">Đơn Hàng Theo Trạng Thái</h2>
+      <h2 className="mb-5 font-serif text-lg text-foreground">{t("dashboard.orderStatus")}</h2>
       <div className="flex flex-col gap-3">
         {counts.map((c) => (
           <div key={c.status} className="flex items-center gap-3">

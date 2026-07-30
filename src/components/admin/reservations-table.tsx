@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RESERVATION_STATUS_LABELS } from "@/lib/format";
+import { useLocale, useTranslations } from "next-intl";
+import { RESERVATION_STATUS_LABELS_BY_LOCALE, reservationStatusLabel } from "@/lib/format";
 import { updateReservationStatus } from "@/lib/actions/reservation";
 import type { SortDir } from "@/lib/admin/table-query";
 import type { ReservationSortKey } from "@/lib/data/reservations";
@@ -19,10 +20,9 @@ import type { Reservation, ReservationStatus } from "@/types";
 
 const BASE_PATH = "/admin/reservations";
 
-const STATUS_OPTIONS = Object.entries(RESERVATION_STATUS_LABELS) as [
-  ReservationStatus,
-  string,
-][];
+const STATUS_VALUES = Object.keys(
+  RESERVATION_STATUS_LABELS_BY_LOCALE.vi,
+) as ReservationStatus[];
 
 export function ReservationsTable({
   reservations,
@@ -36,6 +36,8 @@ export function ReservationsTable({
   dir: SortDir;
 }) {
   const router = useRouter();
+  const t = useTranslations("Admin");
+  const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
@@ -57,7 +59,7 @@ export function ReservationsTable({
     <div className="rounded-lg border border-border bg-card">
       <AdminSearchForm
         defaultValue={search}
-        placeholder="Tìm theo tên khách..."
+        placeholder={t("reservations.searchPlaceholder")}
         sort={sort}
         dir={dir}
       />
@@ -67,24 +69,24 @@ export function ReservationsTable({
           <thead>
             <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
               <SortHeader
-                label="Khách Hàng"
+                label={t("common.customer")}
                 sortKey="guestName"
                 activeSort={sort}
                 activeDir={dir}
                 basePath={BASE_PATH}
                 search={search}
               />
-              <th className="px-5 py-3 font-medium">Liên Hệ</th>
+              <th className="px-5 py-3 font-medium">{t("reservations.contact")}</th>
               <SortHeader
-                label="Ngày Giờ"
+                label={t("reservations.dateTime")}
                 sortKey="date"
                 activeSort={sort}
                 activeDir={dir}
                 basePath={BASE_PATH}
                 search={search}
               />
-              <th className="px-5 py-3 font-medium">Số Khách</th>
-              <th className="px-5 py-3 font-medium">Trạng Thái</th>
+              <th className="px-5 py-3 font-medium">{t("reservations.partySize")}</th>
+              <th className="px-5 py-3 font-medium">{t("common.status")}</th>
             </tr>
           </thead>
           <tbody>
@@ -112,17 +114,17 @@ export function ReservationsTable({
                       v && changeStatus(reservation.id, v as ReservationStatus)
                     }
                   >
-                    <SelectTrigger size="sm" aria-label="Đổi trạng thái">
+                    <SelectTrigger size="sm" aria-label={t("common.changeStatus")}>
                       <SelectValue>
                         {(value: ReservationStatus) =>
-                          RESERVATION_STATUS_LABELS[value]
+                          reservationStatusLabel(value, locale)
                         }
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {STATUS_OPTIONS.map(([value, label]) => (
+                      {STATUS_VALUES.map((value) => (
                         <SelectItem key={value} value={value}>
-                          {label}
+                          {reservationStatusLabel(value, locale)}
                         </SelectItem>
                       ))}
                     </SelectContent>

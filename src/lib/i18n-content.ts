@@ -26,7 +26,11 @@ export function categoryName(category: Category, locale: string): string {
   return pick(category.name, category.nameEn, locale);
 }
 
-export function dishName(dish: Dish, locale: string): string {
+/**
+ * Nhận structural type thay vì nguyên `Dish`: dashboard truyền `TopDish` (chỉ select vài
+ * cột từ DB), đòi đủ `Dish` là không truyền được mà cũng không cần — hàm chỉ đọc 2 field.
+ */
+export function dishName(dish: Pick<Dish, "name" | "nameEn">, locale: string): string {
   return pick(dish.name, dish.nameEn, locale);
 }
 
