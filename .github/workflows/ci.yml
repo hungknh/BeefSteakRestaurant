@@ -41,12 +41,17 @@ jobs:
           cache: npm
 
       # `npm ci` — cài đúng theo package-lock, tái lập tuyệt đối. Đã quay lại được sau
-      # một giai đoạn phải dùng `npm install` vì xung đột ajv (xem PROGRESS.md #62, #75).
+      # một giai đoạn phải dùng `npm install` (xem PROGRESS.md #62, #75).
+      #
+      # Giữ được nhờ `overrides: {"@swc/helpers": "^0.5.23"}` trong package.json:
+      # `next` ghim 0.5.15 còn `@swc/core` (do next-intl kéo về) cần >=0.5.17, và npm
+      # giải xung đột đó KHÁC NHAU giữa Windows và Linux — không có override thì lock
+      # sinh trên máy dev Windows sẽ vỡ ở CI Linux. Đừng xoá override đó.
       #
       # Nếu bước này lại vỡ với "Missing: <gói> from lock file": ĐỪNG đổi sang
       # `npm install` cho nhanh, và ĐỪNG xoá lock rồi sinh lại một cách vô định.
       # Chẩn đoán bằng `npm ci --dry-run` ở local (đọc phần ĐẦU output — dòng `Missing:`
-      # nằm ở đầu, `| tail` sẽ cắt mất) rồi sinh lại lock một lần và thử lại.
+      # nằm ở đầu, `| tail` sẽ cắt mất), nhưng nhớ local xanh KHÔNG bảo đảm CI xanh.
       #
       # Tự chạy postinstall -> `prisma generate` (xem "Sai khác" #30).
       - run: npm ci --no-audit --no-fund

@@ -372,10 +372,18 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
     Vì ajv chỉ là optional peer, npm **không cần** thoả nó. Sinh lại lock một lần là hội tụ: `npm ci --dry-run` sạch, `npm ls ajv --all` **không còn dòng `invalid`** nào (ajv 6.15.0 nằm lồng dưới `eslint`, ajv 8.20.0 ở nơi khác), lint/test/build đều xanh. Lock thay đổi: +5 gói, -10 gói, 8 gói đổi version.
 
-    **Không dùng `overrides`** — thử thì thấy không cần, thêm `overrides` cho một optional peer mình còn không dùng là thừa.
+    Không cần `overrides` cho ajv — nó chỉ là optional peer.
+
+    **Nhưng ajv chỉ là nửa vấn đề. Nửa còn lại là `@swc/helpers`, và nó PHỤ THUỘC NỀN TẢNG.** Lock sinh trên Windows pass `npm ci --dry-run` ở local nhưng **CI Linux vẫn vỡ**: `Missing: @swc/helpers@0.5.23 from lock file`. Nguyên nhân: `next@16.2.10` ghim đúng `@swc/helpers@0.5.15`, còn `@swc/core` (do `next-intl` kéo về, xem #62) cần `>=0.5.17` → cây `invalid` ngay cả trên máy dev, và **npm giải xung đột này khác nhau giữa Windows và Linux** nên lock sinh ở một bên không dùng được ở bên kia.
+
+    **Bài học: `npm ci --dry-run` xanh ở local KHÔNG bảo đảm CI xanh.** Lock có thể phụ thuộc nền tảng nơi nó được sinh ra.
+
+    **Cách sửa: `overrides` toàn cục `{"@swc/helpers": "^0.5.23"}`** — ép một version duy nhất nên mọi nền tảng giải giống nhau. Hai lưu ý:
+    - **Override có phạm vi (`{"@swc/core": {"@swc/helpers": "..."}}`) KHÔNG ăn** — đã thử, npm vẫn giữ 0.5.15 hoisted và tiếp tục báo `invalid`. Phải override toàn cục.
+    - Override này **cố ý phá cái ghim `0.5.15` của `next`**. An toàn vì `@swc/helpers` chỉ là thư viện helper runtime của SWC và 0.5.x tương thích ngược. Đã verify: lint 0 lỗi, 114 test pass, `next build` xanh, `next dev` phục vụ `/` và `/en/thuc-don` đều 200. **Nếu nâng `next` lên bản mới, kiểm lại xem còn cần override này không** — bỏ được thì bỏ.
 
     Ghi lại cách chẩn đoán cho lần sau, vì đây từng là chỗ tốn thời gian nhất của dự án:
-    - `npm ci --dry-run` là phép thử duy nhất đáng tin. **Đọc phần ĐẦU output** — dòng `Missing:` nằm ở đầu, `| tail` cắt mất đúng thông tin cần.
+    - `npm ci --dry-run` để chẩn đoán, **đọc phần ĐẦU output** — dòng `Missing:` nằm ở đầu, `| tail` cắt mất đúng thông tin cần. Nhưng nhớ nó **chỉ đúng cho nền tảng đang chạy**; phép thử thật là CI Linux.
     - `npm ls <gói> --all` để xem gói nào bị đánh dấu `invalid` và ai là bên yêu cầu.
     - Trước khi kết luận "xung đột không giải được", **kiểm xem cái gây xung đột có phải optional peer không** — nếu có, thường chỉ cần sinh lại lock.
     - Vẫn giữ nguyên bài học gốc của #62: đừng xoá lock đang chạy tốt một cách vô định. Lần này xoá có chủ đích, trên nhánh riêng, và verify bằng `npm ci --dry-run` + lint/test/build trước khi commit.
