@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { stripLocale } from "@/i18n/strip-locale";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +32,11 @@ export function LoginForm() {
       setFormError("Email hoặc mật khẩu không đúng.");
       return;
     }
-    router.push(searchParams.get("callbackUrl") ?? "/tai-khoan");
+    // callbackUrl do next-auth sinh nên ĐÃ có thể chứa prefix locale (`/en/tai-khoan`).
+    // router của next-intl tự thêm prefix, nên phải bỏ prefix cũ trước, không thì ra
+    // `/en/en/tai-khoan`.
+    const callbackUrl = searchParams.get("callbackUrl");
+    router.push(callbackUrl ? stripLocale(callbackUrl) : "/tai-khoan");
     router.refresh();
   };
 

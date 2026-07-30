@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { RatingStars } from "@/components/shared/rating-stars";
 import { Price } from "@/components/shared/price";
 import type { Dish } from "@/types";

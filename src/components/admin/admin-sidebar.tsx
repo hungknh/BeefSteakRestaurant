@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { LayoutDashboard, UtensilsCrossed, Tag, CalendarCheck, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +14,8 @@ const ADMIN_NAV = [
 ] as const;
 
 export function AdminSidebar() {
+  // usePathname của next-intl: đã bỏ prefix locale, nên so khớp `active` chạy đúng ở cả
+  // `/admin` và `/en/admin`. Dùng bản của next/navigation thì bản tiếng Anh không tô mục nào.
   const pathname = usePathname();
   return (
     <aside className="hidden w-60 shrink-0 border-r border-border bg-card sm:block">

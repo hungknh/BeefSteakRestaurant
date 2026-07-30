@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { CartLineItem } from "@/components/cart/cart-line-item";
 import { CartSummary } from "@/components/cart/cart-summary";

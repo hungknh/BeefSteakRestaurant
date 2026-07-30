@@ -40,8 +40,24 @@ jobs:
           node-version: 22
           cache: npm
 
-      # `npm ci` tự chạy postinstall -> `prisma generate` (xem "Sai khác" #30).
-      - run: npm ci
+      # `npm install`, KHÔNG phải `npm ci` — có lý do, đừng "sửa lại cho chuẩn".
+      #
+      # `npm ci` đòi package-lock khớp tuyệt đối với package.json, và hiện không thoả được:
+      # `eslint` cần `ajv ^6.12.4`, `@hookform/resolvers` cần `ajv ^8.12.0`. Dòng ajv 6
+      # đứng ở 6.12.6 từ 2020, nhưng 6.14.0/6.15.0 được phát hành 02+04/2026 nên npm giờ
+      # hoist ajv 6.15.0 lên root — đúng chỗ @hookform/resolvers tìm, thành "invalid", và
+      # npm ghi lock thiếu các bản lồng. Sinh lại lock bao nhiêu lần cũng không hội tụ.
+      #
+      # Xung đột này có sẵn từ trước, không do code dự án, và KHÔNG ảnh hưởng runtime: chỗ
+      # duy nhất cần ajv là `ajvResolver` của @hookform/resolvers, mà dự án dùng
+      # `zodResolver`. lint/test/build đều xanh với cây npm install sinh ra.
+      #
+      # Đánh đổi: CI có thể cài bản transitive mới hơn lock, nên mất tính tái lập tuyệt đối.
+      # Vẫn bắt được hồi quy lint/test/build — đó là việc chính của CI ở đây.
+      # Quay lại `npm ci` khi upstream sửa (xem PROGRESS.md #62).
+      #
+      # Tự chạy postinstall -> `prisma generate` (xem "Sai khác" #30).
+      - run: npm install --no-audit --no-fund
 
       - name: Áp migrations lên Postgres của CI
         run: npx prisma migrate deploy

@@ -43,7 +43,7 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 | 12 — Hoàn thiện (SEO/test/CI) | ✅ Xong (Playwright đã **cắt khỏi phạm vi** — xem "Sai khác" #46) | [#27](https://github.com/hungknh/BeefSteakRestaurant/pull/27) |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
 | 14 — Đóng gói cho CV | ✅ Xong | [#28](https://github.com/hungknh/BeefSteakRestaurant/pull/28) |
-| 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
+| 15 — Optional: i18n Việt/Anh | 🔶 Đang làm (1/3 PR) — chỉ làm i18n, 3 mục còn lại đã cắt | [#29](https://github.com/hungknh/BeefSteakRestaurant/pull/29) |
 
 ## Việc cần làm tiếp
 
@@ -215,6 +215,38 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 56. **Tài khoản khách để demo là `hang.do@example.com` / `password123` — chọn từ dữ liệu seed có sẵn, KHÔNG tạo user mới.** Lý do: email khách do `generateCustomers()` sinh random nên không có email cố định nào để ghi vào README, mà tài khoản đăng ký mới thì trắng lịch sử và **không viết được đánh giá** (cần đơn `COMPLETED` chứa món đó, xem #42). Đã truy vấn DB chọn khách có lịch sử đẹp nhất: 15 đơn hoàn thành, 8 đặt bàn, 5 đánh giá. **Nếu seed lại DB thì email này đổi** (random theo seed) — phải truy vấn lại và sửa README, nếu không nhà tuyển dụng đăng nhập sẽ lỗi. Câu truy vấn: `groupBy` trên `Order` theo `userId` với `status: "COMPLETED"`, sắp giảm dần theo `_count`.
 
 57. **README đã viết lại hoàn toàn (Giai đoạn 14) — bản cũ vẫn còn nguyên boilerplate `create-next-app`** (kể cả đoạn quảng cáo font Geist mà dự án không dùng). Bản mới: link demo, bảng 2 tài khoản dùng thử, 5 screenshot, tech stack, bảng số liệu dữ liệu, **sơ đồ DB bằng Mermaid `erDiagram`** (GitHub render sẵn, không cần ảnh), và 3 vấn đề khó nhất theo yêu cầu PLAN.md. Số liệu trong README lấy từ **truy vấn DB thật** chứ không copy số cũ trong file này — đặt bàn thực tế là **457** chứ không phải 460 như phần đầu file từng ghi. Nếu sửa số liệu thì truy vấn lại, đừng chép chéo giữa 2 file.
+
+58. **Giai đoạn 15: chỉ làm i18n Việt/Anh. Đã CẮT 3 mục còn lại** (quyết định chủ dự án, 2026-07-30): VNPay/Momo sandbox (cần tự đăng ký merchant), **email xác nhận Resend** (không có custom domain thì Resend chỉ gửi được tới email của chính chủ tài khoản → nhà tuyển dụng thử sẽ không nhận được gì, tính năng trông như hỏng), Blog/CMS (giá trị CV thấp nhất, không thể hiện thêm kỹ năng nào so với CRUD món/khuyến mãi đã có).
+
+59. **⚠️ i18n bắt buộc chuyển toàn bộ route vào `app/[locale]/` — không phải để cho gọn.** `<html lang>` phải đổi theo ngôn ngữ, mà root layout là chỗ duy nhất render `<html>`, nên root layout phải biết locale ⇒ nó phải nằm trong `[locale]`. Hệ quả: **không còn `app/layout.tsx`**, root layout thật là `app/[locale]/layout.tsx`. `admin` cũng nằm trong `[locale]` (để có `<html>`), nhưng **chuỗi admin giữ tiếng Việt** — công cụ nội bộ, dịch nó gần như gấp đôi khối lượng mà không thêm giá trị CV. `robots.ts`/`sitemap.ts` ở lại `app/` (không phải page, không cần `<html>`; matcher của proxy loại trừ path có dấu chấm nên chúng không bị redirect locale).
+
+    **Đường dẫn KHÔNG dịch**: `/en/thuc-don` chứ không phải `/en/menu`. next-intl làm được (`pathnames`) nhưng thêm một tầng cấu hình cho lợi ích nhỏ.
+
+    **Xoá `.next` khi đổi cấu trúc route.** Type cache cũ gây lỗi trông như lỗi code: `Type '"/"' is not assignable to type 'LayoutRoutes'` ở `.next/dev/types/validator.ts`. `rm -rf .next tsconfig.tsbuildinfo` là hết.
+
+60. **⚠️⚠️ Truyền handler vào `auth(...)` làm MẤT lớp chặn route — hồi quy nghiêm trọng đã gặp và sửa.** Trước i18n, `proxy.ts` là `NextAuth(authConfig).auth` (dạng "trần"); ở dạng đó next-auth tự đọc `callbacks.authorized` rồi tự redirect. Nhưng khi xếp chồng với middleware i18n phải viết `auth((req) => intlMiddleware(req))`, và **ở dạng có handler thì next-auth KHÔNG đọc `authorized` nữa** — handler chịu trách nhiệm hoàn toàn. Kết quả: `/admin` trả **HTTP 200 cho khách chưa đăng nhập**. Phát hiện được vì so với production (`307 -> /dang-nhap`) chứ build/lint/test đều xanh.
+
+    Đã chuyển việc chặn route vào chính `proxy.ts` (đọc `req.auth` tường minh) và **xoá `callbacks.authorized`** khỏi `auth.config.ts` — để lại thì nó là code chết trông như đang bảo vệ route. Nhân đó sửa luôn lỗi sẵn có: `pages.signIn` của next-auth là đường dẫn cứng nên khách xem bản tiếng Anh bị đẩy về trang đăng nhập tiếng Việt; giờ về `/en/dang-nhap`.
+
+    Nhắc lại: middleware chỉ là lớp UX. Lớp bảo vệ thật vẫn là `requireAdminSession()` trong từng Server Action (#43) — đừng bỏ vì đã có middleware.
+
+61. **⚠️ Dùng `Link`/`useRouter`/`usePathname` từ `@/i18n/navigation`, KHÔNG từ `next/link`/`next/navigation`** cho điều hướng nội bộ. Bản của next-intl tự thêm prefix locale; bản gốc thì không, nên đang ở `/en/...` mà bấm link là rơi về tiếng Việt. Đã đổi 18 file. Ngoại lệ hợp lệ: `router.refresh()` (không liên quan locale, 5 file admin/review giữ `next/navigation`), `notFound()`, và `app/not-found.tsx` ở root (nằm ngoài `[locale]` nên không có ngữ cảnh locale). Trong `login-form.tsx` phải `stripLocale(callbackUrl)` trước khi push vì callbackUrl do next-auth sinh đã chứa prefix — không bỏ thì ra `/en/en/tai-khoan`.
+
+62. **⚠️⚠️ `next-intl@4.13.4` gây lock file không hội tụ — `npm ci` liên tục báo "Missing: … from lock file".** Đây là chỗ tốn thời gian nhất của giai đoạn này, đọc kỹ trước khi nâng/thêm dependency.
+
+    Gốc rễ: `next-intl@4.13.4` **không phải thư viện thuần runtime** — nó phụ thuộc cứng vào `@swc/core`, `@parcel/watcher`, `next-intl-swc-plugin-extractor`, `po-parser`, `icu-minify` (kiểm bằng `npm view next-intl dependencies`). Hai gói đầu có native binary. `@swc/core` đòi `@swc/helpers >=0.5.17` còn `next@16.2.10` ghim đúng `0.5.15` ⇒ cây phụ thuộc vào trạng thái `invalid`, và npm ghi lock **thiếu các bản lồng trùng version**.
+
+    Triệu chứng đặc trưng: mỗi lần sinh lại lock thì `npm ci` báo thiếu gói KHÁC (`@swc/helpers@0.5.23`, rồi `ajv@6.15.0` + `json-schema-traverse@0.4.1` — deps lồng của eslint). Lock không bao giờ hội tụ.
+
+    Những cách **KHÔNG** sửa được (đã thử, đừng thử lại): `npm install` thường (node_modules đã "đủ" nên npm không tính lại lock); `npm install --package-lock-only`; `rm -rf node_modules package-lock.json && npm install`. Lưu ý `npm ci` **xoá node_modules trước rồi mới fail**, nên sau một lần fail thì repo không còn node_modules.
+
+    Cách kiểm nhanh mà không phải chờ CI: `npm ci --dry-run`. **Đừng `| tail -n`** — dòng `Missing:` nằm ở đầu output, `tail` cắt mất đúng thông tin cần.
+
+    **Nhưng gốc rễ cuối cùng KHÔNG phải next-intl** — sau khi `npm cache clean --force` + sinh lại lock thì `@swc/helpers` hết, chỉ còn `ajv`. Nguyên nhân thật: **`eslint` cần `ajv ^6.12.4`, `@hookform/resolvers` cần `ajv ^8.12.0`**. Dòng ajv 6 đứng yên ở 6.12.6 từ 2020, nhưng **6.14.0 và 6.15.0 được phát hành 02/2026 và 04/2026** — npm giờ hoist `ajv@6.15.0` lên root, đúng chỗ `@hookform/resolvers` tìm, nên thành `invalid` và npm ghi lock thiếu các bản lồng.
+
+    ⚠️ **Bài học đắt nhất: lock cũ trên `main` vẫn chạy tốt, chính việc sinh lại lock đã làm hỏng.** Xung đột có sẵn từ trước, chỉ lộ ra khi lock được tính lại từ đầu. Lần sau gặp `npm ci` báo thiếu 1 gói: **đừng xoá lock để sinh lại** — thử thêm đúng entry còn thiếu, hoặc `overrides`, trước khi phá lock đang hoạt động.
+
+    Xử lý cuối cùng: **đổi bước CI từ `npm ci` sang `npm install --no-audit --no-fund`** (xem comment dài trong `.github/workflows/ci.yml`). Không ảnh hưởng runtime — chỗ duy nhất cần ajv là `ajvResolver` của `@hookform/resolvers`, mà dự án dùng `zodResolver`; lint/test/build đều xanh. Đánh đổi: CI có thể cài transitive mới hơn lock, mất tính tái lập tuyệt đối; vẫn bắt được hồi quy lint/test/build. Quay lại `npm ci` khi upstream sửa.
 
 ## Cách tiếp tục ở phiên mới
 

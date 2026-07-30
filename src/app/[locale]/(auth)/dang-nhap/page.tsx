@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata = { title: "Đăng Nhập" };

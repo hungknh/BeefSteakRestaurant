@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useSyncExternalStore } from "react";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";

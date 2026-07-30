@@ -1,9 +1,15 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { Link } from "@/i18n/navigation";
+import { SITE } from "@/lib/site";
 
 export function Footer() {
+  const t = useTranslations("Footer");
+  const tNav = useTranslations("Nav");
+  const tSite = useTranslations("Site");
+
   return (
     <footer className="border-t border-border bg-background-alt">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-4 lg:px-8">
@@ -19,14 +25,12 @@ export function Footer() {
             />
             Beef <span className="text-primary">Haven</span>
           </p>
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Nhà hàng bít tết cao cấp, phục vụ nguyên liệu tuyển chọn từ 2010.
-          </p>
+          <p className="mt-3 max-w-xs text-sm text-muted-foreground">{tSite("about")}</p>
         </div>
 
         <div>
           <p className="text-sm font-medium text-foreground uppercase tracking-wider">
-            Điều hướng
+            {t("navigation")}
           </p>
           <nav className="mt-4 flex flex-col gap-2">
             {NAV_ITEMS.map((item) => (
@@ -35,51 +39,53 @@ export function Footer() {
                 href={item.href}
                 className="text-sm text-muted-foreground transition-colors hover:text-primary"
               >
-                {item.label}
+                {tNav(item.labelKey)}
               </Link>
             ))}
           </nav>
         </div>
 
         <div>
-          <p className="text-sm font-medium text-foreground uppercase tracking-wider">Liên hệ</p>
+          <p className="text-sm font-medium text-foreground uppercase tracking-wider">
+            {t("contact")}
+          </p>
           <ul className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground">
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 size-4 shrink-0 text-primary" strokeWidth={1.5} />
-              <span>12 Lê Lợi, Quận 1, TP. Hồ Chí Minh</span>
+              <span>
+                {SITE.address.street}, {SITE.address.district}, {SITE.address.city}
+              </span>
             </li>
             <li className="flex items-center gap-2">
               <Phone className="size-4 shrink-0 text-primary" strokeWidth={1.5} />
-              <span>028 3822 1010</span>
+              <span>{SITE.phone}</span>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="size-4 shrink-0 text-primary" strokeWidth={1.5} />
-              <span>lienhe@beefhaven.vn</span>
+              <span>{SITE.email}</span>
             </li>
           </ul>
         </div>
 
         <div>
           <p className="text-sm font-medium text-foreground uppercase tracking-wider">
-            Giờ mở cửa
+            {t("hours")}
           </p>
           <ul className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <Clock className="size-4 shrink-0 text-primary" strokeWidth={1.5} />
-              <span>Thứ 2 - Thứ 6: 11:00 - 22:00</span>
+              <span>{t("weekdayHours")}</span>
             </li>
             <li className="flex items-center gap-2">
               <Clock className="size-4 shrink-0 text-primary" strokeWidth={1.5} />
-              <span>Thứ 7 - Chủ Nhật: 10:00 - 23:00</span>
+              <span>{t("weekendHours")}</span>
             </li>
           </ul>
         </div>
       </div>
 
       <div className="border-t border-border px-4 py-6 sm:px-6 lg:px-8">
-        <p className="text-center text-xs text-muted-foreground">
-          © 2026 Beef Haven. Đã đăng ký bản quyền.
-        </p>
+        <p className="text-center text-xs text-muted-foreground">{t("rights")}</p>
       </div>
     </footer>
   );

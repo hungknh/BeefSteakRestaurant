@@ -1,21 +1,19 @@
 import type { NextAuthConfig } from "next-auth";
 
 // Tách riêng khỏi auth.ts: file này KHÔNG được import Prisma/bcrypt (Credentials provider),
-// vì middleware.ts chạy Edge runtime — Prisma Client (driver adapter libsql) không chạy được
-// ở Edge. middleware chỉ cần đọc lại JWT đã có sẵn (req.auth), không cần gọi DB.
+// vì proxy.ts chạy Edge runtime — Prisma Client (driver adapter) không chạy được ở Edge.
+// proxy chỉ cần đọc lại JWT đã có sẵn (req.auth), không cần gọi DB.
+//
+// ⚠️ KHÔNG có `callbacks.authorized` ở đây — cố ý. `proxy.ts` truyền handler vào `auth(...)`
+// (để xếp chồng với middleware i18n), và ở dạng đó next-auth KHÔNG đọc `authorized` nữa.
+// Để lại callback này thì nó thành code chết trông như đang bảo vệ route mà thực ra không.
+// Logic chặn route nằm trong `proxy.ts`.
 export const authConfig = {
   pages: {
     signIn: "/dang-nhap",
   },
   providers: [],
   callbacks: {
-    authorized({ auth, request }) {
-      const { pathname } = request.nextUrl;
-      const role = auth?.user?.role;
-      if (pathname.startsWith("/admin")) return role === "ADMIN";
-      if (pathname.startsWith("/tai-khoan")) return !!auth;
-      return true;
-    },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;

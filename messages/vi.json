@@ -1,0 +1,59 @@
+{
+  "Site": {
+    "description": "Nhà hàng bít tết cao cấp — thực đơn, khuyến mãi và đặt bàn trực tuyến.",
+    "tagline": "EST. 2010 · PREMIUM STEAKHOUSE",
+    "about": "Nhà hàng bít tết cao cấp, phục vụ nguyên liệu tuyển chọn từ 2010."
+  },
+  "Nav": {
+    "home": "Trang Chủ",
+    "promotions": "Khuyến Mãi",
+    "menu": "Thực Đơn",
+    "reservation": "Đặt Bàn",
+    "contact": "Liên Hệ"
+  },
+  "Header": {
+    "openMenu": "Mở menu",
+    "menu": "Menu",
+    "account": "Tài khoản",
+    "admin": "Quản trị",
+    "signOut": "Đăng xuất",
+    "signIn": "Đăng nhập",
+    "signUp": "Đăng ký",
+    "bookTable": "Đặt Bàn",
+    "switchLanguage": "Đổi ngôn ngữ"
+  },
+  "Footer": {
+    "navigation": "Điều hướng",
+    "contact": "Liên hệ",
+    "hours": "Giờ mở cửa",
+    "weekdayHours": "Thứ 2 - Thứ 6: 11:00 - 22:00",
+    "weekendHours": "Thứ 7 - Chủ Nhật: 10:00 - 23:00",
+    "rights": "© 2026 Beef Haven. Đã đăng ký bản quyền."
+  },
+  "NotFound": {
+    "metaTitle": "Không Tìm Thấy Trang",
+    "title": "Không Tìm Thấy Trang",
+    "description": "Đường dẫn bạn truy cập không tồn tại hoặc đã được chuyển đi.",
+    "goHome": "Về Trang Chủ",
+    "viewMenu": "Xem Thực Đơn"
+  },
+  "ErrorPage": {
+    "title": "Đã Có Lỗi Xảy Ra",
+    "description": "Xin lỗi vì sự bất tiện. Bạn thử lại giúp chúng tôi, hoặc quay về trang chủ.",
+    "errorCode": "Mã lỗi",
+    "retry": "Thử Lại",
+    "goHome": "Về Trang Chủ"
+  },
+  "Contact": {
+    "metaTitle": "Liên Hệ",
+    "metaDescription": "Địa chỉ, số điện thoại và giờ mở cửa của Beef Haven.",
+    "title": "Liên Hệ",
+    "subtitle": "Gọi trực tiếp để được phục vụ nhanh nhất, hoặc đặt bàn trực tuyến chỉ trong một phút.",
+    "address": "Địa chỉ",
+    "phone": "Điện thoại",
+    "email": "Email",
+    "hours": "Giờ mở cửa",
+    "bookOnline": "Đặt Bàn Trực Tuyến",
+    "viewMenu": "Xem Thực Đơn"
+  }
+}

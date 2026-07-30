@@ -1,0 +1,59 @@
+{
+  "Site": {
+    "description": "Premium steakhouse — menu, offers and online table reservations.",
+    "tagline": "EST. 2010 · PREMIUM STEAKHOUSE",
+    "about": "A premium steakhouse serving hand-picked cuts since 2010."
+  },
+  "Nav": {
+    "home": "Home",
+    "promotions": "Offers",
+    "menu": "Menu",
+    "reservation": "Reservations",
+    "contact": "Contact"
+  },
+  "Header": {
+    "openMenu": "Open menu",
+    "menu": "Menu",
+    "account": "Account",
+    "admin": "Admin",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "bookTable": "Book a Table",
+    "switchLanguage": "Change language"
+  },
+  "Footer": {
+    "navigation": "Navigation",
+    "contact": "Contact",
+    "hours": "Opening hours",
+    "weekdayHours": "Mon - Fri: 11:00 - 22:00",
+    "weekendHours": "Sat - Sun: 10:00 - 23:00",
+    "rights": "© 2026 Beef Haven. All rights reserved."
+  },
+  "NotFound": {
+    "metaTitle": "Page Not Found",
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "goHome": "Back to Home",
+    "viewMenu": "View Menu"
+  },
+  "ErrorPage": {
+    "title": "Something Went Wrong",
+    "description": "Sorry for the inconvenience. Please try again, or head back to the home page.",
+    "errorCode": "Error code",
+    "retry": "Try Again",
+    "goHome": "Back to Home"
+  },
+  "Contact": {
+    "metaTitle": "Contact",
+    "metaDescription": "Address, phone number and opening hours of Beef Haven.",
+    "title": "Contact",
+    "subtitle": "Call us for the fastest service, or book a table online in under a minute.",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Opening hours",
+    "bookOnline": "Book a Table Online",
+    "viewMenu": "View Menu"
+  }
+}
