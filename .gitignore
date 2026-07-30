@@ -48,3 +48,13 @@ next-env.d.ts
 /.claude/
 /.windsurf/
 /skills-lock.json
+
+# file kế hoạch do công cụ AI sinh — cùng lý do với khối trên và với việc đã xóa
+# CLAUDE.md/AGENTS.md: repo trên GitHub không mang dấu vết công cụ AI
+/docs/superpowers/
+
+# ảnh gốc chủ dự án gửi. Đã copy đủ sang `public/images/` (chỗ app thật sự đọc);
+# 29 file ở đây trùng byte-for-byte với bản trong `public/images/`, kể cả 5 file
+# `promo-*v2.jpg` chỉ khác tên. Commit vào là +61MB trùng lặp vĩnh viễn trong
+# lịch sử git. Giữ trên máy làm bản gốc, đừng đưa lên repo.
+/img/

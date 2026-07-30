@@ -322,6 +322,10 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
     ⚠️ **Nút xoá trong bảng admin xoá NGAY, không confirm** (#42) — khi thao tác bằng script/automation phải nhắm `button[aria-label="Sửa món"]` tường minh, đừng lấy nút theo thứ tự.
 
+73. **`/img/` và `/docs/superpowers/` đã cho vào `.gitignore` (2026-07-30), cố ý KHÔNG commit.**
+    - `img/` là 29 ảnh gốc chủ dự án gửi, **cả 29 file trùng byte-for-byte với bản đã có trong `public/images/`** — kể cả 5 file `promo-*v2.jpg` (chỉ khác tên, nội dung y hệt bản đang chạy, đã kiểm bằng `cmp`). Không có ảnh nào là mới hay chưa dùng. Commit vào là +61MB trùng lặp **vĩnh viễn** trong lịch sử git, gỡ ra phải rewrite history + force-push như #44. App chỉ đọc `public/images/`, nên thư mục này thuần túy là bản lưu trên máy.
+    - `docs/superpowers/` là file kế hoạch do công cụ AI sinh — cùng lý do với `/.claude/` ở khối trên và với việc đã xóa `CLAUDE.md`/`AGENTS.md`: repo trên GitHub không mang dấu vết công cụ AI (#44).
+
 ## Cách tiếp tục ở phiên mới
 
 1. Đọc file này + `PLAN.md`.
