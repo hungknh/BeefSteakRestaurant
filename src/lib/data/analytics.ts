@@ -42,7 +42,15 @@ export async function getMonthlyRevenue(): Promise<MonthlyRevenue[]> {
     .map(([month, v]) => ({ month, ...v }));
 }
 
-export type TopDish = { id: string; name: string; imageUrl: string; quantitySold: number; revenue: number };
+export type TopDish = {
+  id: string;
+  name: string;
+  /** Cần cho `dishName()` — thiếu thì dashboard bản /en hiện tên tiếng Việt. */
+  nameEn: string | null;
+  imageUrl: string;
+  quantitySold: number;
+  revenue: number;
+};
 
 /** Món bán chạy nhất theo số lượng đã bán (chỉ tính đơn không bị hủy). */
 export async function getTopDishes(limit = 5): Promise<TopDish[]> {
@@ -66,7 +74,7 @@ export async function getTopDishes(limit = 5): Promise<TopDish[]> {
 
   const dishes = await prisma.dish.findMany({
     where: { id: { in: topIds } },
-    select: { id: true, name: true, imageUrl: true },
+    select: { id: true, name: true, nameEn: true, imageUrl: true },
   });
   const dishById = new Map(dishes.map((d) => [d.id, d]));
 

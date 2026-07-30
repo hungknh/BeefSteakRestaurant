@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Price } from "@/components/shared/price";
-import { ORDER_STATUS_LABELS } from "@/lib/format";
+import { useLocale, useTranslations } from "next-intl";
+import { ORDER_STATUS_LABELS_BY_LOCALE, orderStatusLabel } from "@/lib/format";
 import { updateOrderStatus } from "@/lib/actions/order";
 import type { SortDir } from "@/lib/admin/table-query";
 import type { OrderSortKey } from "@/lib/data/orders";
@@ -20,10 +21,7 @@ import type { Order, OrderStatus } from "@/types";
 
 const BASE_PATH = "/admin/orders";
 
-const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS) as [
-  OrderStatus,
-  string,
-][];
+const STATUS_VALUES = Object.keys(ORDER_STATUS_LABELS_BY_LOCALE.vi) as OrderStatus[];
 
 export function OrdersTable({
   orders,
@@ -37,6 +35,8 @@ export function OrdersTable({
   dir: SortDir;
 }) {
   const router = useRouter();
+  const t = useTranslations("Admin");
+  const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
@@ -59,7 +59,7 @@ export function OrdersTable({
     <div className="rounded-lg border border-border bg-card">
       <AdminSearchForm
         defaultValue={search}
-        placeholder="Tìm theo mã đơn hoặc tên khách..."
+        placeholder={t("orders.searchPlaceholder")}
         sort={sort}
         dir={dir}
       />
@@ -69,23 +69,23 @@ export function OrdersTable({
           <thead>
             <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
               <SortHeader
-                label="Mã Đơn"
+                label={t("orders.code")}
                 sortKey="code"
                 activeSort={sort}
                 activeDir={dir}
                 basePath={BASE_PATH}
                 search={search}
               />
-              <th className="px-5 py-3 font-medium">Khách Hàng</th>
+              <th className="px-5 py-3 font-medium">{t("common.customer")}</th>
               <SortHeader
-                label="Tổng Tiền"
+                label={t("orders.total")}
                 sortKey="total"
                 activeSort={sort}
                 activeDir={dir}
                 basePath={BASE_PATH}
                 search={search}
               />
-              <th className="px-5 py-3 font-medium">Trạng Thái</th>
+              <th className="px-5 py-3 font-medium">{t("common.status")}</th>
             </tr>
           </thead>
           <tbody>
@@ -108,15 +108,15 @@ export function OrdersTable({
                       v && changeStatus(order.id, v as OrderStatus)
                     }
                   >
-                    <SelectTrigger size="sm" aria-label="Đổi trạng thái">
+                    <SelectTrigger size="sm" aria-label={t("common.changeStatus")}>
                       <SelectValue>
-                        {(value: OrderStatus) => ORDER_STATUS_LABELS[value]}
+                        {(value: OrderStatus) => orderStatusLabel(value, locale)}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {STATUS_OPTIONS.map(([value, label]) => (
+                      {STATUS_VALUES.map((value) => (
                         <SelectItem key={value} value={value}>
-                          {label}
+                          {orderStatusLabel(value, locale)}
                         </SelectItem>
                       ))}
                     </SelectContent>

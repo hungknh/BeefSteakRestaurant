@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { createDish, updateDish } from "@/lib/actions/dish";
+import { categoryName } from "@/lib/i18n-content";
 import type { DishFormValues } from "@/lib/validations/dish";
 import type { Category, Dish } from "@/types";
 
@@ -69,6 +71,8 @@ export function DishFormDialog({
   onSaved: () => void;
   trigger: React.ReactElement;
 }) {
+  const t = useTranslations("Admin");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<DishFormValues>(dish ? toFormValues(dish) : EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
@@ -100,11 +104,11 @@ export function DishFormDialog({
       <DialogTrigger render={trigger} />
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-serif">{dish ? "Sửa Món Ăn" : "Thêm Món Ăn"}</DialogTitle>
+          <DialogTitle className="font-serif">{dish ? t("dishes.form.editTitle") : t("dishes.form.addTitle")}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <div>
-            <Label htmlFor="dish-name">Tên món</Label>
+            <Label htmlFor="dish-name">{t("dishes.form.name")}</Label>
             <Input
               id="dish-name"
               className="mt-2"
@@ -113,18 +117,18 @@ export function DishFormDialog({
             />
           </div>
           <div>
-            <Label htmlFor="dish-name-en">Tên món (tiếng Anh)</Label>
+            <Label htmlFor="dish-name-en">{t("dishes.form.nameEn")}</Label>
             <Input
               id="dish-name-en"
               className="mt-2"
-              placeholder="Để trống thì bản tiếng Anh hiện tên tiếng Việt"
+              placeholder={t("dishes.form.nameEnPlaceholder")}
               value={form.nameEn}
               onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="dish-price">Giá (VNĐ)</Label>
+              <Label htmlFor="dish-price">{t("dishes.form.price")}</Label>
               <Input
                 id="dish-price"
                 type="number"
@@ -134,20 +138,23 @@ export function DishFormDialog({
               />
             </div>
             <div>
-              <Label htmlFor="dish-category">Danh mục</Label>
+              <Label htmlFor="dish-category">{t("dishes.form.category")}</Label>
               <Select
                 value={form.categoryId}
                 onValueChange={(v) => setForm({ ...form, categoryId: v ?? "" })}
               >
                 <SelectTrigger id="dish-category" className="mt-2 w-full">
-                  <SelectValue placeholder="Chọn danh mục">
-                    {(value: string) => categories.find((c) => c.id === value)?.name}
+                  <SelectValue placeholder={t("dishes.form.categoryPlaceholder")}>
+                    {(value: string) => {
+                      const cat = categories.find((c) => c.id === value);
+                      return cat ? categoryName(cat, locale) : "";
+                    }}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name}
+                      {categoryName(c, locale)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -155,7 +162,7 @@ export function DishFormDialog({
             </div>
           </div>
           <div>
-            <Label htmlFor="dish-description">Mô tả</Label>
+            <Label htmlFor="dish-description">{t("dishes.form.description")}</Label>
             <Textarea
               id="dish-description"
               className="mt-2"
@@ -164,17 +171,17 @@ export function DishFormDialog({
             />
           </div>
           <div>
-            <Label htmlFor="dish-description-en">Mô tả (tiếng Anh)</Label>
+            <Label htmlFor="dish-description-en">{t("dishes.form.descriptionEn")}</Label>
             <Textarea
               id="dish-description-en"
               className="mt-2"
-              placeholder="Để trống thì bản tiếng Anh hiện mô tả tiếng Việt"
+              placeholder={t("dishes.form.descriptionEnPlaceholder")}
               value={form.descriptionEn}
               onChange={(e) => setForm({ ...form, descriptionEn: e.target.value })}
             />
           </div>
           <div>
-            <Label htmlFor="dish-image">Ảnh (URL)</Label>
+            <Label htmlFor="dish-image">{t("dishes.form.imageUrl")}</Label>
             <Input
               id="dish-image"
               className="mt-2"
@@ -183,7 +190,7 @@ export function DishFormDialog({
             />
           </div>
           <div>
-            <Label htmlFor="dish-weight">Trọng lượng (gram, để trống nếu không áp dụng)</Label>
+            <Label htmlFor="dish-weight">{t("dishes.form.weight")}</Label>
             <Input
               id="dish-weight"
               type="number"
@@ -202,7 +209,7 @@ export function DishFormDialog({
                 onChange={(e) => setForm({ ...form, isAvailable: e.target.checked })}
                 className="size-4 rounded border-border"
               />
-              Còn bán
+              {t("dishes.form.isAvailable")}
             </label>
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <input
@@ -211,7 +218,7 @@ export function DishFormDialog({
                 onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
                 className="size-4 rounded border-border"
               />
-              Món nổi bật
+              {t("dishes.form.isFeatured")}
             </label>
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <input
@@ -220,14 +227,14 @@ export function DishFormDialog({
                 onChange={(e) => setForm({ ...form, hasDoneness: e.target.checked })}
                 className="size-4 rounded border-border"
               />
-              Chọn được độ chín
+              {t("dishes.form.hasDoneness")}
             </label>
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
           <Button onClick={handleSubmit} disabled={isPending}>
-            {dish ? "Lưu Thay Đổi" : "Thêm Món"}
+            {dish ? t("common.save") : t("dishes.add")}
           </Button>
         </DialogFooter>
       </DialogContent>

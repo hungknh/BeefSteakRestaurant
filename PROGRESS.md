@@ -53,7 +53,7 @@ Từ 2026-07-30 bản deploy Vercel **tự cập nhật theo mỗi push lên `ma
 
 **Đã xong toàn bộ Giai đoạn 0–15. Website hoàn chỉnh. Không còn việc bắt buộc.** Những mục dưới đây chỉ làm nếu chủ dự án muốn:
 
-1. **Dịch khu admin sang tiếng Anh** — hiện cố ý chỉ có tiếng Việt (#59). Catalog messages đã có sẵn hạ tầng, chỉ cần thêm namespace.
+1. ~~**Dịch khu admin sang tiếng Anh**~~ — **đã xong (#77).**
 2. ~~**Sort server-side cho `/admin/orders` và `/admin/reservations`**~~ — **đã xong (#76).**
 3. ~~**Quay lại `npm ci` trong CI**~~ — **đã xong (#75).**
 4. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`).
@@ -236,7 +236,7 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
 58. **Giai đoạn 15: chỉ làm i18n Việt/Anh. Đã CẮT 3 mục còn lại** (quyết định chủ dự án, 2026-07-30): VNPay/Momo sandbox (cần tự đăng ký merchant), **email xác nhận Resend** (không có custom domain thì Resend chỉ gửi được tới email của chính chủ tài khoản → nhà tuyển dụng thử sẽ không nhận được gì, tính năng trông như hỏng), Blog/CMS (giá trị CV thấp nhất, không thể hiện thêm kỹ năng nào so với CRUD món/khuyến mãi đã có).
 
-59. **⚠️ i18n bắt buộc chuyển toàn bộ route vào `app/[locale]/` — không phải để cho gọn.** `<html lang>` phải đổi theo ngôn ngữ, mà root layout là chỗ duy nhất render `<html>`, nên root layout phải biết locale ⇒ nó phải nằm trong `[locale]`. Hệ quả: **không còn `app/layout.tsx`**, root layout thật là `app/[locale]/layout.tsx`. `admin` cũng nằm trong `[locale]` (để có `<html>`), nhưng **chuỗi admin giữ tiếng Việt** — công cụ nội bộ, dịch nó gần như gấp đôi khối lượng mà không thêm giá trị CV. `robots.ts`/`sitemap.ts` ở lại `app/` (không phải page, không cần `<html>`; matcher của proxy loại trừ path có dấu chấm nên chúng không bị redirect locale).
+59. **⚠️ i18n bắt buộc chuyển toàn bộ route vào `app/[locale]/` — không phải để cho gọn.** `<html lang>` phải đổi theo ngôn ngữ, mà root layout là chỗ duy nhất render `<html>`, nên root layout phải biết locale ⇒ nó phải nằm trong `[locale]`. Hệ quả: **không còn `app/layout.tsx`**, root layout thật là `app/[locale]/layout.tsx`. `admin` cũng nằm trong `[locale]` (để có `<html>`), và **chuỗi admin ban đầu giữ tiếng Việt** (công cụ nội bộ) — **quyết định này đã đảo ngược, xem #77: khu admin giờ đã dịch đầy đủ.** `robots.ts`/`sitemap.ts` ở lại `app/` (không phải page, không cần `<html>`; matcher của proxy loại trừ path có dấu chấm nên chúng không bị redirect locale).
 
     **Đường dẫn KHÔNG dịch**: `/en/thuc-don` chứ không phải `/en/menu`. next-intl làm được (`pathnames`) nhưng thêm một tầng cấu hình cho lợi ích nhỏ.
 
@@ -402,6 +402,24 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
     `sortBy`/`filterBySearch` trong `table-utils.ts` **vẫn còn dùng** cho `dishes-table`/`promotions-table` (2 bảng đó nạp full list, không phân trang) — đừng xoá.
 
     **Đã verify bằng browser thật**, không chỉ build: sort `total` giảm dần ra 10.533.000 ₫ (max toàn bộ 632 đơn, trong khi trang 1 mặc định chỉ tới 8.702.100 ₫); sort tăng dần ra 65.000 ₫; kết hợp `q=BS-2025` + sort thì max tụt còn 10.285.000 ₫ (đơn lớn nhất là của 2026, bị lọc đúng); bấm "Sau" giữ đủ `q`/`sort`/`dir`; bấm header khi đang ở trang 2 thì về trang 1.
+
+77. **✅ Đã dịch khu admin sang tiếng Anh (2026-07-30) — đảo ngược quyết định "admin chỉ tiếng Việt" ở #59.** Namespace `Admin` mới trong `messages/vi.json` + `en.json` (~110 key, chia theo `nav`/`common`/`dashboard`/`orders`/`reservations`/`dishes`/`promotions`, mỗi bảng có nhánh `form` riêng). 20 file đã chuyển.
+
+    **Nhắc lại luật chọn API dịch (sai là lỗi runtime, xem #63):** Server Component **async** → `getTranslations()` từ `next-intl/server`; component **sync** (kể cả sync Server Component như `Pager`/`TopDishes`/`RevenueChart`) và client → hook `useTranslations()`/`useLocale()`.
+
+    **⚠️ 4 bẫy đã gặp thật khi làm — đọc trước khi dịch thêm khu vực nào:**
+    - **`export const metadata` tĩnh không dịch được.** Phải đổi sang `export async function generateMetadata()` rồi `await getTranslations()`. Cả 5 page admin đều đã đổi.
+    - **Hằng số ở cấp module không gọi được `t()`.** `DISCOUNT_TYPE_LABELS`/`SCOPE_LABELS`/`DAY_OPTIONS` trong `promotion-form-dialog.tsx` từng là bảng CHỮ; giờ là bảng **KEY** (`DISCOUNT_TYPE_KEYS`…) và dịch lúc render. Lỗi build: `Cannot find name 't'`.
+    - **Ô tìm kiếm phải tìm theo cả tên đang hiển thị.** `dishes-table`/`promotions-table` lọc client theo `d.name` (tiếng Việt); ở bản `/en` màn hình hiện tên tiếng Anh nên gõ đúng cái đang nhìn lại không ra kết quả. Đã đổi thành tìm trên `` `${d.name} ${dishName(d, locale)}` `` — và nhớ thêm `locale` vào deps của `useMemo`.
+    - **`dishName()` từng đòi nguyên type `Dish`.** Dashboard truyền `TopDish` (chỉ select vài cột) nên không biên dịch được. Đã thu hẹp tham số thành `Pick<Dish, "name" | "nameEn">`. Đồng thời `getTopDishes` phải `select` thêm `nameEn`, thiếu là dashboard bản `/en` âm thầm hiện tên tiếng Việt.
+
+    **2 lỗi sẵn có phát hiện nhân tiện:**
+    - **`SignOutButton` hard-code "Đăng Xuất"** — dùng ở cả `/tai-khoan` (trang khách), nghĩa là **bản `/en` của trang tài khoản vẫn hiện tiếng Việt từ Giai đoạn 15**. Bộ dò ở #68 sót vì trang này cần đăng nhập, `curl` bị đẩy về trang login. **Bài học: bộ dò dựa trên curl chỉ soi được trang công khai** — trang sau lớp đăng nhập phải kiểm bằng browser đã login.
+    - **Cột "Giảm Giá" tự nối `đ` và ép `toLocaleString("vi-VN")`** thay vì dùng `formatVND` như mọi nơi khác. Đã sửa.
+
+    **Cố ý KHÔNG dịch (là dữ liệu, không phải chữ UI):** tên người dùng (`session.user.name` = "Quản Trị Viên"), tên khách hàng, và `receiverName` = "Khách vãng lai" — cái cuối là **snapshot lưu trong DB lúc tạo đơn**, cùng lý do với `appliedPromotionTitle` ở #69.
+
+    **Đã verify bằng browser thật**, chạy bộ dò dấu tiếng Việt trên cả 5 trang admin bản `/en`: chỉ còn đúng 3 nhóm dữ liệu kể trên, 0 chuỗi UI. Bản tiếng Việt kiểm lại không hồi quy. ⚠️ Khi kiểm thủ công nhớ **cookie `NEXT_LOCALE`**: đã xem `/en` một lần thì gõ `/admin` sẽ bị redirect sang `/en/admin`, trông hệt như "bản tiếng Việt hỏng". Đặt lại bằng `document.cookie='NEXT_LOCALE=vi; path=/'`.
 
 ## Cách tiếp tục ở phiên mới
 

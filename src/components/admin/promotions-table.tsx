@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PromotionFormDialog } from "@/components/admin/promotion-form-dialog";
 import { Pill } from "@/components/admin/pill";
-import { formatDaysOfWeek } from "@/lib/format";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDaysOfWeek, formatVND } from "@/lib/format";
 import { deletePromotion } from "@/lib/actions/promotion";
 import { filterBySearch, sortBy } from "@/lib/admin/table-utils";
+import { promoTitle } from "@/lib/i18n-content";
 import type { Category, Dish, Promotion } from "@/types";
 
 export function PromotionsTable({
@@ -22,6 +24,8 @@ export function PromotionsTable({
   dishes: Dish[];
 }) {
   const router = useRouter();
+  const t = useTranslations("Admin");
+  const locale = useLocale();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Promotion>("sortOrder");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -30,9 +34,14 @@ export function PromotionsTable({
   const [, startTransition] = useTransition();
 
   const rows = useMemo(() => {
-    const filtered = filterBySearch(initialPromotions, search, (p) => p.title);
+    // Xem ghi chú cùng loại trong `dishes-table.tsx`.
+    const filtered = filterBySearch(
+      initialPromotions,
+      search,
+      (p) => `${p.title} ${promoTitle(p, locale)}`,
+    );
     return sortBy(filtered, sortKey, sortDir);
-  }, [initialPromotions, search, sortKey, sortDir]);
+  }, [initialPromotions, search, sortKey, sortDir, locale]);
 
   const toggleSort = (key: keyof Promotion) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -60,7 +69,7 @@ export function PromotionsTable({
     <div className="rounded-lg border border-border bg-card">
       <div className="flex items-center justify-between gap-4 border-b border-border p-5">
         <Input
-          placeholder="Tìm khuyến mãi..."
+          placeholder={t("promotions.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
@@ -71,7 +80,7 @@ export function PromotionsTable({
           onSaved={() => router.refresh()}
           trigger={
             <Button>
-              <Plus className="size-4" strokeWidth={1.5} /> Thêm Khuyến Mãi
+              <Plus className="size-4" strokeWidth={1.5} /> {t("promotions.add")}
             </Button>
           }
         />
@@ -87,12 +96,12 @@ export function PromotionsTable({
                   className="cursor-pointer rounded-xs uppercase focus-visible:outline-2 focus-visible:outline-primary"
                   onClick={() => toggleSort("title")}
                 >
-                  Tiêu Đề
+                  {t("promotions.title")}
                 </button>
               </th>
-              <th className="px-5 py-3 font-medium">Giảm Giá</th>
-              <th className="px-5 py-3 font-medium">Ngày Áp Dụng</th>
-              <th className="px-5 py-3 font-medium">Trạng Thái</th>
+              <th className="px-5 py-3 font-medium">{t("promotions.discount")}</th>
+              <th className="px-5 py-3 font-medium">{t("promotions.days")}</th>
+              <th className="px-5 py-3 font-medium">{t("common.status")}</th>
               <th className="px-5 py-3 font-medium" />
             </tr>
           </thead>
@@ -102,18 +111,18 @@ export function PromotionsTable({
                 key={promotion.id}
                 className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"
               >
-                <td className="px-5 py-3 text-foreground">{promotion.title}</td>
+                <td className="px-5 py-3 text-foreground">{promoTitle(promotion, locale)}</td>
                 <td className="px-5 py-3 text-muted-foreground">
                   {promotion.discountType === "PERCENT"
                     ? `${promotion.discountValue}%`
-                    : `${promotion.discountValue.toLocaleString("vi-VN")}đ`}
+                    : formatVND(promotion.discountValue)}
                 </td>
                 <td className="px-5 py-3 text-muted-foreground">
-                  {formatDaysOfWeek(promotion.daysOfWeek)}
+                  {formatDaysOfWeek(promotion.daysOfWeek, locale)}
                 </td>
                 <td className="px-5 py-3">
                   <Pill tone={promotion.isActive ? "gold-muted" : "neutral"}>
-                    {promotion.isActive ? "Đang Chạy" : "Tạm Dừng"}
+                    {promotion.isActive ? t("promotions.active") : t("promotions.paused")}
                   </Pill>
                 </td>
                 <td className="px-5 py-3">
@@ -127,7 +136,7 @@ export function PromotionsTable({
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          aria-label="Sửa khuyến mãi"
+                          aria-label={t("promotions.editAria")}
                         >
                           <Pencil className="size-3.5" strokeWidth={1.5} />
                         </Button>
@@ -136,7 +145,7 @@ export function PromotionsTable({
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label="Xóa khuyến mãi"
+                      aria-label={t("promotions.deleteAria")}
                       className="text-muted-foreground hover:text-destructive"
                       disabled={deletingId === promotion.id}
                       onClick={() => handleDelete(promotion)}

@@ -1,9 +1,13 @@
+import { getTranslations } from "next-intl/server";
 import { getReservationsPaged, RESERVATION_SORT_KEYS } from "@/lib/data/reservations";
 import { ReservationsTable } from "@/components/admin/reservations-table";
 import { Pager } from "@/components/admin/pager";
 import { parseSearch, parseSortDir, parseSortKey } from "@/lib/admin/table-query";
 
-export const metadata = { title: "Admin — Đặt Bàn" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("reservations.metaTitle") };
+}
 
 type Props = {
   searchParams: Promise<{ page?: string; q?: string; sort?: string; dir?: string }>;
@@ -17,11 +21,14 @@ export default async function AdminReservationsPage({ searchParams }: Props) {
   const sort = parseSortKey(sortParam, RESERVATION_SORT_KEYS, "date");
   const dir = parseSortDir(dirParam);
 
-  const { reservations, totalPages } = await getReservationsPaged(page, search, sort, dir);
+  const [{ reservations, totalPages }, t] = await Promise.all([
+    getReservationsPaged(page, search, sort, dir),
+    getTranslations("Admin"),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-foreground">Quản Lý Đặt Bàn</h1>
+      <h1 className="font-serif text-2xl text-foreground">{t("reservations.heading")}</h1>
       <ReservationsTable
         reservations={reservations}
         search={search}

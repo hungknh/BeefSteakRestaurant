@@ -3,20 +3,22 @@
 import Image from "next/image";
 import { Link, usePathname } from "@/i18n/navigation";
 import { LayoutDashboard, UtensilsCrossed, Tag, CalendarCheck, ShoppingBag } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 const ADMIN_NAV = [
-  { label: "Tổng Quan", href: "/admin", icon: LayoutDashboard },
-  { label: "Món Ăn", href: "/admin/dishes", icon: UtensilsCrossed },
-  { label: "Khuyến Mãi", href: "/admin/promotions", icon: Tag },
-  { label: "Đặt Bàn", href: "/admin/reservations", icon: CalendarCheck },
-  { label: "Đơn Hàng", href: "/admin/orders", icon: ShoppingBag },
+  { key: "dashboard", href: "/admin", icon: LayoutDashboard },
+  { key: "dishes", href: "/admin/dishes", icon: UtensilsCrossed },
+  { key: "promotions", href: "/admin/promotions", icon: Tag },
+  { key: "reservations", href: "/admin/reservations", icon: CalendarCheck },
+  { key: "orders", href: "/admin/orders", icon: ShoppingBag },
 ] as const;
 
 export function AdminSidebar() {
   // usePathname của next-intl: đã bỏ prefix locale, nên so khớp `active` chạy đúng ở cả
   // `/admin` và `/en/admin`. Dùng bản của next/navigation thì bản tiếng Anh không tô mục nào.
   const pathname = usePathname();
+  const t = useTranslations("Admin.nav");
   return (
     <aside className="hidden w-60 shrink-0 border-r border-border bg-card sm:block">
       <div className="flex h-16 items-center gap-2 px-6 font-serif text-lg text-foreground">
@@ -46,7 +48,7 @@ export function AdminSidebar() {
               )}
             >
               <Icon className="size-4" strokeWidth={1.5} />
-              {item.label}
+              {t(item.key)}
             </Link>
           );
         })}

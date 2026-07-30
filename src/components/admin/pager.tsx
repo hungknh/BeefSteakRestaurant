@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { tableHref, type SortDir } from "@/lib/admin/table-query";
@@ -17,6 +18,8 @@ export function Pager({
   sort?: string;
   dir?: SortDir;
 }) {
+  const t = useTranslations("Admin.common");
+
   if (totalPages <= 1) return null;
 
   // Giữ q/sort/dir khi chuyển trang — thiếu là bấm "Sau" mất cả kết quả tìm kiếm lẫn
@@ -29,25 +32,25 @@ export function Pager({
   return (
     <div className="flex items-center justify-between px-1">
       <p className="text-sm text-muted-foreground">
-        Trang {currentPage} / {totalPages}
+        {t("page", { current: currentPage, total: totalPages })}
       </p>
       <div className="flex gap-2">
         {prevHref ? (
           <Button variant="outline" size="sm" nativeButton={false} render={<Link href={prevHref} />}>
-            Trước
+            {t("prev")}
           </Button>
         ) : (
           <Button variant="outline" size="sm" disabled>
-            Trước
+            {t("prev")}
           </Button>
         )}
         {nextHref ? (
           <Button variant="outline" size="sm" nativeButton={false} render={<Link href={nextHref} />}>
-            Sau
+            {t("next")}
           </Button>
         ) : (
           <Button variant="outline" size="sm" disabled>
-            Sau
+            {t("next")}
           </Button>
         )}
       </div>
