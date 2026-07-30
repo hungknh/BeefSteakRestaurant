@@ -12,7 +12,8 @@
 - Push nhánh lên GitHub thường xuyên trong lúc làm.
 - Xong 1 giai đoạn (lint + build xanh) → `gh pr create` vào `main` → **squash merge** (`gh pr merge --squash --delete-branch`) → xóa nhánh.
 - **Không bật Branch Protection** trên GitHub (quyết định có chủ đích, xem lịch sử chat) — tự giác đi qua nhánh + PR mà không khóa cứng ở repo settings.
-- **⚠️ KHÔNG thêm dòng `Co-Authored-By: Claude` vào commit message** (dù công cụ AI mặc định hay làm vậy) — chủ dự án yêu cầu giữ contributor trên GitHub chỉ có mình mình. Đã xóa dòng này khỏi toàn bộ lịch sử `main` cũ (rewrite qua `git filter-branch` + force-push) và khỏi mô tả 12 PR đã merge trước đó — xem "Sai khác" #44. Đừng thêm lại.
+- **⚠️⚠️ TUYỆT ĐỐI KHÔNG thêm dòng ghi công AI (`Co-Authored-By: <tên AI>`) vào commit message** — dù công cụ AI mặc định hay làm vậy. Chủ dự án yêu cầu contributor trên GitHub chỉ có mình mình. **Đây không phải chuyện dọn được sau:** một dòng như vậy lọt vào 1 PR là GitHub giữ vĩnh viễn trong `refs/pull/*`, rewrite `main` không gỡ được, và **đã phải xoá repo tạo lại toàn bộ để dứt điểm** (xem "Sai khác" #44 và #74). Kiểm trước mỗi lần commit: `git log -1 --format='%(trailers)'` phải trả về rỗng.
+- **⚠️ Đừng squash-merge một PR chứa nhiều commit lịch sử.** Squash gộp hết thành 1 commit — với PR thường thì đúng ý, nhưng nếu PR mang cả lịch sử nhiều giai đoạn thì mất sạch dấu vết quá trình làm việc, vốn là thứ giá trị nhất của repo CV này.
 - **⚠️ Tên file là `PROGRESS.md` VIẾT HOA.** Windows không phân biệt hoa/thường nên `Read`/`Edit` với `progress.md` vẫn sửa đúng file, nhưng `git add progress.md` thì **im lặng không stage gì** (git phân biệt hoa/thường). Hệ quả: sửa xong tưởng đã commit mà thực ra không có trong commit. Luôn dùng đúng `PROGRESS.md`, và kiểm bằng `git status --short` trước khi commit.
 - Repo: https://github.com/hungknh/BeefSteakRestaurant
 
@@ -24,27 +25,27 @@
 
 **Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 457 đặt bàn, 113 đánh giá, 71 người dùng** (số đếm thật từ DB ngày 2026-07-30 — xem #57). Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
 
-PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database) → #17 (Giai đoạn 8 — Auth) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20, #21 (progress.md) → #22 (Giai đoạn 10 — Review) → #23 (Giai đoạn 11 — CRUD món/khuyến mãi thật) → #24 (Giai đoạn 11 — đổi trạng thái đơn/đặt bàn thật) → #25 (Giai đoạn 11 — phân trang admin) → #26 (progress.md) → #27 (Giai đoạn 12 — SEO/JSON-LD/error page/rate limit/CI). **Không còn PR nào chờ merge — `main` đã sạch.**
+⚠️ **Repo đã được tạo lại từ đầu ngày 2026-07-30 (xem "Sai khác" #74) — mọi số PR cũ (#1–#34) KHÔNG còn tồn tại trên GitHub.** Lịch sử code thì giữ đủ 39 commit. Vì vậy bảng dưới trỏ tới **commit squash trên `main`** thay vì link PR, và các `(#N)` nằm trong tiêu đề commit chỉ là chữ, bấm vào không ra gì. Các `#N` trong mục "Sai khác" của file này là **số thứ tự nội bộ của file**, không liên quan PR — vẫn dùng bình thường.
 
-| Giai đoạn | Trạng thái | PR |
+| Giai đoạn | Trạng thái | Commit squash trên `main` |
 |---|---|---|
 | 0 — Khởi tạo project | ✅ Xong | (commit trực tiếp trước khi thống nhất quy trình PR) |
-| 1 — Design system + Layout shell | ✅ Xong | [#1](https://github.com/hungknh/BeefSteakRestaurant/pull/1) |
-| 2 — Trang chủ | ✅ Xong | [#3](https://github.com/hungknh/BeefSteakRestaurant/pull/3) |
-| 3 — Khuyến mãi + Thực đơn | ✅ Xong | [#6](https://github.com/hungknh/BeefSteakRestaurant/pull/6) |
-| 4 — Discount engine | ✅ Xong | [#8](https://github.com/hungknh/BeefSteakRestaurant/pull/8) |
-| 5 — Giỏ hàng + Đặt bàn (UI) | ✅ Xong | [#9](https://github.com/hungknh/BeefSteakRestaurant/pull/9) |
-| 6 — Admin UI (mock) | ✅ Xong | [#10](https://github.com/hungknh/BeefSteakRestaurant/pull/10) |
-| Checkpoint — Chốt frontend | ✅ Xong | [#11](https://github.com/hungknh/BeefSteakRestaurant/pull/11) |
-| 7 — Database (Prisma + Postgres) | ✅ Xong | [#13](https://github.com/hungknh/BeefSteakRestaurant/pull/13) |
-| 8 — Auth | ✅ Xong | [#17](https://github.com/hungknh/BeefSteakRestaurant/pull/17) |
-| 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [#18](https://github.com/hungknh/BeefSteakRestaurant/pull/18) |
-| 10 — Review | ✅ Xong | [#22](https://github.com/hungknh/BeefSteakRestaurant/pull/22) |
-| 11 — Admin backend | ✅ Xong (upload ảnh UploadThing đã **cắt khỏi phạm vi** theo quyết định chủ dự án — xem "Sai khác" #45) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24), [#25](https://github.com/hungknh/BeefSteakRestaurant/pull/25) |
-| 12 — Hoàn thiện (SEO/test/CI) | ✅ Xong (Playwright đã **cắt khỏi phạm vi** — xem "Sai khác" #46) | [#27](https://github.com/hungknh/BeefSteakRestaurant/pull/27) |
+| 1 — Design system + Layout shell | ✅ Xong | [49d3369](https://github.com/hungknh/BeefSteakRestaurant/commit/49d3369) |
+| 2 — Trang chủ | ✅ Xong | [ab6a49e](https://github.com/hungknh/BeefSteakRestaurant/commit/ab6a49e) |
+| 3 — Khuyến mãi + Thực đơn | ✅ Xong | [0d5c9b2](https://github.com/hungknh/BeefSteakRestaurant/commit/0d5c9b2) |
+| 4 — Discount engine | ✅ Xong | [5fc3da9](https://github.com/hungknh/BeefSteakRestaurant/commit/5fc3da9) |
+| 5 — Giỏ hàng + Đặt bàn (UI) | ✅ Xong | [657f795](https://github.com/hungknh/BeefSteakRestaurant/commit/657f795) |
+| 6 — Admin UI (mock) | ✅ Xong | [9e994e1](https://github.com/hungknh/BeefSteakRestaurant/commit/9e994e1) |
+| Checkpoint — Chốt frontend | ✅ Xong | [c41117a](https://github.com/hungknh/BeefSteakRestaurant/commit/c41117a) |
+| 7 — Database (Prisma + Postgres) | ✅ Xong | [ec683bd](https://github.com/hungknh/BeefSteakRestaurant/commit/ec683bd) |
+| 8 — Auth | ✅ Xong | [15b491c](https://github.com/hungknh/BeefSteakRestaurant/commit/15b491c) |
+| 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [6f5a5e2](https://github.com/hungknh/BeefSteakRestaurant/commit/6f5a5e2) |
+| 10 — Review | ✅ Xong | [b5925d2](https://github.com/hungknh/BeefSteakRestaurant/commit/b5925d2) |
+| 11 — Admin backend | ✅ Xong (upload ảnh UploadThing đã **cắt khỏi phạm vi** theo quyết định chủ dự án — xem "Sai khác" #45) | [bdea55b](https://github.com/hungknh/BeefSteakRestaurant/commit/bdea55b), [ba18af5](https://github.com/hungknh/BeefSteakRestaurant/commit/ba18af5), [b27dcdc](https://github.com/hungknh/BeefSteakRestaurant/commit/b27dcdc) |
+| 12 — Hoàn thiện (SEO/test/CI) | ✅ Xong (Playwright đã **cắt khỏi phạm vi** — xem "Sai khác" #46) | [3406051](https://github.com/hungknh/BeefSteakRestaurant/commit/3406051) |
 | 13 — Deploy production | ✅ Xong (2 env trong checklist PLAN.md không set vì tính năng tương ứng đã cắt — xem "Sai khác" #70) | |
-| 14 — Đóng gói cho CV | ✅ Xong | [#28](https://github.com/hungknh/BeefSteakRestaurant/pull/28) |
-| 15 — Optional: i18n Việt/Anh | ✅ Xong (3/3 PR) — chỉ làm i18n, 3 mục còn lại đã cắt | [#29](https://github.com/hungknh/BeefSteakRestaurant/pull/29), [#30](https://github.com/hungknh/BeefSteakRestaurant/pull/30), [#31](https://github.com/hungknh/BeefSteakRestaurant/pull/31) |
+| 14 — Đóng gói cho CV | ✅ Xong | [85aceac](https://github.com/hungknh/BeefSteakRestaurant/commit/85aceac) |
+| 15 — Optional: i18n Việt/Anh | ✅ Xong (3/3 PR) — chỉ làm i18n, 3 mục còn lại đã cắt | [9276ead](https://github.com/hungknh/BeefSteakRestaurant/commit/9276ead), [233ad2c](https://github.com/hungknh/BeefSteakRestaurant/commit/233ad2c), [790bfed](https://github.com/hungknh/BeefSteakRestaurant/commit/790bfed) |
 
 ## Việc cần làm tiếp
 
@@ -340,6 +341,20 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 73. **`/img/` và `/docs/superpowers/` đã cho vào `.gitignore` (2026-07-30), cố ý KHÔNG commit.**
     - `img/` là 29 ảnh gốc chủ dự án gửi, **cả 29 file trùng byte-for-byte với bản đã có trong `public/images/`** — kể cả 5 file `promo-*v2.jpg` (chỉ khác tên, nội dung y hệt bản đang chạy, đã kiểm bằng `cmp`). Không có ảnh nào là mới hay chưa dùng. Commit vào là +61MB trùng lặp **vĩnh viễn** trong lịch sử git, gỡ ra phải rewrite history + force-push như #44. App chỉ đọc `public/images/`, nên thư mục này thuần túy là bản lưu trên máy.
     - `docs/superpowers/` là file kế hoạch do công cụ AI sinh — cùng lý do với `/.claude/` ở khối trên và với việc đã xóa `CLAUDE.md`/`AGENTS.md`: repo trên GitHub không mang dấu vết công cụ AI (#44).
+
+74. **⚠️⚠️ ĐÃ XOÁ REPO CŨ VÀ TẠO LẠI TỪ ĐẦU (2026-07-30) — đọc kỹ, đây là mốc quan trọng nhất về mặt lịch sử git.**
+
+    **Lý do:** như #44 phân tích, `refs/pull/*` của PR #11–#21 còn dòng ghi công AI và GitHub không cho xoá, nên sidebar Contributors vẫn hiện 2 người. Không có cách nào khác ngoài xoá repo.
+
+    **Đã làm:** chủ dự án tự xoá repo cũ (thao tác huỷ vĩnh viễn) → tạo lại cùng tên, Public → push `main` (39 commit, đã verify 0 trailer bằng cả `grep` lẫn `git log --format='%(trailers)'`) → đổi default branch về `main` → xoá nhánh trung gian. **Kết quả: sidebar Contributors = 1, chỉ `hungknh`.**
+
+    **Mất vĩnh viễn (không lấy lại được, đừng đi tìm):** 34 PR cũ kèm mô tả, lịch sử GitHub Actions, lịch sử deployment gắn với repo cũ. Vì vậy bảng giai đoạn ở đầu file giờ trỏ **commit squash** thay vì link PR.
+
+    **Bản sao lưu trước khi xoá:** `C:\Project\_backup\BeefSteakRestaurant-main-backup.bundle` (51MB, đã `git bundle verify` → "records a complete history"). Khôi phục nếu cần: `git clone <đường-dẫn-bundle> <thư-mục-mới>`.
+
+    **Việc phải làm sau khi tạo lại repo** (đã làm, ghi lại để lần sau khỏi quên): đổi default branch về `main` — GitHub tự đặt nhánh **đầu tiên được push** làm default, và **không cho xoá nhánh đang là default** (gặp đúng lỗi `refusing to delete the current branch`); nối lại Vercel ↔ GitHub; sửa link PR chết trong `PROGRESS.md`.
+
+    Cũng vì lịch sử `main` bị rewrite ở #44 rồi push sang repo mới, **mọi clone cũ trên máy khác đều không còn dùng được** — clone lại từ đầu, đừng `git pull`.
 
 ## Cách tiếp tục ở phiên mới
 
