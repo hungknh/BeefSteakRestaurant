@@ -248,6 +248,22 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
     Xử lý cuối cùng: **đổi bước CI từ `npm ci` sang `npm install --no-audit --no-fund`** (xem comment dài trong `.github/workflows/ci.yml`). Không ảnh hưởng runtime — chỗ duy nhất cần ajv là `ajvResolver` của `@hookform/resolvers`, mà dự án dùng `zodResolver`; lint/test/build đều xanh. Đánh đổi: CI có thể cài transitive mới hơn lock, mất tính tái lập tuyệt đối; vẫn bắt được hồi quy lint/test/build. Quay lại `npm ci` khi upstream sửa.
 
+63. **Dịch nội dung DB (Giai đoạn 15, PR2): thêm cột `*En` nullable, KHÔNG tạo bảng dịch riêng.** `Category.nameEn`, `Dish.nameEn/descriptionEn`, `Promotion.titleEn/descriptionEn/badgeLabelEn/badgeOfferEn/scheduleTextEn`. Chỉ 2 ngôn ngữ và số bản ghi nhỏ (25) nên bảng translation riêng là over-engineer. Migration `20260730044550_add_english_content_fields` thuần `ADD COLUMN ... TEXT`, không sửa/xoá dữ liệu.
+
+    **KHÔNG dịch, có chủ đích:** `slug` (nằm trong URL + sitemap, đổi là hỏng link cũ), `Review.content` (khách viết — giữ nguyên ngôn ngữ gốc mới đúng thực tế).
+
+    **Đọc nội dung qua helper `src/lib/i18n-content.ts`, đừng đọc thẳng `dish.nameEn`.** Helper **luôn rơi về tiếng Việt** khi bản dịch `null` HOẶC chuỗi rỗng — quan trọng vì form admin lưu ô để trống thành `""` chứ không phải `null`, và món admin mới tạo có thể chưa dịch. Hiện tên tiếng Việt vẫn tốt hơn hiện ô trống.
+
+    Tầng `lib/data/` **không** biết locale (nó chỉ truy vấn) — chọn ngôn ngữ lúc render. Server Component async dùng `getLocale()` từ `next-intl/server`; component sync/client dùng hook `useLocale()`. Dùng sai loại là lỗi runtime.
+
+64. **⚠️ Bản dịch nằm ở `prisma/seed-data/menu-en.ts`, tách khỏi `menu.ts`, và có test canh.** Thêm món/khuyến mãi mới vào `menu.ts` mà quên bản dịch thì **UI không vỡ** (tự rơi về tiếng Việt) nên không ai phát hiện — `menu-en.test.ts` bắt việc đó, cùng với bản dịch mồ côi (id không còn tồn tại) và bản dịch rỗng.
+
+    Một test trong đó kiểm "bản dịch còn sót dấu tiếng Việt". Regex **chỉ liệt kê dấu riêng của tiếng Việt**, cố ý bỏ dấu dùng chung với tiếng Pháp/Latin-1 (à á â è é ê ì í ò ó ô ù ú û ý...) — bản đầu bắt sai "Crème Brûlée" là tên tiếng Anh hợp lệ. Đừng "sửa cho đủ dấu".
+
+65. **Dữ liệu đang có trên Neon được điền bản dịch bằng `prisma/backfill-en.ts`, KHÔNG seed lại.** `prisma db seed` xoá sạch rồi sinh lại — mất 632 đơn + 457 đặt bàn + 113 đánh giá của bản demo (và bị Prisma chặn khi chạy từ AI agent, xem #35). Script chỉ `updateMany` các cột `*En` theo id, an toàn chạy lại nhiều lần, và cuối cùng in ra bản ghi nào trong DB còn thiếu bản dịch. Đã chạy: 5 danh mục + 15 món + 5 khuyến mãi. Chạy lại: `npx tsx prisma/backfill-en.ts`.
+
+66. **Form admin có ô nhập bản dịch (không bắt buộc).** Phải map DB → form qua `toFormValues()` trong `dish-form-dialog.tsx`/`promotion-form-dialog.tsx`: cột `*En` nullable trong DB nhưng input HTML cần `string`, nhồi `null` vào `value` làm input thành uncontrolled và React cảnh báo. Schema Zod dùng `z.string().trim()` (cho phép `""`) chứ **không** `.optional()` — input HTML luôn gửi `""` khi bỏ trống, `.optional()` sẽ không khớp. Fixture test của `dish.test.ts`/`promotion.test.ts` đã cập nhật theo, kèm 2 test mới kiểm "để rỗng vẫn pass".
+
 ## Cách tiếp tục ở phiên mới
 
 1. Đọc file này + `PLAN.md`.

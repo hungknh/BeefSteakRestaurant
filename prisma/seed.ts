@@ -6,6 +6,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { bestPromotion, type CartLine } from "../src/lib/promotions/apply";
 import type { Dish, Doneness, Promotion } from "../src/types";
 import { CATEGORIES, DISHES, PROMOTIONS } from "./seed-data/menu";
+import { DISH_EN, PROMOTION_EN } from "./seed-data/menu-en";
 import { generateCustomers } from "./seed-data/names";
 import { generateReviewContent } from "./seed-data/review-text";
 import { dayMultiplier, eachDay, isRomanticWindow, WINDOW_START } from "./seed-data/calendar";
@@ -80,10 +81,13 @@ async function main() {
     await prisma.category.create({ data: c });
   }
   for (const d of DISHES) {
-    await prisma.dish.create({ data: { ...d, avgRating: 0, reviewCount: 0 } });
+    // Bản dịch tiếng Anh nằm trong menu-en.ts, gộp vào lúc ghi (xem ghi chú ở file đó).
+    await prisma.dish.create({
+      data: { ...d, ...DISH_EN[d.id], avgRating: 0, reviewCount: 0 },
+    });
   }
   for (const p of PROMOTIONS) {
-    await prisma.promotion.create({ data: p });
+    await prisma.promotion.create({ data: { ...p, ...PROMOTION_EN[p.id] } });
   }
 
   console.log("Seeding users...");

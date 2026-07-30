@@ -1,4 +1,6 @@
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { categoryName } from "@/lib/i18n-content";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types";
 
@@ -18,10 +20,13 @@ export function CategoryFilter({
   categories: Category[];
   active?: string;
 }) {
+  const locale = useLocale();
+  const t = useTranslations("Menu");
+
   return (
     <div className="flex flex-wrap justify-center gap-3">
       <Link href="/thuc-don" className={pillClass(!active)}>
-        Tất Cả
+        {t("allCategories")}
       </Link>
       {categories.map((category) => (
         <Link
@@ -29,7 +34,7 @@ export function CategoryFilter({
           href={`/thuc-don?category=${category.slug}`}
           className={pillClass(active === category.slug)}
         >
-          {category.name}
+          {categoryName(category, locale)}
         </Link>
       ))}
     </div>

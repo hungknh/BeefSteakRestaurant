@@ -4,13 +4,19 @@ import Image from "next/image";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/shared/price";
+import { useLocale } from "next-intl";
 import { useCartStore, type CartItem } from "@/store/cart";
 import { DONENESS_LABELS } from "@/lib/format";
+import { dishName } from "@/lib/i18n-content";
 import { cn } from "@/lib/utils";
 
 export function CartLineItem({ item, compact = false }: { item: CartItem; compact?: boolean }) {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
+  const locale = useLocale();
+  // Giỏ hàng lưu snapshot Dish trong localStorage (PROGRESS.md #17). Item thêm từ trước
+  // Giai đoạn 15 không có `nameEn` — helper tự rơi về tiếng Việt, không vỡ.
+  const name = dishName(item.dish, locale);
 
   return (
     <div className="flex gap-3 py-4">
@@ -20,11 +26,11 @@ export function CartLineItem({ item, compact = false }: { item: CartItem; compac
           compact ? "size-16" : "size-24",
         )}
       >
-        <Image src={item.dish.imageUrl} alt={item.dish.name} fill sizes="96px" className="object-cover" />
+        <Image src={item.dish.imageUrl} alt={name} fill sizes="96px" className="object-cover" />
       </div>
       <div className="flex flex-1 flex-col gap-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="font-serif text-foreground">{item.dish.name}</p>
+          <p className="font-serif text-foreground">{name}</p>
           <Price amount={item.dish.price * item.quantity} className="shrink-0 text-sm" />
         </div>
         {item.doneness ? (

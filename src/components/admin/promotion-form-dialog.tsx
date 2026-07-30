@@ -49,11 +49,16 @@ const DAY_OPTIONS = [
 
 const EMPTY_FORM: PromotionFormValues = {
   title: "",
+  titleEn: "",
   description: "",
+  descriptionEn: "",
   imageUrl: "",
   badgeLabel: "",
+  badgeLabelEn: "",
   badgeOffer: "",
+  badgeOfferEn: "",
   scheduleText: "",
+  scheduleTextEn: "",
   discountType: "PERCENT",
   discountValue: 10,
   scope: "ALL",
@@ -69,6 +74,21 @@ const EMPTY_FORM: PromotionFormValues = {
   sortOrder: 1,
 };
 
+/**
+ * Promotion (DB) -> giá trị form. Các cột `*En` nullable trong DB nhưng input HTML phải
+ * nhận string: nhồi `null` vào `value` làm input thành uncontrolled và React cảnh báo.
+ */
+function toFormValues(p: Promotion): PromotionFormValues {
+  return {
+    ...p,
+    titleEn: p.titleEn ?? "",
+    descriptionEn: p.descriptionEn ?? "",
+    badgeLabelEn: p.badgeLabelEn ?? "",
+    badgeOfferEn: p.badgeOfferEn ?? "",
+    scheduleTextEn: p.scheduleTextEn ?? "",
+  };
+}
+
 export function PromotionFormDialog({
   promotion,
   categories,
@@ -83,14 +103,14 @@ export function PromotionFormDialog({
   trigger: React.ReactElement;
 }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<PromotionFormValues>(promotion ?? EMPTY_FORM);
+  const [form, setForm] = useState<PromotionFormValues>(promotion ? toFormValues(promotion) : EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
     if (next) {
-      setForm(promotion ?? EMPTY_FORM);
+      setForm(promotion ? toFormValues(promotion) : EMPTY_FORM);
       setError(null);
     }
   };
@@ -146,6 +166,63 @@ export function PromotionFormDialog({
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
+          </div>
+          {/* Khối bản dịch — gom lại một chỗ để admin thấy rõ đây là phần tiếng Anh,
+              và mọi ô đều không bắt buộc. */}
+          <div className="flex flex-col gap-4 rounded-lg border border-dashed border-border p-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Bản tiếng Anh — để trống ô nào thì ô đó hiện nội dung tiếng Việt
+            </p>
+            <div>
+              <Label htmlFor="promo-title-en">Tiêu đề (tiếng Anh)</Label>
+              <Input
+                id="promo-title-en"
+                className="mt-2"
+                value={form.titleEn}
+                onChange={(e) => setForm({ ...form, titleEn: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="promo-description-en">Mô tả (tiếng Anh)</Label>
+              <Textarea
+                id="promo-description-en"
+                className="mt-2"
+                value={form.descriptionEn}
+                onChange={(e) => setForm({ ...form, descriptionEn: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="promo-badge-label-en">Nhãn badge (EN)</Label>
+                <Input
+                  id="promo-badge-label-en"
+                  className="mt-2"
+                  placeholder="VD: DAILY"
+                  value={form.badgeLabelEn}
+                  onChange={(e) => setForm({ ...form, badgeLabelEn: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="promo-badge-offer-en">Ưu đãi (EN)</Label>
+                <Input
+                  id="promo-badge-offer-en"
+                  className="mt-2"
+                  placeholder="VD: 30% OFF"
+                  value={form.badgeOfferEn}
+                  onChange={(e) => setForm({ ...form, badgeOfferEn: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="promo-schedule-text-en">Lịch áp dụng (EN)</Label>
+              <Input
+                id="promo-schedule-text-en"
+                className="mt-2"
+                placeholder="VD: EVERY THURSDAY"
+                value={form.scheduleTextEn}
+                onChange={(e) => setForm({ ...form, scheduleTextEn: e.target.value })}
+              />
+            </div>
           </div>
           <div>
             <Label htmlFor="promo-image">Ảnh (URL)</Label>

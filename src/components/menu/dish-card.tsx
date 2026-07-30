@@ -1,10 +1,16 @@
 import Image from "next/image";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { RatingStars } from "@/components/shared/rating-stars";
 import { Price } from "@/components/shared/price";
+import { dishDescription, dishName } from "@/lib/i18n-content";
 import type { Dish } from "@/types";
 
 export function DishCard({ dish }: { dish: Dish }) {
+  const locale = useLocale();
+  const t = useTranslations("Menu");
+  const name = dishName(dish, locale);
+
   return (
     <Link
       href={`/thuc-don/${dish.slug}`}
@@ -13,23 +19,25 @@ export function DishCard({ dish }: { dish: Dish }) {
       <div className="relative aspect-4/3 w-full overflow-hidden">
         <Image
           src={dish.imageUrl}
-          alt={dish.name}
+          alt={name}
           fill
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {dish.isFeatured ? (
           <span className="absolute top-4 left-4 rounded-full bg-badge-label px-3 py-1 text-xs font-medium text-foreground uppercase tracking-wider">
-            Nổi Bật
+            {t("featured")}
           </span>
         ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-serif text-lg text-foreground">{dish.name}</h3>
+          <h3 className="font-serif text-lg text-foreground">{name}</h3>
           <Price amount={dish.price} className="shrink-0 text-sm" />
         </div>
-        <p className="line-clamp-2 text-sm text-muted-foreground">{dish.description}</p>
+        <p className="line-clamp-2 text-sm text-muted-foreground">
+          {dishDescription(dish, locale)}
+        </p>
         {dish.reviewCount > 0 ? (
           <div className="mt-auto flex items-center gap-2 pt-2">
             <RatingStars rating={dish.avgRating} />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CalendarClock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,10 +15,13 @@ import {
 } from "@/lib/validations/reservation";
 import { TIME_SLOTS, isSlotDisabled, toLocalDateStr } from "@/lib/reservation/time-slots";
 import { createReservation } from "@/lib/actions/reservation";
+import { promoScheduleText, promoTitle } from "@/lib/i18n-content";
 import { cn } from "@/lib/utils";
 import type { Promotion } from "@/types";
 
 export function ReservationForm({ promo }: { promo: Promotion | null }) {
+  const locale = useLocale();
+  const tPromo = useTranslations("Reservation");
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const today = toLocalDateStr(new Date());
@@ -68,9 +72,9 @@ export function ReservationForm({ promo }: { promo: Promotion | null }) {
           <CalendarClock className="mt-0.5 size-5 shrink-0 text-primary" strokeWidth={1.5} />
           <div>
             <p className="text-sm font-medium text-foreground">
-              Đang áp dụng ưu đãi: {promo.title}
+              {tPromo("applying", { title: promoTitle(promo, locale) })}
             </p>
-            <p className="text-sm text-muted-foreground">{promo.scheduleText}</p>
+            <p className="text-sm text-muted-foreground">{promoScheduleText(promo, locale)}</p>
           </div>
         </div>
       ) : null}

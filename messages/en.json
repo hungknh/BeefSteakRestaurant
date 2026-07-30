@@ -44,6 +44,32 @@
     "retry": "Try Again",
     "goHome": "Back to Home"
   },
+  "Menu": {
+    "featured": "Featured",
+    "allCategories": "All"
+  },
+  "Promotions": {
+    "viewDetails": "View details"
+  },
+  "PromotionDetail": {
+    "scheduleTitle": "When it applies",
+    "conditionsTitle": "Conditions",
+    "scopeAll": "Applies to the entire menu.",
+    "scopeCategory": "Applies to the {name} category.",
+    "scopeDish": "Applies to {name}.",
+    "discountPercent": "{value}% off the order total",
+    "discountFixed": "{amount} off",
+    "minSubtotal": "On bills from {amount}",
+    "bookWithOffer": "Book a Table With This Offer"
+  },
+  "Home": {
+    "menuPreview": {
+      "eyebrow": "Our picks for you",
+      "title": "A Look at the Menu",
+      "imageAlt": "Steak plated on a stone dish at Beef Haven",
+      "viewFullMenu": "View the Full Menu"
+    }
+  },
   "Contact": {
     "metaTitle": "Contact",
     "metaDescription": "Address, phone number and opening hours of Beef Haven.",
@@ -55,5 +81,8 @@
     "hours": "Opening hours",
     "bookOnline": "Book a Table Online",
     "viewMenu": "View Menu"
+  },
+  "Reservation": {
+    "applying": "Offer applied: {title}"
   }
 }

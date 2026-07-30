@@ -1,12 +1,19 @@
 // Thực đơn cố định (category/dish/promotion) — chuyển từ src/lib/data/_mock.ts (đã xóa,
 // không còn nơi nào import trực tiếp sau khi lib/data/*.ts chuyển sang Prisma ở Giai đoạn 9).
 
+// `slug` KHÔNG dịch — nó nằm trong URL (`/thuc-don?category=steak`), đổi là hỏng link cũ.
 export const CATEGORIES = [
-  { id: "cat-steak", name: "Bít Tết", slug: "steak", sortOrder: 1 },
-  { id: "cat-khai-vi", name: "Khai Vị", slug: "khai-vi", sortOrder: 2 },
-  { id: "cat-mon-phu", name: "Món Phụ", slug: "mon-phu", sortOrder: 3 },
-  { id: "cat-trang-mieng", name: "Tráng Miệng", slug: "trang-mieng", sortOrder: 4 },
-  { id: "cat-do-uong", name: "Đồ Uống", slug: "do-uong", sortOrder: 5 },
+  { id: "cat-steak", name: "Bít Tết", nameEn: "Steaks", slug: "steak", sortOrder: 1 },
+  { id: "cat-khai-vi", name: "Khai Vị", nameEn: "Starters", slug: "khai-vi", sortOrder: 2 },
+  { id: "cat-mon-phu", name: "Món Phụ", nameEn: "Sides", slug: "mon-phu", sortOrder: 3 },
+  {
+    id: "cat-trang-mieng",
+    name: "Tráng Miệng",
+    nameEn: "Desserts",
+    slug: "trang-mieng",
+    sortOrder: 4,
+  },
+  { id: "cat-do-uong", name: "Đồ Uống", nameEn: "Drinks", slug: "do-uong", sortOrder: 5 },
 ];
 
 export const DISHES = [

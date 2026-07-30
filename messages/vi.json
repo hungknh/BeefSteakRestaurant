@@ -44,6 +44,32 @@
     "retry": "Thử Lại",
     "goHome": "Về Trang Chủ"
   },
+  "Menu": {
+    "featured": "Nổi Bật",
+    "allCategories": "Tất Cả"
+  },
+  "Promotions": {
+    "viewDetails": "Xem chi tiết"
+  },
+  "PromotionDetail": {
+    "scheduleTitle": "Thời gian áp dụng",
+    "conditionsTitle": "Điều kiện áp dụng",
+    "scopeAll": "Áp dụng cho toàn bộ thực đơn.",
+    "scopeCategory": "Áp dụng cho danh mục {name}.",
+    "scopeDish": "Áp dụng cho món {name}.",
+    "discountPercent": "Giảm {value}% giá trị đơn",
+    "discountFixed": "Giảm {amount}",
+    "minSubtotal": "Cho hóa đơn từ {amount}",
+    "bookWithOffer": "Đặt Bàn Với Ưu Đãi Này"
+  },
+  "Home": {
+    "menuPreview": {
+      "eyebrow": "Gợi ý cho bạn",
+      "title": "Xem Trước Thực Đơn",
+      "imageAlt": "Bít tết trình bày trên đĩa đá tại Beef Haven",
+      "viewFullMenu": "Xem Toàn Bộ Thực Đơn"
+    }
+  },
   "Contact": {
     "metaTitle": "Liên Hệ",
     "metaDescription": "Địa chỉ, số điện thoại và giờ mở cửa của Beef Haven.",
@@ -55,5 +81,8 @@
     "hours": "Giờ mở cửa",
     "bookOnline": "Đặt Bàn Trực Tuyến",
     "viewMenu": "Xem Thực Đơn"
+  },
+  "Reservation": {
+    "applying": "Đang áp dụng ưu đãi: {title}"
   }
 }

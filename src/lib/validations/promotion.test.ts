@@ -3,11 +3,16 @@ import { promotionFormSchema } from "./promotion";
 
 const base = {
   title: "Giờ Vàng",
+  titleEn: "Happy Hour",
   description: "Giảm giá khung giờ thấp điểm.",
+  descriptionEn: "Off-peak discount.",
   imageUrl: "/images/gio-vang.jpg",
   badgeLabel: "HÀNG NGÀY",
+  badgeLabelEn: "DAILY",
   badgeOffer: "GIẢM 20%",
+  badgeOfferEn: "20% OFF",
   scheduleText: "T2-T6, 14:00-17:00",
+  scheduleTextEn: "MON-FRI, 14:00-17:00",
   discountType: "PERCENT" as const,
   discountValue: 20,
   scope: "ALL" as const,
@@ -24,6 +29,19 @@ const base = {
 };
 
 describe("promotionFormSchema", () => {
+  // Bản dịch không bắt buộc: để trống thì bản tiếng Anh hiện nội dung tiếng Việt.
+  it("mọi field tiếng Anh để rỗng -> vẫn pass", () => {
+    const khongDich = {
+      ...base,
+      titleEn: "",
+      descriptionEn: "",
+      badgeLabelEn: "",
+      badgeOfferEn: "",
+      scheduleTextEn: "",
+    };
+    expect(promotionFormSchema.safeParse(khongDich).success).toBe(true);
+  });
+
   it("scope ALL, dữ liệu hợp lệ -> pass", () => {
     expect(promotionFormSchema.safeParse(base).success).toBe(true);
   });

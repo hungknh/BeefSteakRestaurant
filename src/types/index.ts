@@ -11,13 +11,23 @@ export type Doneness = "RARE" | "MEDIUM_RARE" | "MEDIUM" | "MEDIUM_WELL" | "WELL
 export type DiscountType = "PERCENT" | "FIXED" | "NONE";
 export type PromoScope = "ALL" | "CATEGORY" | "DISH";
 
-export type Category = { id: string; name: string; slug: string; sortOrder: number };
+// Các field `*En` là bản dịch tiếng Anh (Giai đoạn 15), nullable: bản ghi chưa dịch thì
+// UI rơi về tiếng Việt. Đừng đọc trực tiếp — dùng helper trong `src/lib/i18n-content.ts`.
+export type Category = {
+  id: string;
+  name: string;
+  nameEn: string | null;
+  slug: string;
+  sortOrder: number;
+};
 
 export type Dish = {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   description: string;
+  descriptionEn: string | null;
   price: number; // Int, đơn vị VNĐ
   imageUrl: string;
   categoryId: string;
@@ -33,13 +43,18 @@ export type Dish = {
 export type Promotion = {
   id: string;
   title: string;
+  titleEn: string | null;
   slug: string;
   description: string;
+  descriptionEn: string | null;
   imageUrl: string;
   // Hiển thị — đúng như 2 badge trong design
   badgeLabel: string; // "PHỔ BIẾN NHẤT" | "HÀNG NGÀY" | "LÃNG MẠN" | "CUỐI TUẦN"
+  badgeLabelEn: string | null;
   badgeOffer: string; // "GIẢM 30%" | "TẶNG MÓN PHỤ"
+  badgeOfferEn: string | null;
   scheduleText: string; // "THỨ 5 HÀNG TUẦN" | "T2-T6, 17:00-19:00"
+  scheduleTextEn: string | null;
   // Logic tính tiền
   discountType: DiscountType;
   discountValue: number; // PERCENT: 0-100 | FIXED: số VNĐ

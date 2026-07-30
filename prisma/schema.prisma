@@ -21,45 +21,58 @@ datasource db {
 //   src/types/index.ts (không phải DateTime) — Server Action tạo record mới tự sinh ISO string
 //   (`new Date().toISOString()`), không dùng @default(now()).
 
+// Các cột `*En` là bản dịch tiếng Anh (Giai đoạn 15). Đều nullable có chủ đích:
+// bản ghi cũ và món admin mới tạo có thể chưa có bản dịch — lúc đó UI tự rơi về tiếng
+// Việt (xem `src/lib/i18n-content.ts`), KHÔNG hiện ô trống.
+// Nội dung do người dùng viết (Review.content) cố tình KHÔNG dịch.
+
 model Category {
-  id        String @id
+  id        String  @id
   name      String
-  slug      String @unique
+  nameEn    String?
+  slug      String  @unique
   sortOrder Int
 
   dishes Dish[]
 }
 
 model Dish {
-  id          String   @id
-  name        String
-  slug        String   @unique
-  description String
-  price       Int
-  imageUrl    String
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
-  isAvailable Boolean
-  isFeatured  Boolean
-  weightGram  Int?
-  hasDoneness Boolean
-  avgRating   Float
-  reviewCount Int
+  id            String  @id
+  name          String
+  nameEn        String?
+  slug          String  @unique
+  description   String
+  descriptionEn String?
+  price         Int
+  imageUrl      String
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  isAvailable   Boolean
+  isFeatured    Boolean
+  weightGram    Int?
+  hasDoneness   Boolean
+  avgRating     Float
+  reviewCount   Int
 
   reviews    Review[]
   orderItems OrderItem[]
 }
 
 model Promotion {
-  id          String @id
-  title       String
-  slug        String @unique
-  description String
-  imageUrl    String
+  id            String  @id
+  title         String
+  titleEn       String?
+  slug          String  @unique
+  description   String
+  descriptionEn String?
+  imageUrl      String
 
-  badgeLabel   String
-  badgeOffer   String
-  scheduleText String
+  badgeLabel     String
+  badgeLabelEn   String?
+  badgeOffer     String
+  badgeOfferEn   String?
+  scheduleText   String
+  scheduleTextEn String?
 
   discountType     String // PERCENT | FIXED | NONE
   discountValue    Int

@@ -10,28 +10,32 @@ import { ReviewSection } from "@/components/review/review-section";
 import { getDishBySlug, getDishes } from "@/lib/data/dishes";
 import { getHasPurchasedDish } from "@/lib/data/orders";
 import { getReviews } from "@/lib/data/reviews";
+import { dishDescription, dishName } from "@/lib/i18n-content";
+import { localeAlternates } from "@/lib/seo/alternates";
 import type { User } from "@/types";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string; locale: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const dish = await getDishBySlug(slug);
   if (!dish) return {};
+  const name = dishName(dish, locale);
+  const description = dishDescription(dish, locale);
   return {
-    title: dish.name,
-    description: dish.description,
-    alternates: { canonical: `/thuc-don/${dish.slug}` },
+    title: name,
+    description,
+    alternates: localeAlternates(`/thuc-don/${dish.slug}`, locale),
     openGraph: {
-      title: dish.name,
-      description: dish.description,
-      images: [{ url: dish.imageUrl, alt: dish.name }],
+      title: name,
+      description,
+      images: [{ url: dish.imageUrl, alt: name }],
     },
   };
 }
 
 export default async function DishDetailPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const dish = await getDishBySlug(slug);
   if (!dish) notFound();
 
@@ -59,7 +63,7 @@ export default async function DishDetailPage({ params }: Props) {
         <div className="relative aspect-4/3 w-full overflow-hidden rounded-lg lg:aspect-square">
           <Image
             src={dish.imageUrl}
-            alt={dish.name}
+            alt={dishName(dish, locale)}
             fill
             priority
             sizes="(min-width: 1024px) 50vw, 100vw"
@@ -69,7 +73,7 @@ export default async function DishDetailPage({ params }: Props) {
 
         <div className="flex flex-col gap-6">
           <div>
-            <h1 className="font-serif text-3xl text-foreground sm:text-4xl">{dish.name}</h1>
+            <h1 className="font-serif text-3xl text-foreground sm:text-4xl">{dishName(dish, locale)}</h1>
             <div className="mt-3 flex items-center gap-4">
               <Price amount={dish.price} className="text-2xl" />
               {dish.weightGram ? (
@@ -79,7 +83,7 @@ export default async function DishDetailPage({ params }: Props) {
                 </span>
               ) : null}
             </div>
-            <p className="mt-4 text-muted-foreground">{dish.description}</p>
+            <p className="mt-4 text-muted-foreground">{dishDescription(dish, locale)}</p>
           </div>
 
           <OrderPanel dish={dish} />

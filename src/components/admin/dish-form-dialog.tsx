@@ -26,7 +26,9 @@ import type { Category, Dish } from "@/types";
 
 const EMPTY_FORM: DishFormValues = {
   name: "",
+  nameEn: "",
   description: "",
+  descriptionEn: "",
   price: 0,
   imageUrl: "",
   categoryId: "",
@@ -35,6 +37,26 @@ const EMPTY_FORM: DishFormValues = {
   weightGram: null,
   hasDoneness: false,
 };
+
+/**
+ * Dish (DB) -> giá trị form. Cần thiết vì các cột `*En` nullable trong DB nhưng input HTML
+ * phải nhận string: nhồi `null` vào `value` sẽ làm input thành uncontrolled và React cảnh báo.
+ */
+function toFormValues(dish: Dish): DishFormValues {
+  return {
+    name: dish.name,
+    nameEn: dish.nameEn ?? "",
+    description: dish.description,
+    descriptionEn: dish.descriptionEn ?? "",
+    price: dish.price,
+    imageUrl: dish.imageUrl,
+    categoryId: dish.categoryId,
+    isAvailable: dish.isAvailable,
+    isFeatured: dish.isFeatured,
+    weightGram: dish.weightGram,
+    hasDoneness: dish.hasDoneness,
+  };
+}
 
 export function DishFormDialog({
   dish,
@@ -48,14 +70,14 @@ export function DishFormDialog({
   trigger: React.ReactElement;
 }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<DishFormValues>(dish ?? EMPTY_FORM);
+  const [form, setForm] = useState<DishFormValues>(dish ? toFormValues(dish) : EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
     if (next) {
-      setForm(dish ?? EMPTY_FORM);
+      setForm(dish ? toFormValues(dish) : EMPTY_FORM);
       setError(null);
     }
   };
@@ -88,6 +110,16 @@ export function DishFormDialog({
               className="mt-2"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="dish-name-en">Tên món (tiếng Anh)</Label>
+            <Input
+              id="dish-name-en"
+              className="mt-2"
+              placeholder="Để trống thì bản tiếng Anh hiện tên tiếng Việt"
+              value={form.nameEn}
+              onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -129,6 +161,16 @@ export function DishFormDialog({
               className="mt-2"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="dish-description-en">Mô tả (tiếng Anh)</Label>
+            <Textarea
+              id="dish-description-en"
+              className="mt-2"
+              placeholder="Để trống thì bản tiếng Anh hiện mô tả tiếng Việt"
+              value={form.descriptionEn}
+              onChange={(e) => setForm({ ...form, descriptionEn: e.target.value })}
             />
           </div>
           <div>

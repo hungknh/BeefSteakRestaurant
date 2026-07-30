@@ -32,22 +32,42 @@ export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
   NO_SHOW: "Không Đến",
 };
 
-const WEEKDAY_LABELS: Record<string, string> = {
-  "0": "Chủ Nhật",
-  "1": "Thứ Hai",
-  "2": "Thứ Ba",
-  "3": "Thứ Tư",
-  "4": "Thứ Năm",
-  "5": "Thứ Sáu",
-  "6": "Thứ Bảy",
+const WEEKDAY_LABELS: Record<string, Record<string, string>> = {
+  vi: {
+    "0": "Chủ Nhật",
+    "1": "Thứ Hai",
+    "2": "Thứ Ba",
+    "3": "Thứ Tư",
+    "4": "Thứ Năm",
+    "5": "Thứ Sáu",
+    "6": "Thứ Bảy",
+  },
+  en: {
+    "0": "Sunday",
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday",
+    "6": "Saturday",
+  },
 };
 
-/** daysOfWeek là chuỗi CSV "1,4,6" (0=CN), rỗng = mọi ngày. Xem PLAN.md mục 5. */
-export function formatDaysOfWeek(daysOfWeek: string): string {
-  if (!daysOfWeek.trim()) return "Mọi ngày trong tuần";
+const EVERY_DAY: Record<string, string> = {
+  vi: "Mọi ngày trong tuần",
+  en: "Every day of the week",
+};
+
+/**
+ * daysOfWeek là chuỗi CSV "1,4,6" (0=CN), rỗng = mọi ngày. Xem PLAN.md mục 5.
+ * `locale` mặc định "vi" để chỗ gọi cũ không phải sửa; truyền "en" cho bản tiếng Anh.
+ */
+export function formatDaysOfWeek(daysOfWeek: string, locale = "vi"): string {
+  const labels = WEEKDAY_LABELS[locale] ?? WEEKDAY_LABELS.vi;
+  if (!daysOfWeek.trim()) return EVERY_DAY[locale] ?? EVERY_DAY.vi;
   return daysOfWeek
     .split(",")
-    .map((d) => WEEKDAY_LABELS[d.trim()])
+    .map((d) => labels[d.trim()])
     .filter(Boolean)
     .join(", ");
 }
