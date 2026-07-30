@@ -17,13 +17,13 @@
 
 ## Trạng thái hiện tại
 
-**Đã xong hết Giai đoạn 10 (Review) và gần hết Giai đoạn 11 (Admin backend)** — chỉ còn thiếu "upload ảnh" (chờ chủ dự án tạo tài khoản UploadThing, xem mục "Việc cần làm tiếp"). Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Lưu ý: bản deploy Vercel hiện KHÔNG tự cập nhật theo commit mới (xem "Sai khác" #26) — code trên `main` đã đi trước bản demo, muốn deploy lại thì `npx vercel --prod --yes`.
+**Đã xong Giai đoạn 10 (Review), 11 (Admin backend) và 12 (Hoàn thiện).** Web live **đọc/ghi database thật** (Neon Postgres), không còn mock tĩnh. Còn lại: phần cuối Giai đoạn 13 (nối GitHub↔Vercel) và Giai đoạn 14 (đóng gói CV). **Link demo: https://beefsteakhouse.vercel.app** — đăng nhập thử: `admin@beefhaven.vn` / `admin1234` (admin) hoặc bất kỳ email nào trong DB / `password123` (khách). Lưu ý: bản deploy Vercel hiện KHÔNG tự cập nhật theo commit mới (xem "Sai khác" #26) — code trên `main` đã đi trước bản demo, muốn deploy lại thì `npx vercel --prod --yes`.
 
 **Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
 **Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 460 đặt bàn, 113 đánh giá, 71 khách hàng**. Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
 
-PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database) → #17 (Giai đoạn 8 — Auth) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20, #21 (progress.md) → #22 (Giai đoạn 10 — Review) → #23 (Giai đoạn 11 — CRUD món/khuyến mãi thật) → #24 (Giai đoạn 11 — đổi trạng thái đơn/đặt bàn thật) → #25 (Giai đoạn 11 — phân trang admin). **Không còn PR nào chờ merge — `main` đã sạch.**
+PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database) → #17 (Giai đoạn 8 — Auth) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20, #21 (progress.md) → #22 (Giai đoạn 10 — Review) → #23 (Giai đoạn 11 — CRUD món/khuyến mãi thật) → #24 (Giai đoạn 11 — đổi trạng thái đơn/đặt bàn thật) → #25 (Giai đoạn 11 — phân trang admin) → #26 (progress.md) → #27 (Giai đoạn 12 — SEO/JSON-LD/error page/rate limit/CI). **Không còn PR nào chờ merge — `main` đã sạch.**
 
 | Giai đoạn | Trạng thái | PR |
 |---|---|---|
@@ -39,20 +39,23 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 | 8 — Auth | ✅ Xong | [#17](https://github.com/hungknh/BeefSteakRestaurant/pull/17) |
 | 9 — Nối data thật + dữ liệu lịch sử + dashboard thống kê | ✅ Xong | [#18](https://github.com/hungknh/BeefSteakRestaurant/pull/18) |
 | 10 — Review | ✅ Xong | [#22](https://github.com/hungknh/BeefSteakRestaurant/pull/22) |
-| 11 — Admin backend | 🔶 Một phần (còn thiếu duy nhất: upload ảnh, chờ chủ dự án tạo tài khoản UploadThing) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24), [#25](https://github.com/hungknh/BeefSteakRestaurant/pull/25) |
-| 12 — Hoàn thiện (SEO/test/CI) | ⬜ Chưa làm | |
+| 11 — Admin backend | ✅ Xong (upload ảnh UploadThing đã **cắt khỏi phạm vi** theo quyết định chủ dự án — xem "Sai khác" #45) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24), [#25](https://github.com/hungknh/BeefSteakRestaurant/pull/25) |
+| 12 — Hoàn thiện (SEO/test/CI) | ✅ Xong (Playwright đã **cắt khỏi phạm vi** — xem "Sai khác" #46) | [#27](https://github.com/hungknh/BeefSteakRestaurant/pull/27) |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
 | 14 — Đóng gói cho CV | ⬜ Chưa làm | |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
 ## Việc cần làm tiếp
 
-**Bước tiếp theo ngay: hoàn tất nốt Giai đoạn 11 rồi sang Giai đoạn 12.**
+**Bước tiếp theo ngay: Giai đoạn 13 (phần còn lại) rồi Giai đoạn 14 (đóng gói CV).**
 
-1. **Upload ảnh (UploadThing) — việc duy nhất còn lại của Giai đoạn 11.** Đang chờ chủ dự án tự tạo tài khoản UploadThing + lấy API token (không tự làm được vì cần credential ngoài, xem `UPLOADTHING_TOKEN` ở PLAN.md Giai đoạn 13). Có token rồi thì làm tiếp; nếu chủ dự án quyết định bỏ qua phần này, đánh dấu Giai đoạn 11 là "Xong" luôn trong bảng trạng thái và chuyển sang Giai đoạn 12.
-2. Sau đó bắt đầu **Giai đoạn 12 (Hoàn thiện)**: SEO (`generateMetadata`, `sitemap.ts`, `robots.ts`, OG image), JSON-LD, `error.tsx`/`not-found.tsx` toàn cục, rate limit đặt bàn, thêm Vitest/Playwright, GitHub Actions CI — xem chi tiết PLAN.md.
+1. **Nối GitHub repo với Vercel** (chủ dự án tự làm: Vercel Dashboard → Project Settings → Git) — hiện mỗi lần deploy phải chạy `npx vercel --prod --yes` thủ công, xem "Sai khác" #26. Nối xong thì CI ở `.github/workflows/ci.yml` + auto-deploy mới thành 1 mạch.
+2. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`) — canonical URL/OG image/sitemap đều dựa vào biến này.
+3. **Giai đoạn 14 (Đóng gói cho CV)**: README có screenshot, link demo, tài khoản demo, sơ đồ DB, và mục "3 vấn đề khó nhất đã giải" — xem PLAN.md.
 
-**Đã xong toàn bộ ở Giai đoạn 10 và 11 (trừ mục 1 ở trên)** — mọi CRUD/đổi trạng thái/phân trang admin đều đã nối Server Action thật, tự check `role === "ADMIN"` qua `requireAdminSession()` (`src/lib/auth/require-admin.ts`, dùng chung), và đã tự test qua browser thật (không chỉ lint/build/test). Chi tiết từng quyết định/gap đã sửa xem "Sai khác" #42–#44. Mục "Stat" của Giai đoạn 11 (doanh thu/số đơn/booking hôm nay/món bán chạy) **đã xong sẵn từ Giai đoạn 9**, không cần làm lại.
+Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload ảnh UploadThing (#45), Playwright E2E (#46), custom domain (dự án quy mô CV, dùng domain `*.vercel.app` là đủ).
+
+**Đã xong toàn bộ Giai đoạn 10, 11, 12.** Giai đoạn 11: mọi CRUD/đổi trạng thái/phân trang admin đều nối Server Action thật, tự check `role === "ADMIN"` qua `requireAdminSession()` (`src/lib/auth/require-admin.ts`, dùng chung), đã test qua browser thật. Chi tiết xem "Sai khác" #42–#44. Mục "Stat" của Giai đoạn 11 (doanh thu/số đơn/booking hôm nay/món bán chạy) **đã xong sẵn từ Giai đoạn 9**, không cần làm lại.
 
 ⚠️ **Đánh đổi đã biết ở phân trang admin** (`/admin/orders`, `/admin/reservations`): ô tìm kiếm/sort trong 2 bảng này giờ chỉ hoạt động trong phạm vi 20 dòng của trang hiện tại, không tìm xuyên suốt toàn bộ 632 đơn/460 đặt bàn (search vẫn client-side, PLAN.md chỉ yêu cầu phân trang server-side chứ không yêu cầu search server-side). Muốn tìm toàn bộ thì phải thêm `searchParams.q` — chưa làm, chỉ làm nếu chủ dự án cần.
 
@@ -176,6 +179,24 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
     - Xóa hẳn `CLAUDE.md`, `AGENTS.md` ở root — **đừng tự tạo lại** 2 file này (kể cả khi `prisma init`/`shadcn add`/công cụ khác tự sinh ra, xem "Sai khác" #31 — file đó nằm trong `.gitignore` nên không commit, không liên quan file đã xóa ở đây).
     - Viết lại toàn bộ lịch sử `main` (qua `git filter-branch`, force-push) để xóa dòng `Co-Authored-By: Claude Sonnet 5` khỏi 1 commit squash-merge cũ + sửa mô tả 12 PR đã merge để xóa dòng "🤖 Generated with Claude Code" — **không phải thao tác cần lặp lại**, chỉ ghi để hiểu vì sao lịch sử git commit hash khác với những gì đã thấy trước đó nếu có clone cũ.
     - Quy tắc áp dụng **từ giờ về sau**: không thêm `Co-Authored-By: Claude` vào bất kỳ commit mới nào (xem mục "Quy trình git" đầu file) — nếu công cụ AI đang dùng tự động thêm dòng này theo mặc định, phải chủ động bỏ nó đi trước khi commit.
+
+45. **Upload ảnh UploadThing — CẮT khỏi phạm vi (quyết định chủ dự án, 2026-07-30).** Không tạo tài khoản UploadThing. Admin nhập URL ảnh thủ công vào field `imageUrl` như hiện tại (`DishFormDialog`/`PromotionFormDialog` đã có input này). Giai đoạn 11 tính là **Xong**. Nếu sau này muốn làm: cài `uploadthing` + `@uploadthing/react`, thêm route `src/app/api/uploadthing/route.ts`, đổi input `imageUrl` trong 2 dialog thành `<UploadButton>`, gọi `requireAdminSession()` trong middleware của file router (xem #43).
+
+46. **Playwright (3 luồng E2E) — CẮT khỏi phạm vi (quyết định chủ dự án, 2026-07-30).** Lý do: dự án ở quy mô portfolio/CV, không cần hạ tầng test browser ~300MB. Thay bằng: **Vitest 11 file / 66 test** (discount engine, tính tiền giỏ, `cartItemKey`, `formatVND`/`formatDaysOfWeek`, 5 schema Zod, table-utils, time-slots) + **GitHub Actions chạy lint → test → build mỗi push**. Nếu sau này muốn thêm E2E: `npm i -D @playwright/test && npx playwright install chromium`, và trong CI phải seed DB trước (job hiện tại chỉ `migrate deploy`, DB rỗng nên không đủ dữ liệu để E2E chạy).
+
+47. **Giai đoạn 12 — SEO đọc thông tin nhà hàng từ `src/lib/site.ts` (file mới), KHÔNG hard-code rải rác.** Địa chỉ/SĐT/email/giờ mở cửa trong file này phải khớp với những gì `src/components/layout/footer.tsx` hiển thị — sửa 1 chỗ thì sửa cả 2 (chưa refactor Footer đọc từ `SITE` vì Footer còn layout icon riêng, không phải chỉ text). `SITE.url` ưu tiên `NEXT_PUBLIC_SITE_URL` → `VERCEL_PROJECT_PRODUCTION_URL` → fallback `https://beefsteakhouse.vercel.app`, nên bản preview Vercel tự có canonical đúng của chính nó.
+
+48. **⚠️ `src/app/sitemap.ts` phải `export const dynamic = "force-dynamic"`.** Sitemap đọc DB (danh sách món + khuyến mãi đang bật). Mặc định Next sinh sitemap **lúc build** → (1) `next build` sẽ cần `DATABASE_URL` thật, CI với Postgres rỗng/không có DB sẽ vỡ, (2) món thêm sau khi deploy không xuất hiện trong sitemap cho tới lần deploy kế tiếp. Với `force-dynamic`, route `/sitemap.xml` thành `ƒ (Dynamic)` (kiểm bằng bảng route ở cuối `npm run build`) — đã verify 24 URL sinh đúng từ DB thật.
+
+49. **JSON-LD chỉ phát ở 2 chỗ, có lý do:** `Restaurant` đặt ở `src/app/(public)/layout.tsx` (hiện trên mọi trang khách, không lặp lại từng page); `Menu` chỉ đặt ở `/thuc-don` **và chỉ khi không lọc danh mục** — bản `?category=...` là tập con của thực đơn, khai báo nó như toàn bộ `Menu` là sai dữ liệu với Google. Giá trong `MenuItem.offers` là **giá gốc** `dish.price`, không phải giá sau khuyến mãi: khuyến mãi phụ thuộc ngày/giờ/giỏ hàng (`bestPromotion()`) nên không biểu diễn tĩnh được. Component `JsonLd` (`src/components/shared/json-ld.tsx`) tự escape `<` thành `<` — `JSON.stringify` không escape ký tự này, nếu tên món/mô tả có `<` thì thẻ `<script>` bị phá.
+
+50. **`src/app/error.tsx` + `src/app/not-found.tsx` ở root nên KHÔNG có Header/Footer** (hệ quả trực tiếp của #12: Header/Footer nằm ở `(public)/layout.tsx`, không phải root). Vì vậy 2 trang này tự có nút "Về Trang Chủ"/"Xem Thực Đơn" thay cho nav. **Không thêm `global-error.tsx`** — nó chỉ cần khi chính root layout ném lỗi, mà root layout ở đây chỉ có font + `SessionProvider`, không fetch dữ liệu (đã ghi comment `ponytail:` trong `error.tsx`). `error.tsx` hiện chỉ `console.error`, chưa nối dịch vụ log lỗi (Sentry...) — chỗ nối nếu cần là `useEffect` trong file đó.
+
+51. **Rate limit đặt bàn = đếm trong DB, không dùng store ngoài** (`createReservation` trong `src/lib/actions/reservation.ts`, hằng số `MAX_RESERVATIONS_PER_PHONE_PER_DAY = 3`). 2 chi tiết quan trọng: (1) hạn mức tính theo **cặp (SĐT, ngày đặt bàn)**, không phải theo ngày tạo đơn; (2) đơn `CANCELLED` **không** tính vào hạn mức — khách hủy rồi đặt lại giờ khác là hành vi bình thường, không phải spam. Đã verify bằng script tạm chạy trên Neon thật (tạo 3 đơn số test `0900000099` → đếm ra 3, hủy 1 → đếm ra 2, khác ngày → 0, rồi xóa sạch); script không commit vì chỉ dùng 1 lần. Lỗi trả về hiển thị qua `formError` sẵn có trong `reservation-form.tsx`, không cần sửa UI.
+
+52. **CI (`.github/workflows/ci.yml`) tự dựng Postgres 17 trong container, KHÔNG dùng Neon thật.** Lý do: không cần GitHub secret (PR từ fork vẫn chạy được) và CI không có cách nào ghi bẩn vào dữ liệu demo. Job: `npm ci` (tự `prisma generate` qua postinstall, xem #30) → `prisma migrate deploy` (đồng thời kiểm migrations còn áp được sạch) → `lint` → `test` → `build`. `AUTH_SECRET` đặt giá trị giả ngay trong file YAML vì next-auth đòi biến này lúc build — không phải secret thật, đừng "sửa cho an toàn" bằng cách chuyển sang GitHub Secrets, sẽ làm fork PR vỡ. Lưu ý: **build hiện không cần DB** (mọi page đọc DB đều `force-dynamic` hoặc có searchParams), Postgres trong CI chỉ để `migrate deploy` chạy được.
+
+53. **`npx prettier --check src/**` báo lỗi ở 105 file — đây là trạng thái sẵn có của repo, không phải do Giai đoạn 12.** `.prettierrc.json` không set `printWidth` nên Prettier dùng mặc định 80, còn code trong repo viết theo ~100 cột. Prettier **không** nằm trong `npm run lint` hay CI, nên sai khác này không làm gì vỡ. Đừng chạy `prettier --write` toàn repo để "dọn" — sẽ tạo 1 diff khổng lồ vô nghĩa; nếu thật muốn thống nhất thì thêm `"printWidth": 100` vào `.prettierrc.json` trước, rồi mới format, và làm ở 1 commit `chore:` riêng.
 
 ## Cách tiếp tục ở phiên mới
 

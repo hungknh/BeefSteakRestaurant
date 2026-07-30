@@ -3,8 +3,10 @@ import { PackageOpen } from "lucide-react";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { DishCard } from "@/components/menu/dish-card";
 import { CategoryFilter } from "@/components/menu/category-filter";
+import { JsonLd } from "@/components/shared/json-ld";
 import { getDishes } from "@/lib/data/dishes";
 import { getCategories } from "@/lib/data/categories";
+import { menuJsonLd } from "@/lib/seo/structured-data";
 
 export const metadata: Metadata = {
   title: "Thực Đơn",
@@ -19,6 +21,9 @@ export default async function ThucDonPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+      {/* Chỉ phát Menu JSON-LD ở trang thực đơn đầy đủ — bản đã lọc danh mục là tập con,
+          khai báo nó như toàn bộ thực đơn sẽ sai. */}
+      {!category && <JsonLd data={menuJsonLd(dishes)} />}
       <SectionHeading eyebrow="Thực đơn" title="Món Ăn Của Chúng Tôi" />
 
       <div className="mt-10">

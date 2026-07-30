@@ -15,7 +15,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const promo = await getPromotionBySlug(slug);
   if (!promo) return {};
-  return { title: promo.title, description: promo.description };
+  return {
+    title: promo.title,
+    description: promo.description,
+    alternates: { canonical: `/khuyen-mai/${promo.slug}` },
+    openGraph: {
+      title: promo.title,
+      description: promo.description,
+      images: [{ url: promo.imageUrl, alt: promo.title }],
+    },
+  };
 }
 
 export default async function PromotionDetailPage({ params }: Props) {

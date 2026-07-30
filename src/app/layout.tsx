@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Lora } from "next/font/google";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const serif = Cormorant_Garamond({
@@ -15,11 +16,27 @@ const sans = Lora({
 });
 
 export const metadata: Metadata = {
+  // metadataBase để mọi ảnh OG/canonical khai bằng đường dẫn tương đối tự thành URL tuyệt đối.
+  metadataBase: new URL(SITE.url),
   title: {
-    default: "Beef Haven",
-    template: "%s · Beef Haven",
+    default: SITE.name,
+    template: `%s · ${SITE.name}`,
   },
-  description: "Nhà hàng bít tết cao cấp — thực đơn, khuyến mãi và đặt bàn trực tuyến.",
+  description: SITE.description,
+  openGraph: {
+    type: "website",
+    locale: "vi_VN",
+    siteName: SITE.name,
+    title: SITE.name,
+    description: SITE.description,
+    images: [{ url: SITE.ogImage, width: 1200, height: 630, alt: SITE.name }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE.name,
+    description: SITE.description,
+    images: [SITE.ogImage],
+  },
 };
 
 export default function RootLayout({

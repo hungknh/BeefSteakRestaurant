@@ -18,7 +18,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const dish = await getDishBySlug(slug);
   if (!dish) return {};
-  return { title: dish.name, description: dish.description };
+  return {
+    title: dish.name,
+    description: dish.description,
+    alternates: { canonical: `/thuc-don/${dish.slug}` },
+    openGraph: {
+      title: dish.name,
+      description: dish.description,
+      images: [{ url: dish.imageUrl, alt: dish.name }],
+    },
+  };
 }
 
 export default async function DishDetailPage({ params }: Props) {

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    # Postgres tạm trong CI thay vì dùng Neon thật: không cần secret (fork/PR vẫn chạy
+    # được), và không có nguy cơ CI ghi vào dữ liệu demo.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: beefsteak_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/beefsteak_ci
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/beefsteak_ci
+      # next-auth bắt buộc có AUTH_SECRET lúc build; giá trị chỉ dùng trong CI.
+      AUTH_SECRET: ci-only-secret-not-used-in-production
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` tự chạy postinstall -> `prisma generate` (xem "Sai khác" #30).
+      - run: npm ci
+
+      - name: Áp migrations lên Postgres của CI
+        run: npx prisma migrate deploy
+
+      - run: npm run lint
+
+      - run: npm test
+
+      - run: npm run build
