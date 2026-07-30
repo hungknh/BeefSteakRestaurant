@@ -21,7 +21,7 @@
 
 **Database đã chuyển từ SQLite sang Neon Postgres** (sớm hơn dự tính PLAN.md Giai đoạn 13) — lý do: cần DB thật để bản deploy trên Vercel phản ánh dữ liệu thật, không chỉ đọc mock. Xem "Sai khác" #37–#39 trước khi động vào `schema.prisma`/`prisma/seed.ts`/`src/lib/prisma.ts`.
 
-**Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 460 đặt bàn, 113 đánh giá, 71 khách hàng**. Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
+**Dữ liệu hiện tại là dữ liệu lịch sử giả nhưng chân thực** — sinh từ 01/2025 đến hiện tại (574 ngày), theo hệ số thực tế (tăng trưởng dần, cuối tuần đông hơn, Tết/Valentine/Giáng Sinh), dùng đúng `bestPromotion()` thật của app để tính giảm giá: **632 đơn hàng, 457 đặt bàn, 113 đánh giá, 71 người dùng** (số đếm thật từ DB ngày 2026-07-30 — xem #57). Xem "Sai khác" #40–#41. Muốn seed lại từ đầu: xem mục "Cách tiếp tục ở phiên mới".
 
 PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Database) → #17 (Giai đoạn 8 — Auth) → #14 (admin UI polish) → #15 (font số/giá tiền) → #18 (Giai đoạn 9 — nối data thật + Neon + dữ liệu lịch sử + dashboard thống kê) → #19 (`.vercelignore`) → #20, #21 (progress.md) → #22 (Giai đoạn 10 — Review) → #23 (Giai đoạn 11 — CRUD món/khuyến mãi thật) → #24 (Giai đoạn 11 — đổi trạng thái đơn/đặt bàn thật) → #25 (Giai đoạn 11 — phân trang admin) → #26 (progress.md) → #27 (Giai đoạn 12 — SEO/JSON-LD/error page/rate limit/CI). **Không còn PR nào chờ merge — `main` đã sạch.**
 
@@ -42,15 +42,18 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 | 11 — Admin backend | ✅ Xong (upload ảnh UploadThing đã **cắt khỏi phạm vi** theo quyết định chủ dự án — xem "Sai khác" #45) | [#23](https://github.com/hungknh/BeefSteakRestaurant/pull/23), [#24](https://github.com/hungknh/BeefSteakRestaurant/pull/24), [#25](https://github.com/hungknh/BeefSteakRestaurant/pull/25) |
 | 12 — Hoàn thiện (SEO/test/CI) | ✅ Xong (Playwright đã **cắt khỏi phạm vi** — xem "Sai khác" #46) | [#27](https://github.com/hungknh/BeefSteakRestaurant/pull/27) |
 | 13 — Deploy production | 🔶 Một phần (đã lên Neon + Vercel, còn lại: custom domain/tài khoản demo chính thức đã có) | |
-| 14 — Đóng gói cho CV | ⬜ Chưa làm | |
+| 14 — Đóng gói cho CV | ✅ Xong | [#28](https://github.com/hungknh/BeefSteakRestaurant/pull/28) |
 | 15 — Optional | ⬜ Không làm trừ khi được yêu cầu | |
 
 ## Việc cần làm tiếp
 
 **Bước tiếp theo ngay: Giai đoạn 13 (phần còn lại) rồi Giai đoạn 14 (đóng gói CV).**
 
-1. **Giai đoạn 14 (Đóng gói cho CV)**: README có screenshot, link demo, tài khoản demo, sơ đồ DB, và mục "3 vấn đề khó nhất đã giải" — xem PLAN.md. **Đây là việc tiếp theo.**
+**Đã xong toàn bộ Giai đoạn 0–14. Không còn việc nào bắt buộc.** Những mục dưới đây chỉ làm nếu chủ dự án muốn:
+
+1. **Giai đoạn 15 (Optional)** — Blog/CMS, VNPay/Momo sandbox, email xác nhận (Resend), i18n. Xem PLAN.md. Nếu làm Resend thì trang `/lien-he` đã có chỗ cắm form (xem #55).
 2. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`) — canonical URL/OG image/sitemap đều dựa vào biến này. Chưa cần làm khi còn dùng domain `*.vercel.app`.
+3. **Search server-side cho `/admin/orders` và `/admin/reservations`** — hiện ô tìm kiếm chỉ hoạt động trong 20 dòng của trang hiện tại (xem cảnh báo đánh đổi ở trên).
 
 Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload ảnh UploadThing (#45), Playwright E2E (#46), custom domain (dự án quy mô CV, dùng domain `*.vercel.app` là đủ).
 
@@ -206,6 +209,12 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
     Cũng đừng bấm toggle **Sensitive** trong form Edit "cho chắc": nó **đang bật** dù nhìn như tắt (kiểm bằng `document.querySelector('input[name=edit-form-sensitive]').checked` → `true`), bấm vào là tắt mất.
 
     Một điểm quan trọng: **thay đổi env không ảnh hưởng deployment đang chạy** — Vercel chỉ áp env mới ở lần deploy kế tiếp. Muốn env mới có hiệu lực thì phải deploy lại (giờ chỉ cần push lên `main`).
+
+55. **⚠️ Giai đoạn 14 phát hiện bug thật: nav có "Liên Hệ" → `/lien-he` nhưng trang chưa bao giờ được tạo, production trả 404.** `NAV_ITEMS` (`src/components/layout/nav-items.ts`) liệt kê 5 mục từ Giai đoạn 1, nhưng `lien-he` bị bỏ sót suốt 13 giai đoạn — Header và Footer đều render link này nên nhà tuyển dụng bấm nav là gặp trang lỗi. Đã tạo `src/app/(public)/lien-he/page.tsx`: trang tĩnh đọc hết từ `SITE` (`src/lib/site.ts`), thêm vào `sitemap.ts`, `robots.ts` không chặn. **Cố tình KHÔNG có form gửi liên hệ** — chưa nối dịch vụ email nào, form bấm xong không gửi đi đâu thì tệ hơn là không có form (đã ghi comment `ponytail:` trong file). Muốn thêm thì cắm Resend vào một Server Action mới, **đừng dùng `mailto:`** (mở app mail của khách, hay hỏng). Bài học: khi thêm mục vào `NAV_ITEMS`, kiểm luôn route tương ứng có tồn tại không.
+
+56. **Tài khoản khách để demo là `hang.do@example.com` / `password123` — chọn từ dữ liệu seed có sẵn, KHÔNG tạo user mới.** Lý do: email khách do `generateCustomers()` sinh random nên không có email cố định nào để ghi vào README, mà tài khoản đăng ký mới thì trắng lịch sử và **không viết được đánh giá** (cần đơn `COMPLETED` chứa món đó, xem #42). Đã truy vấn DB chọn khách có lịch sử đẹp nhất: 15 đơn hoàn thành, 8 đặt bàn, 5 đánh giá. **Nếu seed lại DB thì email này đổi** (random theo seed) — phải truy vấn lại và sửa README, nếu không nhà tuyển dụng đăng nhập sẽ lỗi. Câu truy vấn: `groupBy` trên `Order` theo `userId` với `status: "COMPLETED"`, sắp giảm dần theo `_count`.
+
+57. **README đã viết lại hoàn toàn (Giai đoạn 14) — bản cũ vẫn còn nguyên boilerplate `create-next-app`** (kể cả đoạn quảng cáo font Geist mà dự án không dùng). Bản mới: link demo, bảng 2 tài khoản dùng thử, 5 screenshot, tech stack, bảng số liệu dữ liệu, **sơ đồ DB bằng Mermaid `erDiagram`** (GitHub render sẵn, không cần ảnh), và 3 vấn đề khó nhất theo yêu cầu PLAN.md. Số liệu trong README lấy từ **truy vấn DB thật** chứ không copy số cũ trong file này — đặt bàn thực tế là **457** chứ không phải 460 như phần đầu file từng ghi. Nếu sửa số liệu thì truy vấn lại, đừng chép chéo giữa 2 file.
 
 ## Cách tiếp tục ở phiên mới
 
