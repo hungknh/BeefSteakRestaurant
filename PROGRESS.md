@@ -13,6 +13,7 @@
 - Xong 1 giai đoạn (lint + build xanh) → `gh pr create` vào `main` → **squash merge** (`gh pr merge --squash --delete-branch`) → xóa nhánh.
 - **Không bật Branch Protection** trên GitHub (quyết định có chủ đích, xem lịch sử chat) — tự giác đi qua nhánh + PR mà không khóa cứng ở repo settings.
 - **⚠️ KHÔNG thêm dòng `Co-Authored-By: Claude` vào commit message** (dù công cụ AI mặc định hay làm vậy) — chủ dự án yêu cầu giữ contributor trên GitHub chỉ có mình mình. Đã xóa dòng này khỏi toàn bộ lịch sử `main` cũ (rewrite qua `git filter-branch` + force-push) và khỏi mô tả 12 PR đã merge trước đó — xem "Sai khác" #44. Đừng thêm lại.
+- **⚠️ Tên file là `PROGRESS.md` VIẾT HOA.** Windows không phân biệt hoa/thường nên `Read`/`Edit` với `progress.md` vẫn sửa đúng file, nhưng `git add progress.md` thì **im lặng không stage gì** (git phân biệt hoa/thường). Hệ quả: sửa xong tưởng đã commit mà thực ra không có trong commit. Luôn dùng đúng `PROGRESS.md`, và kiểm bằng `git status --short` trước khi commit.
 - Repo: https://github.com/hungknh/BeefSteakRestaurant
 
 ## Trạng thái hiện tại
@@ -181,6 +182,20 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
     - Xóa hẳn `CLAUDE.md`, `AGENTS.md` ở root — **đừng tự tạo lại** 2 file này (kể cả khi `prisma init`/`shadcn add`/công cụ khác tự sinh ra, xem "Sai khác" #31 — file đó nằm trong `.gitignore` nên không commit, không liên quan file đã xóa ở đây).
     - Viết lại toàn bộ lịch sử `main` (qua `git filter-branch`, force-push) để xóa dòng `Co-Authored-By: Claude Sonnet 5` khỏi 1 commit squash-merge cũ + sửa mô tả 12 PR đã merge để xóa dòng "🤖 Generated with Claude Code" — **không phải thao tác cần lặp lại**, chỉ ghi để hiểu vì sao lịch sử git commit hash khác với những gì đã thấy trước đó nếu có clone cũ.
     - Quy tắc áp dụng **từ giờ về sau**: không thêm `Co-Authored-By: Claude` vào bất kỳ commit mới nào (xem mục "Quy trình git" đầu file) — nếu công cụ AI đang dùng tự động thêm dòng này theo mặc định, phải chủ động bỏ nó đi trước khi commit.
+    - **⚠️⚠️ Rewrite ở trên KHÔNG dọn được hết — GitHub vẫn hiện `claude` là contributor thứ 2 (phát hiện 2026-07-30).**
+
+      **Gốc rễ: `git filter-branch` chỉ viết lại `main`, còn GitHub lưu mỗi pull request thành một ref riêng `refs/pull/<số>/head` trỏ vào commit GỐC trước khi rewrite, và giữ vĩnh viễn.** Fetch về kiểm (`git fetch origin '+refs/pull/*/head:refs/remotes/pr/*'`) thì **PR #11 → #21 đều còn dòng `Co-Authored-By: Claude Sonnet 5`**. `refs/pull/*` là read-only phía server — không xoá được bằng bất kỳ lệnh git nào, rewrite/force-push đều không đụng tới.
+
+      **Vì sao dễ kết luận nhầm là đã sạch** (đã mắc đúng bẫy này một lần, đừng lặp lại):
+      - `gh api .../contributors` → chỉ `hungknh`. **API này chỉ đếm _author_, không đếm _co-author_.**
+      - Insights → Contributors → chỉ `hungknh`. Trang này chỉ tính "contributions to main".
+      - `/commits/main?author=claude` → "There isn't any commit history to show here". Cũng chỉ soi `main`.
+      - `git log origin/main` → 0 trailer. Đúng, nhưng `main` không phải toàn bộ repo.
+      - **Chỉ có widget "Contributors" ở sidebar trang chủ repo mới lộ ra.** Muốn kiểm nhanh: mở `https://github.com/<user>/<repo>` rồi đọc mục Contributors ở cột phải.
+
+      **Kết luận: cách duy nhất dứt điểm là xoá repo rồi tạo lại và push `main` sang.** `main` hiện tại đã sạch 100% (84 commit, 0 trailer) nên không phải dựng lại lịch sử — push nguyên là được. Đánh đổi: mất toàn bộ PR kèm mô tả, lịch sử Actions, lịch sử deployment; phải nối lại Vercel ↔ GitHub (#54) và sửa các link PR chết trong `README.md`/`PROGRESS.md`.
+
+      Ngoài ra trên máy local còn `refs/original/refs/heads/main` (backup do `filter-branch` tạo) cũng chứa dòng này — chưa bao giờ được push. Dọn bằng: `git update-ref -d refs/original/refs/heads/main && git reflog expire --expire=now --all && git gc --prune=now`.
 
 45. **Upload ảnh UploadThing — CẮT khỏi phạm vi (quyết định chủ dự án, 2026-07-30).** Không tạo tài khoản UploadThing. Admin nhập URL ảnh thủ công vào field `imageUrl` như hiện tại (`DishFormDialog`/`PromotionFormDialog` đã có input này). Giai đoạn 11 tính là **Xong**. Nếu sau này muốn làm: cài `uploadthing` + `@uploadthing/react`, thêm route `src/app/api/uploadthing/route.ts`, đổi input `imageUrl` trong 2 dialog thành `<UploadButton>`, gọi `requireAdminSession()` trong middleware của file router (xem #43).
 
