@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSearchForm } from "@/components/admin/search-form";
+import { SortHeader } from "@/components/admin/sort-header";
 import {
   Select,
   SelectContent,
@@ -12,8 +13,11 @@ import {
 } from "@/components/ui/select";
 import { RESERVATION_STATUS_LABELS } from "@/lib/format";
 import { updateReservationStatus } from "@/lib/actions/reservation";
-import { sortBy } from "@/lib/admin/table-utils";
+import type { SortDir } from "@/lib/admin/table-query";
+import type { ReservationSortKey } from "@/lib/data/reservations";
 import type { Reservation, ReservationStatus } from "@/types";
+
+const BASE_PATH = "/admin/reservations";
 
 const STATUS_OPTIONS = Object.entries(RESERVATION_STATUS_LABELS) as [
   ReservationStatus,
@@ -21,31 +25,21 @@ const STATUS_OPTIONS = Object.entries(RESERVATION_STATUS_LABELS) as [
 ][];
 
 export function ReservationsTable({
-  initialReservations,
+  reservations,
   search,
+  sort,
+  dir,
 }: {
-  initialReservations: Reservation[];
+  reservations: Reservation[];
   search?: string;
+  sort: ReservationSortKey;
+  dir: SortDir;
 }) {
   const router = useRouter();
-  const [sortKey, setSortKey] = useState<keyof Reservation>("date");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  // ponytail: xem ghi chú cùng loại trong `orders-table.tsx` — sort vẫn là trong-trang.
-  const rows = useMemo(
-    () => sortBy(initialReservations, sortKey, sortDir),
-    [initialReservations, sortKey, sortDir],
-  );
-
-  const toggleSort = (key: keyof Reservation) => {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-  };
+  // Search và sort đều do server làm — xem ghi chú trong `orders-table.tsx`.
 
   const changeStatus = (id: string, status: ReservationStatus) => {
     setError(null);
@@ -61,37 +55,40 @@ export function ReservationsTable({
 
   return (
     <div className="rounded-lg border border-border bg-card">
-      <AdminSearchForm defaultValue={search} placeholder="Tìm theo tên khách..." />
+      <AdminSearchForm
+        defaultValue={search}
+        placeholder="Tìm theo tên khách..."
+        sort={sort}
+        dir={dir}
+      />
       {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
-              <th className="px-5 py-3 font-medium">
-                <button
-                  type="button"
-                  className="cursor-pointer rounded-xs uppercase focus-visible:outline-2 focus-visible:outline-primary"
-                  onClick={() => toggleSort("guestName")}
-                >
-                  Khách Hàng
-                </button>
-              </th>
+              <SortHeader
+                label="Khách Hàng"
+                sortKey="guestName"
+                activeSort={sort}
+                activeDir={dir}
+                basePath={BASE_PATH}
+                search={search}
+              />
               <th className="px-5 py-3 font-medium">Liên Hệ</th>
-              <th className="px-5 py-3 font-medium">
-                <button
-                  type="button"
-                  className="cursor-pointer rounded-xs uppercase focus-visible:outline-2 focus-visible:outline-primary"
-                  onClick={() => toggleSort("date")}
-                >
-                  Ngày Giờ
-                </button>
-              </th>
+              <SortHeader
+                label="Ngày Giờ"
+                sortKey="date"
+                activeSort={sort}
+                activeDir={dir}
+                basePath={BASE_PATH}
+                search={search}
+              />
               <th className="px-5 py-3 font-medium">Số Khách</th>
               <th className="px-5 py-3 font-medium">Trạng Thái</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((reservation) => (
+            {reservations.map((reservation) => (
               <tr
                 key={reservation.id}
                 className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSearchForm } from "@/components/admin/search-form";
+import { SortHeader } from "@/components/admin/sort-header";
 import {
   Select,
   SelectContent,
@@ -13,8 +14,11 @@ import {
 import { Price } from "@/components/shared/price";
 import { ORDER_STATUS_LABELS } from "@/lib/format";
 import { updateOrderStatus } from "@/lib/actions/order";
-import { sortBy } from "@/lib/admin/table-utils";
+import type { SortDir } from "@/lib/admin/table-query";
+import type { OrderSortKey } from "@/lib/data/orders";
 import type { Order, OrderStatus } from "@/types";
+
+const BASE_PATH = "/admin/orders";
 
 const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS) as [
   OrderStatus,
@@ -22,32 +26,22 @@ const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABELS) as [
 ][];
 
 export function OrdersTable({
-  initialOrders,
+  orders,
   search,
+  sort,
+  dir,
 }: {
-  initialOrders: Order[];
+  orders: Order[];
   search?: string;
+  sort: OrderSortKey;
+  dir: SortDir;
 }) {
   const router = useRouter();
-  const [sortKey, setSortKey] = useState<keyof Order>("createdAt");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  // ponytail: search đã lên server (query DB), chỉ còn sort xếp trong 20 dòng của
-  // trang hiện tại. Muốn sort toàn bảng thì đẩy `orderBy` xuống `getOrdersPaged`.
-  const rows = useMemo(
-    () => sortBy(initialOrders, sortKey, sortDir),
-    [initialOrders, sortKey, sortDir],
-  );
-
-  const toggleSort = (key: keyof Order) => {
-    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-  };
+  // Search và sort đều do server làm (query DB) — component này chỉ render đúng thứ tự
+  // server trả về, không còn state sort nào ở client.
 
   const changeStatus = (id: string, status: OrderStatus) => {
     setError(null);
@@ -66,36 +60,36 @@ export function OrdersTable({
       <AdminSearchForm
         defaultValue={search}
         placeholder="Tìm theo mã đơn hoặc tên khách..."
+        sort={sort}
+        dir={dir}
       />
       {error ? <p className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs tracking-wider text-muted-foreground uppercase">
-              <th className="px-5 py-3 font-medium">
-                <button
-                  type="button"
-                  className="cursor-pointer rounded-xs uppercase focus-visible:outline-2 focus-visible:outline-primary"
-                  onClick={() => toggleSort("code")}
-                >
-                  Mã Đơn
-                </button>
-              </th>
+              <SortHeader
+                label="Mã Đơn"
+                sortKey="code"
+                activeSort={sort}
+                activeDir={dir}
+                basePath={BASE_PATH}
+                search={search}
+              />
               <th className="px-5 py-3 font-medium">Khách Hàng</th>
-              <th className="px-5 py-3 font-medium">
-                <button
-                  type="button"
-                  className="cursor-pointer rounded-xs uppercase focus-visible:outline-2 focus-visible:outline-primary"
-                  onClick={() => toggleSort("total")}
-                >
-                  Tổng Tiền
-                </button>
-              </th>
+              <SortHeader
+                label="Tổng Tiền"
+                sortKey="total"
+                activeSort={sort}
+                activeDir={dir}
+                basePath={BASE_PATH}
+                search={search}
+              />
               <th className="px-5 py-3 font-medium">Trạng Thái</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((order) => (
+            {orders.map((order) => (
               <tr
                 key={order.id}
                 className="border-b border-border transition-colors last:border-0 hover:bg-background-alt"

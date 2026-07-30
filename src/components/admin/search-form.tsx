@@ -12,12 +12,21 @@ import { Button } from "@/components/ui/button";
 export function AdminSearchForm({
   defaultValue,
   placeholder,
+  sort,
+  dir,
 }: {
   defaultValue?: string;
   placeholder: string;
+  sort?: string;
+  dir?: string;
 }) {
   return (
     <form action="" className="flex gap-2 border-b border-border p-5">
+      {/* Form GET thay THẾ cả query string, nên phải mang sort/dir theo bằng hidden
+          input — không có thì tìm kiếm mới làm mất thứ tự đang xem. Cố ý KHÔNG mang
+          `page`: tìm mới thì phải về trang 1. */}
+      {sort ? <input type="hidden" name="sort" value={sort} /> : null}
+      {dir ? <input type="hidden" name="dir" value={dir} /> : null}
       <Input
         type="search"
         name="q"

@@ -1,27 +1,27 @@
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { tableHref, type SortDir } from "@/lib/admin/table-query";
 
 export function Pager({
   currentPage,
   totalPages,
   basePath,
   search,
+  sort,
+  dir,
 }: {
   currentPage: number;
   totalPages: number;
   basePath: string;
   search?: string;
+  sort?: string;
+  dir?: SortDir;
 }) {
   if (totalPages <= 1) return null;
 
-  // Giữ `q` khi chuyển trang — thiếu bước này thì bấm "Sau" là mất kết quả tìm kiếm.
-  const hrefFor = (page: number) => {
-    const params = new URLSearchParams();
-    if (search) params.set("q", search);
-    if (page > 1) params.set("page", String(page));
-    const query = params.toString();
-    return query ? `${basePath}?${query}` : basePath;
-  };
+  // Giữ q/sort/dir khi chuyển trang — thiếu là bấm "Sau" mất cả kết quả tìm kiếm lẫn
+  // thứ tự đang xem.
+  const hrefFor = (page: number) => tableHref(basePath, { q: search, sort, dir, page });
 
   const prevHref = currentPage > 1 ? hrefFor(currentPage - 1) : null;
   const nextHref = currentPage < totalPages ? hrefFor(currentPage + 1) : null;
