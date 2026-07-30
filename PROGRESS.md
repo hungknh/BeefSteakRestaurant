@@ -49,9 +49,8 @@ PR đã merge (theo đúng thứ tự phụ thuộc): #13 (Giai đoạn 7 — Da
 
 **Bước tiếp theo ngay: Giai đoạn 13 (phần còn lại) rồi Giai đoạn 14 (đóng gói CV).**
 
-1. **Thêm `DATABASE_URL` + `DIRECT_URL` cho môi trường Preview trên Vercel** — xem "Sai khác" #54 để biết vì sao việc này phải làm thủ công và cẩn thận. Không làm thì Preview deployment (sinh ra ở mỗi PR) build được nhưng chết lúc chạy vì không có DB. Production **không** ảnh hưởng.
-2. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`) — canonical URL/OG image/sitemap đều dựa vào biến này.
-3. **Giai đoạn 14 (Đóng gói cho CV)**: README có screenshot, link demo, tài khoản demo, sơ đồ DB, và mục "3 vấn đề khó nhất đã giải" — xem PLAN.md.
+1. **Giai đoạn 14 (Đóng gói cho CV)**: README có screenshot, link demo, tài khoản demo, sơ đồ DB, và mục "3 vấn đề khó nhất đã giải" — xem PLAN.md. **Đây là việc tiếp theo.**
+2. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`) — canonical URL/OG image/sitemap đều dựa vào biến này. Chưa cần làm khi còn dùng domain `*.vercel.app`.
 
 Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload ảnh UploadThing (#45), Playwright E2E (#46), custom domain (dự án quy mô CV, dùng domain `*.vercel.app` là đủ).
 
@@ -200,11 +199,13 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
 54. **✅ Đã nối GitHub ↔ Vercel (2026-07-30) — "Sai khác" #26 KHÔNG còn đúng nữa.** Repo `hungknh/BeefSteakRestaurant` giờ connected trong Vercel project `hung-dfd0/beefsteakhouse`, Production branch = `main`. **Mỗi push lên `main` tự deploy production**, không cần `npx vercel --prod --yes` nữa — và đừng dùng lệnh đó nữa vì nó bỏ qua git + upload kèm `.env` cục bộ (xem #40).
 
-    **⚠️ Cạm bẫy khi sửa env var Sensitive trên Vercel dashboard:** cả 3 biến (`AUTH_SECRET`, `DATABASE_URL`, `DIRECT_URL`) đều bật cờ **Sensitive**, nghĩa là Vercel **không gửi giá trị về browser** — mở form Edit thì ô Value **rỗng thật** (kiểm bằng `document.querySelector('textarea').value` → `''`, cái nhìn thấy chỉ là placeholder). Vì vậy không rõ Save có giữ nguyên giá trị cũ hay ghi rỗng lên. Đã thêm Preview cho `AUTH_SECRET` bằng cách này (Save báo thành công, biến vẫn còn + vẫn Sensitive), nhưng **chưa xác minh được giá trị bên trong còn nguyên** — `vercel env pull` chỉ trả về `"[SENSITIVE]"` cho cả 3, không phân biệt được. `DATABASE_URL`/`DIRECT_URL` **cố tình để nguyên Production-only**, chưa sửa, để không đánh cược với connection string.
+    **Cả 3 env var (`AUTH_SECRET`, `DATABASE_URL`, `DIRECT_URL`) giờ bật cho cả Production + Preview** — cần thiết vì mỗi PR sinh 1 Preview deployment, không có DB thì Preview build được nhưng chết lúc chạy. Kiểm bằng `npx vercel env ls` (nguồn độc lập với UI).
 
-    Cách an toàn để thêm Preview cho 2 biến còn lại: **xoá rồi tạo lại** với giá trị copy từ `.env` cục bộ và tick sẵn cả Production + Preview, thay vì Edit biến có sẵn. Hoặc dùng CLI: `npx vercel env add DATABASE_URL preview` (CLI hỏi giá trị qua stdin, không dựa vào form web). Nếu `AUTH_SECRET` hoá ra đã bị ghi rỗng thì cứ tạo lại thoải mái — giá trị của nó là chuỗi random, đổi chỉ làm session đang đăng nhập bị đăng xuất, không mất dữ liệu.
+    **⚠️ Đọc trước khi sửa env var Sensitive lần sau:** cả 3 biến đều bật cờ **Sensitive**, nghĩa là Vercel **không gửi giá trị về browser** — mở form Edit thì ô Value **rỗng thật** (`document.querySelector('textarea').value` → `''`; chữ mờ nhìn thấy chỉ là placeholder kiểu `postgres://user:pass@db.example.com:5432/app`). Trông như sắp ghi rỗng lên secret, nhưng **không phải**: Save với ô Value để trống thì Vercel **giữ nguyên giá trị cũ**, chỉ cập nhật danh sách environment. Đã xác minh chứ không đoán — sau khi sửa `AUTH_SECRET` rồi deploy lại, `GET /api/auth/csrf` trả 200 kèm token (next-auth ký được ⇒ secret còn nguyên), trang `/thuc-don` vẫn ra tên món thật từ Neon (⇒ `DATABASE_URL` còn nguyên). Lưu ý `npx vercel env pull` **không dùng để kiểm việc này được** — nó trả `"[SENSITIVE]"` cho mọi biến sensitive, không phân biệt còn giá trị hay đã rỗng.
 
-    Một điểm quan trọng: **thay đổi env không ảnh hưởng deployment đang chạy** — Vercel chỉ áp env mới ở lần deploy kế tiếp. Nên bản demo vẫn chạy bằng snapshot env cũ cho tới khi có deploy mới.
+    Cũng đừng bấm toggle **Sensitive** trong form Edit "cho chắc": nó **đang bật** dù nhìn như tắt (kiểm bằng `document.querySelector('input[name=edit-form-sensitive]').checked` → `true`), bấm vào là tắt mất.
+
+    Một điểm quan trọng: **thay đổi env không ảnh hưởng deployment đang chạy** — Vercel chỉ áp env mới ở lần deploy kế tiếp. Muốn env mới có hiệu lực thì phải deploy lại (giờ chỉ cần push lên `main`).
 
 ## Cách tiếp tục ở phiên mới
 
