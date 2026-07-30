@@ -40,24 +40,16 @@ jobs:
           node-version: 22
           cache: npm
 
-      # `npm install`, KHÔNG phải `npm ci` — có lý do, đừng "sửa lại cho chuẩn".
+      # `npm ci` — cài đúng theo package-lock, tái lập tuyệt đối. Đã quay lại được sau
+      # một giai đoạn phải dùng `npm install` vì xung đột ajv (xem PROGRESS.md #62, #75).
       #
-      # `npm ci` đòi package-lock khớp tuyệt đối với package.json, và hiện không thoả được:
-      # `eslint` cần `ajv ^6.12.4`, `@hookform/resolvers` cần `ajv ^8.12.0`. Dòng ajv 6
-      # đứng ở 6.12.6 từ 2020, nhưng 6.14.0/6.15.0 được phát hành 02+04/2026 nên npm giờ
-      # hoist ajv 6.15.0 lên root — đúng chỗ @hookform/resolvers tìm, thành "invalid", và
-      # npm ghi lock thiếu các bản lồng. Sinh lại lock bao nhiêu lần cũng không hội tụ.
-      #
-      # Xung đột này có sẵn từ trước, không do code dự án, và KHÔNG ảnh hưởng runtime: chỗ
-      # duy nhất cần ajv là `ajvResolver` của @hookform/resolvers, mà dự án dùng
-      # `zodResolver`. lint/test/build đều xanh với cây npm install sinh ra.
-      #
-      # Đánh đổi: CI có thể cài bản transitive mới hơn lock, nên mất tính tái lập tuyệt đối.
-      # Vẫn bắt được hồi quy lint/test/build — đó là việc chính của CI ở đây.
-      # Quay lại `npm ci` khi upstream sửa (xem PROGRESS.md #62).
+      # Nếu bước này lại vỡ với "Missing: <gói> from lock file": ĐỪNG đổi sang
+      # `npm install` cho nhanh, và ĐỪNG xoá lock rồi sinh lại một cách vô định.
+      # Chẩn đoán bằng `npm ci --dry-run` ở local (đọc phần ĐẦU output — dòng `Missing:`
+      # nằm ở đầu, `| tail` sẽ cắt mất) rồi sinh lại lock một lần và thử lại.
       #
       # Tự chạy postinstall -> `prisma generate` (xem "Sai khác" #30).
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
 
       - name: Áp migrations lên Postgres của CI
         run: npx prisma migrate deploy
