@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import type { SortDir } from "@/lib/admin/table-query";
 import type { Order } from "@/types";
+
+/** Cột được phép sort — dùng chung cho page (validate URL) và bảng (dựng link header). */
+export const ORDER_SORT_KEYS = ["code", "total", "createdAt"] as const;
+export type OrderSortKey = (typeof ORDER_SORT_KEYS)[number];
 
 export async function getOrders(): Promise<Order[]> {
   // status/doneness lưu String trong Prisma (không dùng enum, xem schema.prisma) —
@@ -16,6 +21,8 @@ const PAGE_SIZE = 20;
 export async function getOrdersPaged(
   page: number,
   q?: string,
+  sort: OrderSortKey = "createdAt",
+  dir: SortDir = "desc",
 ): Promise<{ orders: Order[]; totalPages: number }> {
   // ponytail: `contains` + mode "insensitive" (Postgres) — không bỏ dấu tiếng Việt,
   // gõ "hang" không khớp "Hằng", y hệt search client-side trước đây. Muốn khớp
@@ -29,11 +36,17 @@ export async function getOrdersPaged(
       }
     : {};
 
+  // `sort` đã qua whitelist ORDER_SORT_KEYS ở page nên an toàn để đưa vào orderBy.
+  // Thêm `id` làm tiêu chí phụ: sort theo cột có giá trị trùng nhau (vd nhiều đơn cùng
+  // `total`) mà không có tiebreaker thì Postgres không bảo đảm thứ tự ổn định giữa các
+  // trang — cùng một bản ghi có thể hiện ở cả trang 1 và trang 2, hoặc mất hẳn.
+  const orderBy: Prisma.OrderOrderByWithRelationInput[] = [{ [sort]: dir }, { id: "asc" }];
+
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
       include: { items: { include: { dish: true } } },
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),

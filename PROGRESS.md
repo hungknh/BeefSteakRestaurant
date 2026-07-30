@@ -54,7 +54,7 @@ Từ 2026-07-30 bản deploy Vercel **tự cập nhật theo mỗi push lên `ma
 **Đã xong toàn bộ Giai đoạn 0–15. Website hoàn chỉnh. Không còn việc bắt buộc.** Những mục dưới đây chỉ làm nếu chủ dự án muốn:
 
 1. **Dịch khu admin sang tiếng Anh** — hiện cố ý chỉ có tiếng Việt (#59). Catalog messages đã có sẵn hạ tầng, chỉ cần thêm namespace.
-2. **Sort server-side cho `/admin/orders` và `/admin/reservations`** — search đã lên server (#71), riêng sort vẫn chỉ xếp trong 20 dòng của trang hiện tại.
+2. ~~**Sort server-side cho `/admin/orders` và `/admin/reservations`**~~ — **đã xong (#76).**
 3. ~~**Quay lại `npm ci` trong CI**~~ — **đã xong (#75).**
 4. **Đưa `NEXT_PUBLIC_SITE_URL` vào Vercel env** nếu sau này có custom domain (mặc định code tự lấy `VERCEL_PROJECT_PRODUCTION_URL`, xem `src/lib/site.ts`).
 5. **Các mục Giai đoạn 15 đã cắt**: VNPay/Momo sandbox, email Resend, Blog/CMS (xem #58).
@@ -63,7 +63,7 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
 
 **Đã xong toàn bộ Giai đoạn 10, 11, 12.** Giai đoạn 11: mọi CRUD/đổi trạng thái/phân trang admin đều nối Server Action thật, tự check `role === "ADMIN"` qua `requireAdminSession()` (`src/lib/auth/require-admin.ts`, dùng chung), đã test qua browser thật. Chi tiết xem "Sai khác" #42–#44. Mục "Stat" của Giai đoạn 11 (doanh thu/số đơn/booking hôm nay/món bán chạy) **đã xong sẵn từ Giai đoạn 9**, không cần làm lại.
 
-⚠️ **Đánh đổi còn lại ở phân trang admin** (`/admin/orders`, `/admin/reservations`): **search đã lên server-side** (`searchParams.q`, xem #71) nên tìm xuyên toàn bộ 632 đơn / 457 đặt bàn. Riêng **sort vẫn là client-side**, chỉ xếp trong 20 dòng của trang hiện tại — cố ý chưa làm.
+✅ **Phân trang admin (`/admin/orders`, `/admin/reservations`) giờ không còn đánh đổi nào:** cả **search** (#71) lẫn **sort** (#76) đều chạy trên server, tìm và xếp xuyên toàn bộ 632 đơn / 457 đặt bàn. Trạng thái nằm hết ở URL (`q`, `sort`, `dir`, `page`) nên chia sẻ link / refresh / nút Back đều giữ đúng cái đang xem.
 
 ## Sai khác / phát hiện so với PLAN.md gốc — đọc trước khi động vào code liên quan
 
@@ -387,6 +387,21 @@ Các mục đã cắt khỏi phạm vi (không phải việc còn nợ): upload 
     - `npm ls <gói> --all` để xem gói nào bị đánh dấu `invalid` và ai là bên yêu cầu.
     - Trước khi kết luận "xung đột không giải được", **kiểm xem cái gây xung đột có phải optional peer không** — nếu có, thường chỉ cần sinh lại lock.
     - Vẫn giữ nguyên bài học gốc của #62: đừng xoá lock đang chạy tốt một cách vô định. Lần này xoá có chủ đích, trên nhánh riêng, và verify bằng `npm ci --dry-run` + lint/test/build trước khi commit.
+
+76. **✅ Sort server-side cho 2 bảng admin (2026-07-30) — gỡ nốt đánh đổi cuối của #71.**
+
+    Sort giờ nằm ở URL (`?sort=<cột>&dir=asc|desc`) và đi thẳng vào `orderBy` của Prisma. Header bảng đổi từ `<button onClick>` sang **`<Link>`** — nhờ vậy chia sẻ link/refresh/Back đều giữ đúng thứ tự, và không còn state sort nào ở client.
+
+    **⚠️ 3 điểm dễ làm sai, đã xử lý — đừng gỡ ra:**
+    - **Whitelist cột bắt buộc.** `sort` từ URL đi vào `orderBy`; tên cột lạ làm Prisma ném lỗi → khách thấy trang 500, và để người ngoài dò được tên cột. `ORDER_SORT_KEYS`/`RESERVATION_SORT_KEYS` khai ngay cạnh hàm query, `parseSortKey()` ép về mặc định nếu không khớp. Đã thử `?sort=password&dir=SQLi` trên browser → rơi về mặc định, không lỗi.
+    - **`orderBy` phải có tiêu chí phụ `{ id: "asc" }`.** Sort theo cột có giá trị trùng (nhiều đơn cùng `total`, nhiều bàn cùng `date`) mà thiếu tiebreaker thì Postgres **không bảo đảm thứ tự ổn định giữa các trang** — cùng một bản ghi hiện ở cả trang 1 lẫn trang 2, hoặc mất hẳn. Đã verify: sort `guestName` (trùng rất nhiều) rồi so trang 1 với trang 2 → **0 dòng lặp**.
+    - **Form tìm kiếm phải mang `sort`/`dir` bằng hidden input.** Form GET thay THẾ cả query string (xem #71), không có hidden input thì tìm kiếm mới làm mất thứ tự đang xem. Cố ý **không** mang `page` — tìm mới phải về trang 1. Tương tự, bấm header sort cũng bỏ `page`.
+
+    Helper dùng chung ở `src/lib/admin/table-query.ts` (`parseSortKey`/`parseSortDir`/`parseSearch`/`tableHref`), có `table-query.test.ts` canh — 11 test, gồm cả ca cột lạ bị chặn. `Pager` và `SortHeader` đều dựng href qua `tableHref()` nên không nơi nào tự nối query string bằng tay.
+
+    `sortBy`/`filterBySearch` trong `table-utils.ts` **vẫn còn dùng** cho `dishes-table`/`promotions-table` (2 bảng đó nạp full list, không phân trang) — đừng xoá.
+
+    **Đã verify bằng browser thật**, không chỉ build: sort `total` giảm dần ra 10.533.000 ₫ (max toàn bộ 632 đơn, trong khi trang 1 mặc định chỉ tới 8.702.100 ₫); sort tăng dần ra 65.000 ₫; kết hợp `q=BS-2025` + sort thì max tụt còn 10.285.000 ₫ (đơn lớn nhất là của 2026, bị lọc đúng); bấm "Sau" giữ đủ `q`/`sort`/`dir`; bấm header khi đang ở trang 2 thì về trang 1.
 
 ## Cách tiếp tục ở phiên mới
 
